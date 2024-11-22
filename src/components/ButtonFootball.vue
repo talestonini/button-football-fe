@@ -14,20 +14,20 @@ export default {
         const response = await axios.get('http://localhost:8080/teams?name=Corinthians')
         items.value = await response.data
       } catch (error) {
-        console.error('Error fetching API data:', error)
+        console.error('Error fetching API data: ', error)
       }
       
       new Tabulator(table.value, {
         data: [ items.value ],
         layout: "fitColumns",
         columns: [
-          { title: "Name", field: "name" },
-          { title: "Type", field: "type" },
-          { title: "Full Name", field: "fullName" },
-          { title: "Foundation", field: "foundation" },
-          { title: "City", field: "city" },
-          { title: "Country", field: "country" },
-          { title: "Logo", field: "logoImgFile" },
+          { title: "Nome", field: "name" },
+          { title: "Tipo", field: "type" },
+          { title: "Nome Completo", field: "fullName" },
+          { title: "Fundação", field: "foundation" },
+          { title: "Cidade", field: "city" },
+          { title: "País", field: "country" },
+          { title: "Escudo", field: "logoImgFile" },
         ],
       });
     });
