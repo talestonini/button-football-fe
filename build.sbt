@@ -24,5 +24,9 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
     /* Depend on the scalajs-dom library.
      * It provides static types for the browser DOM APIs.
      */
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "2.8.0",
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % "2.8.0",
+      "com.raquo" %%% "laminar"  % "17.1.0",
+      "org.scalameta" %%% "munit" % "1.0.3" % Test
+    )
   )
