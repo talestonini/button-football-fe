@@ -2,6 +2,7 @@ import org.scalajs.linker.interface.ModuleSplitStyle
 
 lazy val buttonFootballFrontEnd = project.in(file("."))
   .enablePlugins(ScalaJSPlugin) // Enable the Scala.js plugin in this project
+  .enablePlugins(ScalablyTypedConverterExternalNpmPlugin)
   .settings(
     scalaVersion := "3.5.2",
 
@@ -25,8 +26,11 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
      * It provides static types for the browser DOM APIs.
      */
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "2.8.0",
-      "com.raquo" %%% "laminar"  % "17.1.0",
-      "org.scalameta" %%% "munit" % "1.0.3" % Test
-    )
+      "org.scala-js"  %%% "scalajs-dom" % "2.8.0",
+      "com.raquo"     %%% "laminar"     % "17.1.0",
+      "org.scalameta" %%% "munit"       % "1.0.3" % Test,
+    ),
+
+    // Tell ScalablyTyped that we manage `npm install` ourselves
+    externalNpm := baseDirectory.value,
   )
