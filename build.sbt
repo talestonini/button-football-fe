@@ -1,5 +1,8 @@
 import org.scalajs.linker.interface.ModuleSplitStyle
 
+val circeVer  = "0.14.10"
+val http4sVer = "0.23.29"
+
 lazy val buttonFootballFrontEnd = project.in(file("."))
   .enablePlugins(ScalaJSPlugin) // Enable the Scala.js plugin in this project
   .enablePlugins(ScalablyTypedConverterExternalNpmPlugin)
@@ -29,6 +32,16 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
       "org.scala-js"  %%% "scalajs-dom" % "2.8.0",
       "com.raquo"     %%% "laminar"     % "17.1.0",
       "org.scalameta" %%% "munit"       % "1.0.3" % Test,
+
+      // Http4s (backend and database stuff)
+      "io.circe"   %%% "circe-core"      % circeVer,
+      "io.circe"   %%% "circe-generic"   % circeVer,
+      "io.circe"   %%% "circe-parser"    % circeVer,
+      "org.http4s" %%% "http4s-circe"    % http4sVer,
+      "org.http4s" %%% "http4s-client"   % http4sVer,
+      "org.http4s" %%% "http4s-dsl"      % http4sVer,
+      "org.http4s" %%% "http4s-dom"      % "0.2.11", // this is maintained by Arman Bilge
+      "io.monix"   %%% "monix-execution" % "3.4.1",
     ),
 
     // Tell ScalablyTyped that we manage `npm install` ourselves
