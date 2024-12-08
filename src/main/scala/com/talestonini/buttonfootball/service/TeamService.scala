@@ -9,15 +9,13 @@ import org.http4s.Header
 import org.typelevel.ci.CIString
 import org.http4s.dom.FetchClientBuilder
 
-object TeamsService extends CommonService {
-
-  def getTeam(name: String): IO[Team] = {
-    val uri = toButtonFootballApiUri("teams").withQueryParam("name", name)
+object TeamService extends CommonService {
+  def getTeams(name: Option[String]): IO[List[Team]] = {
+    val uri = toButtonFootballApiUri("teams").withOptionQueryParam("name", name)
     val request = Request[IO](Method.GET, uri).withHeaders(Header.Raw(CIString("Content-Type"), "application/json"))
 
     FetchClientBuilder[IO].create
-      .expectOr[Team](request)(errorResponse =>
+      .expectOr[List[Team]](request)(errorResponse =>
         IO(RuntimeException(s"failed getting team: $errorResponse")))
   }
-
 }

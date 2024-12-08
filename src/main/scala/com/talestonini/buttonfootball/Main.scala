@@ -2,18 +2,17 @@ package com.talestonini.buttonfootball
 
 import cats.effect.unsafe.implicits.global
 import com.raquo.laminar.api.L.{*, given}
-import com.talestonini.buttonfootball.service.TeamsService
+import com.talestonini.buttonfootball.service.TeamService
 import org.scalajs.dom
 import scala.scalajs.concurrent.JSExecutionContext.queue
 import scala.util.{Failure, Success}
 import com.talestonini.buttonfootball.model.Teams.Team
 
-val team: Var[Team] = Var(Team(-1, "-", "-", "-", "-", "-", "-", "-"))
-val teamSig = team.signal
+val teams: Var[List[Team]] = Var(List.empty)
 
 @main
 def ButtonFootballFrontEnd(): Unit = {
-  val team = getTeam("Corinthians")
+  getTeams(None)
 
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
@@ -22,25 +21,25 @@ def ButtonFootballFrontEnd(): Unit = {
       thead(className := "thead-light", tr(
         th("Nome"), th("Tipo"), th("Nome Completo"), th("Fundação"), th("Cidade"), th("País")
       )),
-      tbody(tr(
-        td(child.text <-- teamSig.map(t => t.name)),
-        td(child.text <-- teamSig.map(t => t.`type`)),
-        td(child.text <-- teamSig.map(t => t.fullName)),
-        td(child.text <-- teamSig.map(t => t.foundation)),
-        td(child.text <-- teamSig.map(t => t.city)),
-        td(child.text <-- teamSig.map(t => t.country))
-      ))
+      tbody(
+        children <-- teams.signal.map(teams => teams.map(t => renderTeamRow(t)))
+      )
     )
   )
 }
 
-def getTeam(name: String): Unit = {
-  TeamsService
-    .getTeam(name)
+def renderTeamRow(team: Team): Element =
+  tr(
+    td(team.name), td(team.`type`), td(team.fullName), td(team.foundation), td(team.city), td(team.country)
+  )
+
+def getTeams(name: Option[String]): Unit = {
+  TeamService
+    .getTeams(name)
     .unsafeToFuture()
     .onComplete({
-      case s: Success[Team] => team.update(_ => s.value)
-      case f: Failure[Team] => println(s"failed getting team: ${f.exception.getMessage()}")
+      case s: Success[List[Team]] => teams.update(_ => s.value)
+      case f: Failure[List[Team]] => println(s"failed getting team: ${f.exception.getMessage()}")
     })(queue)
 
 }

@@ -12,4 +12,6 @@ object Teams {
                   country: String, logoImgFile: String)
   implicit val teamDecoder: EntityDecoder[IO, Team] = jsonOf[IO, Team]
   implicit val teamEncoder: EntityEncoder[IO, Team] = jsonEncoderOf[IO, Team]
+  implicit val teamsDecoder: EntityDecoder[IO, List[Team]] = jsonOf[IO, List[Team]]
+  implicit val teamsEncoder: EntityEncoder[IO, List[Team]] = jsonEncoderOf[IO, List[Team]]
 }
