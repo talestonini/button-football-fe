@@ -1,4 +1,6 @@
-package com.talestonini.buttonfootball.model
+package com.talestonini.buttonfootball.livechart.model
+import com.talestonini.buttonfootball.livechart.Model
+import {DataItem, DataItemID}
 
 class ModelTest extends munit.FunSuite:
   test("fullPrice") {

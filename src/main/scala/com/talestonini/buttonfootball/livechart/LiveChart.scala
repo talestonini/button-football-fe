@@ -1,17 +1,17 @@
-package com.talestonini.buttonfootball
+package com.talestonini.buttonfootball.livechart
 
 import com.raquo.laminar.api.L.{*, given}
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*
 
 import org.scalajs.dom
-import com.talestonini.buttonfootball.model.Model
-import com.talestonini.buttonfootball.model.DataItemID
-import com.talestonini.buttonfootball.model.DataItem
+import com.talestonini.buttonfootball.livechart.model.Model
+import com.talestonini.buttonfootball.livechart.model.DataItemID
+import com.talestonini.buttonfootball.livechart.model.DataItem
 
 object LiveChart:
   val model = new Model
-  import model.* 
+  import model.*
 
   def appElement(): Element =
     div(

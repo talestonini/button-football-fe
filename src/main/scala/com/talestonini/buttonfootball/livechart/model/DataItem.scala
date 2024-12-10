@@ -1,4 +1,4 @@
-package com.talestonini.buttonfootball.model
+package com.talestonini.buttonfootball.livechart.model
 
 import scala.util.Random
 

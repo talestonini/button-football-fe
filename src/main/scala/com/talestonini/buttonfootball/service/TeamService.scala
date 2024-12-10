@@ -1,6 +1,7 @@
 package com.talestonini.buttonfootball.service
 
 import cats.effect.IO
+import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Teams.*
 import org.http4s.FormDataDecoder.formEntityDecoder
 import org.http4s.Request
