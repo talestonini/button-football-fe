@@ -21,11 +21,15 @@ def ButtonFootballFrontEnd(): Unit = {
         onInput.mapToValue --> teamName,
         onChange --> (ev => getTeams(teamName.now()))
       ),
-      // button(className := "btn btn-primary", "⏎️", onClick --> (ev => getTeams(teamName.now()))),
       table(
         className := "table",
         thead(className := "thead-light", tr(
-          th("Nome"), th("Tipo"), th("Nome Completo"), th("Fundação"), th("Cidade"), th("País")
+          renderTableHeader("Nome"),
+          renderTableHeader("Tipo"),
+          renderTableHeader("Nome Completo"),
+          renderTableHeader("Fundação"),
+          renderTableHeader("Cidade"),
+          renderTableHeader("País")
         )),
         tbody(
           children <-- teams.signal.map(teams => teams.map(t => renderTeamRow(t)))
@@ -34,6 +38,17 @@ def ButtonFootballFrontEnd(): Unit = {
     )
   )
 }
+
+def renderTableHeader(label: String): Element =
+  th(
+    label,
+    onClick --> (ev => teams.update { t =>
+      t.sortBy(label match {
+        case "Nome" => _.name
+        case "Nome Completo" => _.fullName
+      })
+    })
+  )
 
 def renderTeamRow(team: Team): Element =
   tr(
