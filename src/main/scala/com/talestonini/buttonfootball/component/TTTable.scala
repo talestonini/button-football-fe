@@ -11,6 +11,8 @@ object TTTable {
   case object Desc extends Sorting
 
   case class TTHeader(label: String, modelFieldPos: Int, sorting: Var[Sorting] = Var(None)) {
+    val labelVar: Var[String] = Var(label)
+
     implicit val anyOrdering: Ordering[Any] = new Ordering[Any] {
       val stringOrdering: Ordering[String] = Ordering.String
       val intOrdering: Ordering[Int] = Ordering.Int
@@ -24,13 +26,15 @@ object TTTable {
 
     def renderTh[M <: Model](data: Var[List[M]]): Element =
       th(
-        label,
+        text <-- labelVar,
         onClick --> (ev => {
           val currSorting = sorting.signal.now()
           if (currSorting == None || currSorting == Desc)
+            labelVar.update(_ => s"$label ↑")
             data.update(_ => data.now().sortBy(_.productElement(modelFieldPos)))
             sorting.update(_ => Asc)
           else
+            labelVar.update(_ => s"$label ↓")
             data.update(_ => data.now().sortBy(_.productElement(modelFieldPos)).reverse)
             sorting.update(_ => Desc)
         })
