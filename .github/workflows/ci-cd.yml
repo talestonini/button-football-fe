@@ -23,7 +23,7 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
 
-    - name: Create project secret files
+    - name: Create project config files
       env:
         DEV_SECRETS: ${{ secrets.DEV }}
         PROD_SECRETS: ${{ secrets.PROD }}
@@ -33,6 +33,7 @@ jobs:
 
     - name: Run tests
       run: |
+        npm install
         sbt test
 
     # This step uploads information to the GitHub dependency graph, unblocking Dependabot alerts for the repository.
