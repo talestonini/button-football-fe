@@ -7,7 +7,8 @@ import org.http4s.dsl.io._
 import org.http4s.circe._
 import org.http4s.circe.CirceEntityCodec._
 
-object Teams {
+object Teams:
+
   case class Team(id: Int, name: String, `type`: String, fullName: String, foundation: String, city: String,
                   country: String, logoImgFile: String) extends Model
 
@@ -15,4 +16,5 @@ object Teams {
   implicit val teamEncoder: EntityEncoder[IO, Team] = jsonEncoderOf[IO, Team]
   implicit val teamsDecoder: EntityDecoder[IO, List[Team]] = jsonOf[IO, List[Team]]
   implicit val teamsEncoder: EntityEncoder[IO, List[Team]] = jsonEncoderOf[IO, List[Team]]
-}
+
+end Teams

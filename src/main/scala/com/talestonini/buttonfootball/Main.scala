@@ -12,7 +12,7 @@ import scala.scalajs.concurrent.JSExecutionContext.queue
 import scala.util.{Failure, Success}
 
 @main
-def ButtonFootballFrontEnd(): Unit = {
+def ButtonFootballFrontEnd(): Unit =
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
     div(
@@ -20,7 +20,7 @@ def ButtonFootballFrontEnd(): Unit = {
         typ := "text",
         value <-- teamName,
         onInput.mapToValue --> teamName,
-        onChange --> (ev => getTeams(teamName.now()))
+        onChange --> (ev => seGetTeams(teamName.now()))
       ),
       TTTable.renderTable(teams, List(
         TTHeader("Nome", 1),
@@ -32,15 +32,12 @@ def ButtonFootballFrontEnd(): Unit = {
       ))
     )
   )
-}
 
-def getTeams(name: String): Unit = {
+def seGetTeams(name: String): Unit =
   TeamService
     .getTeams(if (name.isBlank()) None else Some(name.trim()))
     .unsafeToFuture()
     .onComplete({
       case s: Success[List[Team]] => teams.update(_ => s.value)
-      case f: Failure[List[Team]] => println(s"failed getting team: ${f.exception.getMessage()}")
+      case f: Failure[List[Team]] => println(s"failed fetching team(s): ${f.exception.getMessage()}")
     })(queue)
-
-}

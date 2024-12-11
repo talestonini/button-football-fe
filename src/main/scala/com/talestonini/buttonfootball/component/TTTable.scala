@@ -4,16 +4,18 @@ import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.Model
 import scala.math.Ordering
 
-object TTTable {
+object TTTable:
+
   sealed trait Sorting
   case object None extends Sorting
   case object Asc extends Sorting
   case object Desc extends Sorting
 
-  case class TTHeader(label: String, modelFieldPos: Int, sorting: Var[Sorting] = Var(None)) {
+  case class TTHeader(label: String, modelFieldPos: Int, sorting: Var[Sorting] = Var(None)):
+
     val labelVar: Var[String] = Var(label)
 
-    implicit val anyOrdering: Ordering[Any] = new Ordering[Any] {
+    implicit val anyOrdering: Ordering[Any] = new Ordering[Any]:
       val stringOrdering: Ordering[String] = Ordering.String
       val intOrdering: Ordering[Int] = Ordering.Int
 
@@ -22,7 +24,7 @@ object TTTable {
         case (a: Int, b: Int) => intOrdering.compare(a, b)
         case _ => throw new IllegalArgumentException("unsupported header type")
       }
-    }
+    end anyOrdering
 
     def renderTh[M <: Model](data: Var[List[M]]): Element =
       th(
@@ -39,9 +41,10 @@ object TTTable {
             sorting.update(_ => Desc)
         })
       )
-  }
 
-  def renderTable[M <: Model](data: Var[List[M]], headers: List[TTHeader]): Element = {
+  end TTHeader
+
+  def renderTable[M <: Model](data: Var[List[M]], headers: List[TTHeader]): Element =
     def renderTr(r: M): Element =
       tr(headers.map(h => td(r.productElement(h.modelFieldPos).toString())))
 
@@ -55,5 +58,6 @@ object TTTable {
         children <-- data.signal.map(data => data.map(r => renderTr(r)))
       )
     )
-  }
-}
+  end renderTable
+
+end TTTable
