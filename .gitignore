@@ -34,8 +34,8 @@ public
 project/project
 target
 
-# Firebase
-.firebase
+# Secrets
+.secrets-*
 
-# Config
-config-*
+# Other
+.firebase

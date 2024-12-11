@@ -28,8 +28,8 @@ jobs:
         DEV_SECRETS: ${{ secrets.DEV }}
         PROD_SECRETS: ${{ secrets.PROD }}
       run: |
-        echo "$DEV_SECRETS" > config-dev
-        echo "$PROD_SECRETS" > config-prod
+        echo "$DEV_SECRETS" > .secrets-dev
+        echo "$PROD_SECRETS" > .secrets-prod
 
     - name: Run tests (depends on typescript for scalablytyped, hence npm install)
       run: |
@@ -58,9 +58,9 @@ jobs:
 
     - name: Create project secret files
       env:
-        prod_secrets: ${{ secrets.PROD }}
+        PROD_SECRETS: ${{ secrets.PROD }}
       run: |
-        echo "$prod_secrets" > config-prod
+        echo "$PROD_SECRETS" > .secrets-prod
 
     - name: Deploy
       env:

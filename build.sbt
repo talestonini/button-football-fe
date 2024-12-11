@@ -52,13 +52,13 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Config
-// Tasks fastLinkJS and fullLinkJS to replace code configs from files .config-dev and .config-prod
+// Tasks fastLinkJS and fullLinkJS to replace code secrets from files .secrets-dev and .secrets-prod
 // ---------------------------------------------------------------------------------------------------------------------
 lazy val replaceDevSecrets = taskKey[Unit]("Replaces secret references in the code for fast linking")
 replaceDevSecrets := {
   val log = streams.value.log
   log.info("Replacing DEV secret references:")
-  loadSecretsFrom(baseDirectory.value / "config-dev").foreach { entry =>
+  loadSecretsFrom(baseDirectory.value / ".secrets-dev").foreach { entry =>
     replaceString(
       log,
       baseDirectory.value / s"target/scala-$scalaVer/buttonfootballfrontend-fastopt",
@@ -73,7 +73,7 @@ lazy val replaceTestSecrets = taskKey[Unit]("Replaces secret references in the c
 replaceTestSecrets := {
   val log = streams.value.log
   log.info("Replacing TEST secret references:")
-  loadSecretsFrom(baseDirectory.value / "config-dev").foreach { entry =>
+  loadSecretsFrom(baseDirectory.value / ".secrets-dev").foreach { entry =>
     replaceString(
       log,
       baseDirectory.value / s"target/scala-$scalaVer/buttonfootballfrontend-test-fastopt",
@@ -88,7 +88,7 @@ lazy val replaceProdSecrets = taskKey[Unit]("Replaces secret references in the c
 replaceProdSecrets := {
   val log = streams.value.log
   log.info("Replacing PROD secret references:")
-  loadSecretsFrom(baseDirectory.value / "config-prod").foreach { entry =>
+  loadSecretsFrom(baseDirectory.value / ".secret-prod").foreach { entry =>
     replaceString(
       log,
       baseDirectory.value / s"target/scala-$scalaVer/buttonfootballfrontend-opt",

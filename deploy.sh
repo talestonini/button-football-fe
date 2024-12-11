@@ -24,4 +24,4 @@ echo ">>> Step 7: Deploy to Firebase"
 # - The service account must have a key in JSON format;
 # - An environment variable GOOGLE_APPLICATION_CREDENTIALS whose value is the path to a temp CI file with the JSON key
 #   content (this is done in the CI step, just before calling this script).
-firebase deploy --public dist
+firebase deploy --public dist --project button-football-prj-aecdb
