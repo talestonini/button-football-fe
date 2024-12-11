@@ -19,6 +19,7 @@
     "@popperjs/core": "^2.11.8",
     "@types/bootstrap": "^5.2.10",
     "bootstrap": "^5.3.3",
-    "chart.js": "^2.9.4"
+    "chart.js": "^2.9.4",
+    "typescript": "^4.9.5"
   }
 }
