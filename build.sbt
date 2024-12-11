@@ -88,7 +88,7 @@ lazy val replaceProdSecrets = taskKey[Unit]("Replaces secret references in the c
 replaceProdSecrets := {
   val log = streams.value.log
   log.info("Replacing PROD secret references:")
-  loadSecretsFrom(baseDirectory.value / ".secret-prod").foreach { entry =>
+  loadSecretsFrom(baseDirectory.value / ".secrets-prod").foreach { entry =>
     replaceString(
       log,
       baseDirectory.value / s"target/scala-$scalaVer/buttonfootballfrontend-opt",
