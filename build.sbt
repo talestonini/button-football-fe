@@ -1,5 +1,7 @@
+import sbt.internal.util.ManagedLogger
 import org.scalajs.linker.interface.ModuleSplitStyle
 
+val scalaVer  = "3.5.2" // update prep_public.sh to match this version
 val circeVer  = "0.14.10"
 val http4sVer = "0.23.29"
 
@@ -7,7 +9,7 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
   .enablePlugins(ScalaJSPlugin) // Enable the Scala.js plugin in this project
   .enablePlugins(ScalablyTypedConverterExternalNpmPlugin)
   .settings(
-    scalaVersion := "3.5.2",
+    scalaVersion := scalaVer,
 
     // Tell Scala.js that this is an application with a main method
     scalaJSUseMainModuleInitializer := true,
@@ -47,3 +49,94 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
     // Tell ScalablyTyped that we manage `npm install` ourselves
     externalNpm := baseDirectory.value,
   )
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Config
+// Tasks fastLinkJS and fullLinkJS to replace code configs from files .config-dev and .config-prod
+// ---------------------------------------------------------------------------------------------------------------------
+lazy val replaceDevSecrets = taskKey[Unit]("Replaces secret references in the code for fast linking")
+replaceDevSecrets := {
+  val log = streams.value.log
+  log.info("Replacing DEV secret references:")
+  loadSecretsFrom(baseDirectory.value / "config-dev").foreach { entry =>
+    replaceString(
+      log,
+      baseDirectory.value / s"target/scala-$scalaVer/buttonfootballfrontend-fastopt",
+      "main.js",
+      entry._1,
+      entry._2
+    )
+  }
+}
+
+lazy val replaceTestSecrets = taskKey[Unit]("Replaces secret references in the code for test fast linking")
+replaceTestSecrets := {
+  val log = streams.value.log
+  log.info("Replacing TEST secret references:")
+  loadSecretsFrom(baseDirectory.value / "config-dev").foreach { entry =>
+    replaceString(
+      log,
+      baseDirectory.value / s"target/scala-$scalaVer/buttonfootballfrontend-test-fastopt",
+      "main.js",
+      entry._1,
+      entry._2
+    )
+  }
+}
+
+lazy val replaceProdSecrets = taskKey[Unit]("Replaces secret references in the code for full linking")
+replaceProdSecrets := {
+  val log = streams.value.log
+  log.info("Replacing PROD secret references:")
+  loadSecretsFrom(baseDirectory.value / "config-prod").foreach { entry =>
+    replaceString(
+      log,
+      baseDirectory.value / s"target/scala-$scalaVer/buttonfootballfrontend-opt",
+      "main.js",
+      entry._1,
+      entry._2
+    )
+  }
+}
+
+def replaceString(log: ManagedLogger, dir: File, fileFilter: String, from: String, to: String) = {
+  val toReplace        = s"@$from@"
+  val files: Seq[File] = Option.apply((dir ** fileFilter).get).getOrElse(Seq.empty[File])
+  log.info(s"* ${files.size} files to check for config $from")
+  files.foreach { f =>
+    val content = IO.read(f)
+    if (content.contains(toReplace)) {
+      log.info(s"* replacing $from in file ${f.name}")
+      val replacement = content.replace(toReplace, to)
+      IO.write(f, replacement)
+    }
+  }
+}
+
+def loadSecretsFrom(file: File): Seq[(String, String)] = {
+  scala.io.Source
+    .fromFile(file)
+    .getLines()
+    .filter(_.contains("="))
+    .map(line => {
+      val entry = line.split('=').toList
+      (entry.head, entry.tail.head)
+    })
+    .toSeq
+}
+
+fastLinkJS := (Def.taskDyn {
+  val fljs = (Compile / fastLinkJS).value
+  Def.task {
+    val rs = replaceDevSecrets.value
+    fljs
+  }
+}).value
+
+fullLinkJS := (Def.taskDyn {
+  val fljs = (Compile / fullLinkJS).value
+  Def.task {
+    val rs = replaceProdSecrets.value
+    fljs
+  }
+}).value
