@@ -13,7 +13,6 @@ object TeamTypeService extends CommonService:
   def getTeamTypes(): IO[List[TeamType]] =
     val uri = toButtonFootballApiUri("teamTypes")
     val request = Request[IO](Method.GET, uri).withHeaders(Header.Raw(CIString("Content-Type"), "application/json"))
-
     FetchClientBuilder[IO].create
       .expectOr[List[TeamType]](request)(errorResponse =>
         IO(RuntimeException(s"failed getting team types: $errorResponse")))

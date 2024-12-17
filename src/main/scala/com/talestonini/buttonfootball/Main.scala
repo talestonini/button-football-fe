@@ -10,10 +10,10 @@ import com.talestonini.buttonfootball.service.TeamService
 import org.scalajs.dom
 import scala.scalajs.concurrent.JSExecutionContext.queue
 import scala.util.{Failure, Success}
-import com.talestonini.buttonfootball.service.TeamTypeService
-import com.talestonini.buttonfootball.model.TeamTypes.TeamType
-import com.talestonini.buttonfootball.service.ChampionshipTypeService
+import com.talestonini.buttonfootball.model.Championships.Championship
 import com.talestonini.buttonfootball.model.ChampionshipTypes.ChampionshipType
+import com.talestonini.buttonfootball.model.TeamTypes.TeamType
+import com.talestonini.buttonfootball.service.*
 
 @main
 def ButtonFootballFrontEnd(): Unit =
@@ -85,11 +85,12 @@ def renderChampionshipTypeSelect(): Element =
         className := "form-select",
         children <-- championshipTypes.signal.map(data => data.map(ct =>
           option(
-            ct.description,
-            value <-- selectedChampionshipType,
-            onInput.mapToValue --> selectedChampionshipType
+            value := ct.code,
+            ct.description
           )
-        ))
+        )),
+        onInput.mapToValue --> selectedChampionshipType,
+        onChange --> (ev => seGetChampionships(selectedChampionshipType.now()))
       )
     )
   )
@@ -118,6 +119,30 @@ def seGetChampionshipTypes(codTeamType: String): Unit =
         println(s"failed fetching championship type: ${f.exception.getMessage()}")
     })(queue)
 end seGetChampionshipTypes
+
+def seGetChampionships(codChampionshipType: String): Unit =
+  println(s"fetching championships with championship type code '${codChampionshipType}'")
+  ChampionshipService
+    .getChampionships(Some(codChampionshipType))
+    .unsafeToFuture()
+    .onComplete({
+      case s: Success[List[Championship]] => championships.update(_ => s.value)
+      case f: Failure[List[Championship]] =>
+        println(s"failed fetching championships: ${f.exception.getMessage()}")
+    })(queue)
+end seGetChampionships
+
+def seGetChampionships(championshipTypeId: Int): Unit =
+  println(s"fetching championships with championship type id '${championshipTypeId}'")
+  ChampionshipTypeService
+    .getChampionships(championshipTypeId)
+    .unsafeToFuture()
+    .onComplete({
+      case s: Success[List[Championship]] => championships.update(_ => s.value)
+      case f: Failure[List[Championship]] =>
+        println(s"failed fetching championships: ${f.exception.getMessage()}")
+    })(queue)
+end seGetChampionships
 
 def seGetTeams(name: String): Unit =
   println(s"fetching team with name '${name}'")
