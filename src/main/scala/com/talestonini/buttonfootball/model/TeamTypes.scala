@@ -11,6 +11,8 @@ object TeamTypes:
 
   case class TeamType(id: Int, code: String, description: String) extends Model
 
+  val NO_TEAM_TYPE = TeamType(-1, "-", "-")
+
   implicit val teamDecoder: EntityDecoder[IO, TeamType] = jsonOf[IO, TeamType]
   implicit val teamEncoder: EntityEncoder[IO, TeamType] = jsonEncoderOf[IO, TeamType]
   implicit val teamsDecoder: EntityDecoder[IO, List[TeamType]] = jsonOf[IO, List[TeamType]]

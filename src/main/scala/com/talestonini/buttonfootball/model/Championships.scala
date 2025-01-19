@@ -12,6 +12,8 @@ object Championships:
   case class Championship(id: Int, `type`: String, teamType: String, numEdition: Int, dtCreation: String, dtEnd: String,
                           numTeams: Int, numQualif: Int, status: String) extends Model
 
+  val NO_CHAMPIONSHIP = Championship(-1, "-", "-", NO_CHAMPIONSHIP_EDITION.toInt, "-", "-", -1, -1, "-")
+
   implicit val teamDecoder: EntityDecoder[IO, Championship] = jsonOf[IO, Championship]
   implicit val teamEncoder: EntityEncoder[IO, Championship] = jsonEncoderOf[IO, Championship]
   implicit val teamsDecoder: EntityDecoder[IO, List[Championship]] = jsonOf[IO, List[Championship]]
