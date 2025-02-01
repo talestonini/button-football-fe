@@ -1,20 +1,14 @@
 package com.talestonini.buttonfootball
 
-import cats.effect.unsafe.implicits.global
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.component.TTTable
 import com.talestonini.buttonfootball.component.TTTable.TTHeader
 import com.talestonini.buttonfootball.model.*
-import com.talestonini.buttonfootball.model.Championships.Championship
-import com.talestonini.buttonfootball.model.ChampionshipTypes.ChampionshipType
+import com.talestonini.buttonfootball.model.Championships.*
+import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import com.talestonini.buttonfootball.model.Teams.*
-import com.talestonini.buttonfootball.model.TeamTypes.TeamType
-import com.talestonini.buttonfootball.service.*
+import com.talestonini.buttonfootball.model.TeamTypes.*
 import org.scalajs.dom
-import scala.scalajs.concurrent.JSExecutionContext.queue
-import scala.util.{Failure, Success}
-import com.talestonini.buttonfootball.model.TeamTypes.NO_TEAM_TYPE
-import com.talestonini.buttonfootball.model.ChampionshipTypes.NO_CHAMPIONSHIP_TYPE
 
 @main
 def ButtonFootballFrontEnd(): Unit =
@@ -26,7 +20,7 @@ def ButtonFootballFrontEnd(): Unit =
       renderTeamTypeRadios(),
       renderChampionshipTypeSelect(),
       renderChampionshipEditionsRange(),
-      renderStateForInspection(true)
+      // renderStateForInspection(true)
       // input(
       //   typ := "text",
       //   value <-- teamName,
@@ -59,7 +53,8 @@ def renderStateForInspection(isEnabled: Boolean) =
           .map(ct => "Championship type: " + ct.getOrElse(NO_CHAMPIONSHIP_TYPE).description),
       ),
       div(
-        child.text <-- selectedChampionshipEdition.signal.map(ce => "Championship edition: " + ce)
+        child.text <-- selectedChampionship.signal
+          .map(ce => "Championship edition: " + ce.getOrElse(NO_CHAMPIONSHIP).numEdition)
       )
     )
 
@@ -85,11 +80,8 @@ def renderTeamTypeRadios(): Element =
               typ := "radio",
               nameAttr := "teamType",
               value := tt.code,
-              onInput.mapToValue --> selectedTeamTypeCode,
-              onChange --> (ev =>
-                selectedTeamType.update(_ => teamTypes.now().find((tt) => tt.code.equals(selectedTeamTypeCode.now())))
-                seGetChampionshipTypes(selectedTeamTypeCode.now())
-              )
+              onInput.mapToValue --> { code => selectTeamType(code) },
+              checked <-- selectedTeamType.signal.map(_.getOrElse(NO_TEAM_TYPE).code == tt.code)
             ),
             tt.description
           )
@@ -112,12 +104,7 @@ def renderChampionshipTypeSelect(): Element =
             ct.description
           )
         )),
-        onInput.mapToValue --> selectedChampionshipTypeCode,
-        onChange --> (ev =>
-          selectedChampionshipType.update(_ => championshipTypes.now()
-            .find((ct) => ct.code.equals(selectedChampionshipTypeCode.now())))
-          seGetChampionships(selectedChampionshipTypeCode.now())
-        )
+        onInput.mapToValue --> { code => selectChampionshipType(code) },
       )
     )
   )
@@ -133,91 +120,13 @@ def renderChampionshipEditionsRange(): Element =
         className := "form-range",
         typ := "range",
         minAttr <-- championships.signal.map(cs =>
-          if (!cs.isEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION
+          if (!cs.isEmpty) MIN_CHAMPIONSHIP_EDITION.toString() else NO_CHAMPIONSHIP_EDITION.toString()
         ),
-        maxAttr <-- championships.signal.map(cs => if (!cs.isEmpty) cs.length.toString() else NO_CHAMPIONSHIP_EDITION),
-        onInput.mapToValue --> selectedChampionshipEdition,
-        onChange --> (ev =>
-          selectedChampionship.update(_ => championships.now()
-            .find((c) => c.numEdition == selectedChampionshipEdition.now().toInt))
-        )
+        maxAttr <-- championships.signal.map(cs => 
+          if (!cs.isEmpty) cs.length.toString() else NO_CHAMPIONSHIP_EDITION.toString()),
+        onInput.mapToValue --> { edition => selectChampionshipEdition(edition) },
+        value <-- selectedChampionship.signal.map(_.getOrElse(NO_CHAMPIONSHIP).numEdition.toString())
       ),
-      child.text <-- selectedChampionshipEdition
+      child.text <-- selectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).numEdition)
     )
   )
-
-// --- side-effect functions -------------------------------------------------------------------------------------------
-
-def seGetTeamTypes(): Unit =
-  println(s"fetching team types")
-  TeamTypeService
-    .getTeamTypes()
-    .unsafeToFuture()
-    .onComplete({
-      case s: Success[List[TeamType]] => {
-        teamTypes.update(_ => s.value)
-        selectedTeamType.update(_ => Some(s.value.head))
-      }
-      case f: Failure[List[TeamType]] => println(s"failed fetching team types: ${f.exception.getMessage()}")
-    })(queue)
-end seGetTeamTypes
-
-def seGetChampionshipTypes(codTeamType: String): Unit =
-  println(s"fetching championship types with team type code '${codTeamType}'")
-  ChampionshipTypeService
-    .getChampionshipTypes(Some(codTeamType))
-    .unsafeToFuture()
-    .onComplete({
-      case s: Success[List[ChampionshipType]] => {
-        championshipTypes.update(_ => s.value)
-        selectedChampionshipType.update(_ => Some(s.value.head))
-      }
-      case f: Failure[List[ChampionshipType]] =>
-        println(s"failed fetching championship type: ${f.exception.getMessage()}")
-    })(queue)
-end seGetChampionshipTypes
-
-def seGetChampionships(codChampionshipType: String): Unit =
-  println(s"fetching championships with championship type code '${codChampionshipType}'")
-  ChampionshipService
-    .getChampionships(Some(codChampionshipType))
-    .unsafeToFuture()
-    .onComplete({
-      case s: Success[List[Championship]] => {
-        championships.update(_ => s.value)
-        selectedChampionshipEdition.update(_ => 
-          if (!championships.now().isEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION
-        )
-      }
-      case f: Failure[List[Championship]] =>
-        println(s"failed fetching championships: ${f.exception.getMessage()}")
-    })(queue)
-end seGetChampionships
-
-def seGetChampionships(championshipTypeId: Int): Unit =
-  println(s"fetching championships with championship type id '${championshipTypeId}'")
-  ChampionshipTypeService
-    .getChampionships(championshipTypeId)
-    .unsafeToFuture()
-    .onComplete({
-      case s: Success[List[Championship]] => {
-        championships.update(_ => s.value)
-        selectedChampionshipEdition.update(_ => 
-          if (!championships.now().isEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION
-        )
-      }
-      case f: Failure[List[Championship]] =>
-        println(s"failed fetching championships: ${f.exception.getMessage()}")
-    })(queue)
-end seGetChampionships
-
-def seGetTeams(name: String): Unit =
-  println(s"fetching team with name '${name}'")
-  TeamService
-    .getTeams(if (name.isBlank()) None else Some(name.trim()))
-    .unsafeToFuture()
-    .onComplete({
-      case s: Success[List[Team]] => teams.update(_ => s.value)
-      case f: Failure[List[Team]] => println(s"failed fetching team: ${f.exception.getMessage()}")
-    })(queue)
-end seGetTeams
