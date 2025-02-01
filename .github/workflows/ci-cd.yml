@@ -56,6 +56,11 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
 
+    - name: Install SBT
+      run: |
+        curl -fL https://github.com/coursier/coursier/releases/latest/download/cs-x86_64-pc-linux.gz | gzip -d > cs && chmod +x cs && ./cs install sbt
+        echo "$PATH:/home/runner/.local/share/coursier/bin" >> $GITHUB_PATH
+
     - name: Create project secret files
       env:
         PROD_SECRETS: ${{ secrets.PROD }}
