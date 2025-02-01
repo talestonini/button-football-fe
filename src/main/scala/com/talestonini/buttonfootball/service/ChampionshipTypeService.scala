@@ -19,7 +19,7 @@ object ChampionshipTypeService extends CommonService:
         IO(RuntimeException(s"failed getting team types: $errorResponse")))
   end getChampionshipTypes
 
-  def getChampionships(championshipTypeId: Int): IO[List[Championship]] =
+  def getChampionships(championshipTypeId: Id): IO[List[Championship]] =
     val uri = toButtonFootballApiUri("championshipTypes")./(championshipTypeId)
     val request = Request[IO](Method.GET, uri).withHeaders(Header.Raw(CIString("Content-Type"), "application/json"))
     FetchClientBuilder[IO].create

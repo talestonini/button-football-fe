@@ -2,43 +2,20 @@ package com.talestonini.buttonfootball
 
 import cats.effect.unsafe.implicits.global
 import com.raquo.airstream.state.Var
-import com.talestonini.buttonfootball.model.Championships.Championship
-import com.talestonini.buttonfootball.model.ChampionshipTypes.ChampionshipType
-import com.talestonini.buttonfootball.model.Teams.Team
-import com.talestonini.buttonfootball.model.TeamTypes.TeamType
+import com.talestonini.buttonfootball.model.Championships.*
+import com.talestonini.buttonfootball.model.ChampionshipTypes.*
+import com.talestonini.buttonfootball.model.Teams.*
+import com.talestonini.buttonfootball.model.TeamTypes.*
 import com.talestonini.buttonfootball.service.*
 import scala.scalajs.concurrent.JSExecutionContext.queue
 import scala.util.{Failure, Success}
 
 package object model:
 
-  // --- types ---------------------------------------------------------------------------------------------------------
-
   type Id = Int
   type Code = String
 
-  // --- constants -----------------------------------------------------------------------------------------------------
-
-  val NO_CODE = ""
-  val NO_CHAMPIONSHIP_EDITION = 0
-  val MIN_CHAMPIONSHIP_EDITION = 1
-
-  // --- model ---------------------------------------------------------------------------------------------------------
-
   trait Model extends Product
-
-  def selectTeamType(teamTypeCode: Code): Unit = {
-    selectedTeamType.update(_ => teamTypes.now().find((tt) => tt.code == teamTypeCode))
-    seGetChampionshipTypes(teamTypeCode)
-  }
-
-  def selectChampionshipType(championshipTypeCode: Code): Unit = {
-    selectedChampionshipType.update(_ => championshipTypes.now().find((ct) => ct.code == championshipTypeCode))
-    seGetChampionships(championshipTypeCode)
-  }
-
-  def selectChampionshipEdition(championshipEdition: String): Unit =
-    selectedChampionship.update(_ => championships.now().find((ce) => ce.numEdition == championshipEdition.toInt))
 
   // --- state ---------------------------------------------------------------------------------------------------------
 

@@ -20,7 +20,7 @@ def ButtonFootballFrontEnd(): Unit =
       renderTeamTypeRadios(),
       renderChampionshipTypeSelect(),
       renderChampionshipEditionsRange(),
-      // renderStateForInspection(true)
+      renderStateForInspection(true)
       // input(
       //   typ := "text",
       //   value <-- teamName,
@@ -54,7 +54,7 @@ def renderStateForInspection(isEnabled: Boolean) =
       ),
       div(
         child.text <-- selectedChampionship.signal
-          .map(ce => "Championship edition: " + ce.getOrElse(NO_CHAMPIONSHIP).numEdition)
+          .map(c => "Championship edition: " + c.getOrElse(NO_CHAMPIONSHIP).numEdition)
       )
     )
 
@@ -70,7 +70,7 @@ def renderTeamTypeRadios(): Element =
     div(
       className := "card-body",
       renderCardTitle("Tipo de Time"),
-      children <-- teamTypes.signal.map(data => data.map(tt =>
+      children <-- teamTypes.signal.map(tts => tts.map(tt =>
         div(
           className := "form-check",
           label(
@@ -80,7 +80,10 @@ def renderTeamTypeRadios(): Element =
               typ := "radio",
               nameAttr := "teamType",
               value := tt.code,
-              onInput.mapToValue --> { code => selectTeamType(code) },
+              onInput.mapToValue --> { code =>
+                selectedTeamType.update(_ => teamTypes.now().find((tt) => tt.code == code))
+                seGetChampionshipTypes(code)
+              },
               checked <-- selectedTeamType.signal.map(_.getOrElse(NO_TEAM_TYPE).code == tt.code)
             ),
             tt.description
@@ -98,13 +101,16 @@ def renderChampionshipTypeSelect(): Element =
       renderCardTitle("Campeonato"),
       select(
         className := "form-select",
-        children <-- championshipTypes.signal.map(data => data.map(ct =>
+        children <-- championshipTypes.signal.map(cts => cts.map(ct =>
           option(
             value := ct.code,
             ct.description
           )
         )),
-        onInput.mapToValue --> { code => selectChampionshipType(code) },
+        onInput.mapToValue --> { code =>
+          selectedChampionshipType.update(_ => championshipTypes.now().find((ct) => ct.code == code))
+          seGetChampionships(code)
+        },
       )
     )
   )
@@ -124,7 +130,9 @@ def renderChampionshipEditionsRange(): Element =
         ),
         maxAttr <-- championships.signal.map(cs => 
           if (!cs.isEmpty) cs.length.toString() else NO_CHAMPIONSHIP_EDITION.toString()),
-        onInput.mapToValue --> { edition => selectChampionshipEdition(edition) },
+        onInput.mapToValue --> { edition =>
+          selectedChampionship.update(_ => championships.now().find((ce) => ce.numEdition == edition.toInt))
+        },
         value <-- selectedChampionship.signal.map(_.getOrElse(NO_CHAMPIONSHIP).numEdition.toString())
       ),
       child.text <-- selectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).numEdition)
