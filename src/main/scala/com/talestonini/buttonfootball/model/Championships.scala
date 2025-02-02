@@ -12,14 +12,14 @@ object Championships:
   val NO_CHAMPIONSHIP_EDITION = 0
   val MIN_CHAMPIONSHIP_EDITION = 1
 
-  case class Championship(id: Int, `type`: String, teamType: String, numEdition: Int, dtCreation: String,
+  case class Championship(id: Id, `type`: String, teamType: String, numEdition: Int, dtCreation: String,
                           dtEnd: Option[String], numTeams: Int, numQualif: Int, status: String) extends Model
 
   val NO_CHAMPIONSHIP = Championship(-1, "-", "-", NO_CHAMPIONSHIP_EDITION, "-", None, -1, -1, "-")
 
-  implicit val teamDecoder: EntityDecoder[IO, Championship] = jsonOf[IO, Championship]
-  implicit val teamEncoder: EntityEncoder[IO, Championship] = jsonEncoderOf[IO, Championship]
-  implicit val teamsDecoder: EntityDecoder[IO, List[Championship]] = jsonOf[IO, List[Championship]]
-  implicit val teamsEncoder: EntityEncoder[IO, List[Championship]] = jsonEncoderOf[IO, List[Championship]]
+  implicit val championshipDecoder: EntityDecoder[IO, Championship] = jsonOf[IO, Championship]
+  implicit val championshipEncoder: EntityEncoder[IO, Championship] = jsonEncoderOf[IO, Championship]
+  implicit val championshipsDecoder: EntityDecoder[IO, List[Championship]] = jsonOf[IO, List[Championship]]
+  implicit val championshipsEncoder: EntityEncoder[IO, List[Championship]] = jsonEncoderOf[IO, List[Championship]]
 
 end Championships

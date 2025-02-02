@@ -9,7 +9,7 @@ import org.http4s.circe.CirceEntityCodec._
 
 object Teams:
 
-  case class Team(id: Int, name: String, `type`: String, fullName: String, foundation: String, city: String,
+  case class Team(id: Id, name: String, `type`: String, fullName: String, foundation: String, city: String,
                   country: String, logoImgFile: String) extends Model
 
   implicit val teamDecoder: EntityDecoder[IO, Team] = jsonOf[IO, Team]

@@ -49,9 +49,9 @@ object TTTable:
       tr(headers.map(h => td(r.productElement(h.modelFieldPos).toString())))
 
     table(
-      className := "table",
+      cls := "table",
       thead(
-        className := "thead-light",
+        cls := "thead-light",
         tr(headers.map(h => TTHeader(h.label, h.modelFieldPos).renderTh(data)))
       ),
       tbody(

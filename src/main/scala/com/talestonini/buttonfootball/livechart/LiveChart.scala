@@ -23,13 +23,13 @@ object LiveChart:
 
   def renderDataTable(): Element =
     table(
-      className := "table",
-      thead(className := "thead-light", tr(th("Label"), th("Price"), th("Count"), th("Full Price"), th("Action"))),
+      cls := "table",
+      thead(cls := "thead-light", tr(th("Label"), th("Price"), th("Count"), th("Full Price"), th("Action"))),
       tbody(
         children <-- dataSignal.split(_.id) { (id, initial, itemSignal) => renderDataItem(id, itemSignal) }
       ),
       tfoot(tr(
-        td(button(className := "btn btn-primary", "➕", onClick --> (_ => addDataItem(DataItem())))),
+        td(button(cls := "btn btn-primary", "➕", onClick --> (_ => addDataItem(DataItem())))),
         td(),
         td(),
         td(child.text <-- dataSignal.map(data => "%.2f".format(data.map(_.fullPrice).sum))),
@@ -52,7 +52,7 @@ object LiveChart:
         makeDataItemUpdater(id, { (item, newCount) => item.copy(count = newCount) })
       )),
       td(child.text <-- itemSignal.map(item => "%.2f".format(item.fullPrice))),
-      td(button(className := "btn btn-primary", "🗑️", onClick --> (_ => removeDataItem(id)))),
+      td(button(cls := "btn btn-primary", "🗑️", onClick --> (_ => removeDataItem(id)))),
     )
   end renderDataItem
 
