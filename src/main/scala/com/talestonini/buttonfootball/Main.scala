@@ -25,8 +25,8 @@ def ButtonFootballFrontEnd(): Unit =
         cls := "row h-100",
         renderTeamTypeRadios().wrap("col-auto h-100 d-flex"),
         renderChampionshipTypeSelect().wrap("col h-100 d-flex"),
-        renderChampionshipEditionsRange().wrap("col h-100 d-flex"),
       ),
+      renderChampionshipEditionsRange().wrap("row h-100"),
       renderMatchGroups()
       // input(
       //   typ := "text",
