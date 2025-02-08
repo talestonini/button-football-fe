@@ -19,6 +19,10 @@ package object model:
 
   trait Model extends Product
 
+  val GROUP = "Grupo"
+  val NO_GROUP = "(no group is active)"
+  val FIRST_GROUP = s"$GROUP A"
+
   // --- state ---------------------------------------------------------------------------------------------------------
 
   val teamTypes: Var[List[TeamType]] = Var(List.empty)
@@ -32,7 +36,8 @@ package object model:
 
   val matches: Var[List[Match]] = Var(List.empty)
   val groups: Signal[List[String]] = matches.signal.map(ms => ms.map(_.`type`)
-    .filter(t => t.startsWith("Grupo")).distinct)
+    .filter(t => t.startsWith(GROUP)).distinct)
+  val activeGroup: Var[String] = Var(NO_GROUP)
 
   val teams: Var[List[Team]] = Var(List.empty)
   val teamName: Var[String] = Var("")
@@ -92,6 +97,7 @@ package object model:
           println(s"failed fetching championships: ${f.exception.getMessage()}")
           championships.update(_ => List.empty)
           selectedChampionship.update(_ => None)
+          matches.update(_ => List.empty)
         }
       })(queue)
   end seGetChampionships
@@ -124,9 +130,11 @@ package object model:
       .onComplete({
         case s: Success[List[Match]] =>
           matches.update(_ => s.value)
+          activeGroup.update(_ => FIRST_GROUP)
         case f: Failure[List[Match]] => {
           println(s"failed fetching matches: ${f.exception.getMessage()}")
           matches.update(_ => List.empty)
+          activeGroup.update(_ => NO_GROUP)
         }
       })(queue)
   end seGetMatches

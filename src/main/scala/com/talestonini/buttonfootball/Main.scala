@@ -1,6 +1,7 @@
 package com.talestonini.buttonfootball
 
 import com.raquo.laminar.api.L.{*, given}
+import com.raquo.laminar.api.features.unitArrows
 import com.talestonini.buttonfootball.component.TTTable
 import com.talestonini.buttonfootball.component.TTTable.TTHeader
 import com.talestonini.buttonfootball.model.*
@@ -67,7 +68,10 @@ def renderStateForInspection(isEnabled: Boolean) =
           .map(c => "Championship edition: " + c.getOrElse(NO_CHAMPIONSHIP).numEdition)
       ),
       div(
-        child.text <-- groups.map(gs => "Número de Grupos: " + gs.length)
+        child.text <-- groups.map(gs => "Group count: " + gs.length)
+      ),
+      div(
+        child.text <-- activeGroup.signal.map(ag => "Active group: " + ag)
       )
     )
 
@@ -141,7 +145,7 @@ def renderChampionshipEditionsRange(): Element =
           cls := "form-range",
           typ := "range",
           minAttr <-- championships.signal.map(cs =>
-            if (!cs.isEmpty) MIN_CHAMPIONSHIP_EDITION.toString() else NO_CHAMPIONSHIP_EDITION.toString()
+            (if (!cs.isEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION).toString()
           ),
           maxAttr <-- championships.signal.map(cs => 
             if (!cs.isEmpty) cs.length.toString() else NO_CHAMPIONSHIP_EDITION.toString()),
@@ -162,20 +166,33 @@ def renderChampionshipEditionsRange(): Element =
 def renderMatchGroups(): Element =
   div(
     cls := "row h-100 justify-content-center",
-    children <-- groups.signal.map(gs => gs.map(renderMatchGroup))
+    ul(
+      cls := "nav nav-tabs",
+      children <-- groups.map(gs => gs.map(g =>
+        li(
+          cls := "nav-item",
+          button(
+            cls := "nav-link",
+            cls <-- activeGroup.signal.map(ag => if (g == ag) "active" else ""),
+            onClick --> activeGroup.update(ev => g),
+            b(g)
+          )
+        )
+      )),
+    ),
+    div(
+      cls := "tab-content",
+      child <-- activeGroup.signal.map(renderMatchGroup)
+    )
   )
 
 def renderMatchGroup(groupName: String): Element =
   div(
-    cls := "col-auto text-center card",
-    div(
-      cls := "card-body",
-      renderCardTitle(groupName),
-      table(
-        cls := "table",
-        tbody(
-          children <-- matches.signal.map(ms => ms.filter(m => m.`type` == groupName).map(renderMatch))
-        )
+    cls := "text-center",
+    table(
+      cls := "table",
+      tbody(
+        children <-- matches.signal.map(ms => ms.filter(m => m.`type` == groupName).map(renderMatch))
       )
     )
   )
