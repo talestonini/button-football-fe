@@ -9,9 +9,6 @@ import org.http4s.circe.CirceEntityCodec._
 
 object Championships:
 
-  val NO_CHAMPIONSHIP_EDITION = 0
-  val MIN_CHAMPIONSHIP_EDITION = 1
-
   case class Championship(id: Id, `type`: String, teamType: String, numEdition: Int, dtCreation: String,
                           dtEnd: Option[String], numTeams: Int, numQualif: Int, status: String) extends Model
 

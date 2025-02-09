@@ -14,14 +14,21 @@ import com.raquo.airstream.core.Signal
 
 package object model:
 
-  type Id = Int
+  type Id   = Int
   type Code = String
 
   trait Model extends Product
 
-  val GROUP = "Grupo"
-  val NO_GROUP = "(no group is active)"
-  val FIRST_GROUP = s"$GROUP A"
+  // --- constants -----------------------------------------------------------------------------------------------------
+
+  val NO_CHAMPIONSHIP_EDITION  = 0
+  val MIN_CHAMPIONSHIP_EDITION = 1
+  val NUM_TEAMS_PER_GROUP      = 4
+
+  val GROUP         = "Grupo"
+  val FIRST_TAB     = s"$GROUP A"
+  val FINALS_TAB    = "Finais"
+  val NO_ACTIVE_TAB = "(no active tab)"
 
   // --- state ---------------------------------------------------------------------------------------------------------
 
@@ -34,13 +41,19 @@ package object model:
   val championships: Var[List[Championship]] = Var(List.empty)
   val selectedChampionship: Var[Option[Championship]] = Var(None)
 
-  val matches: Var[List[Match]] = Var(List.empty)
-  val groups: Signal[List[String]] = matches.signal.map(ms => ms.map(_.`type`)
-    .filter(t => t.startsWith(GROUP)).distinct)
-  val activeGroup: Var[String] = Var(NO_GROUP)
-
   val teams: Var[List[Team]] = Var(List.empty)
   val teamName: Var[String] = Var("")
+
+  val groupFilterFn = (matchType: String) => matchType.startsWith(GROUP)
+
+  val matches: Var[List[Match]] = Var(List.empty)
+  val groupsMatches: Signal[List[Match]] = matches.signal.map(ms => ms.filter(m => groupFilterFn(m.`type`)))
+  val groups: Signal[List[String]] = groupsMatches.map(gms => gms.map(_.`type`).distinct)
+  val numTeams: Signal[Int] = groups.signal.map(gm => gm.length * NUM_TEAMS_PER_GROUP)
+  val finalsMatches: Signal[List[Match]] = matches.signal.map(ms => ms.filter(m => !groupFilterFn(m.`type`)))
+  val numFinalsMatches: Signal[Int] = finalsMatches.map(fms => fms.length)
+  val tabs: Signal[List[String]] = groups.signal.map(gs => gs :+ FINALS_TAB)
+  val activeTab: Var[String] = Var(NO_ACTIVE_TAB)
 
   // --- side-effect functions -------------------------------------------------------------------------------------------
   
@@ -130,11 +143,11 @@ package object model:
       .onComplete({
         case s: Success[List[Match]] =>
           matches.update(_ => s.value)
-          activeGroup.update(_ => FIRST_GROUP)
+          activeTab.update(_ => FIRST_TAB)
         case f: Failure[List[Match]] => {
           println(s"failed fetching matches: ${f.exception.getMessage()}")
           matches.update(_ => List.empty)
-          activeGroup.update(_ => NO_GROUP)
+          activeTab.update(_ => NO_ACTIVE_TAB)
         }
       })(queue)
   end seGetMatches

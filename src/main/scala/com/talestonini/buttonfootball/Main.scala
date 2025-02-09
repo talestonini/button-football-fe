@@ -11,6 +11,7 @@ import com.talestonini.buttonfootball.model.Matches.*
 import com.talestonini.buttonfootball.model.Teams.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
 import org.scalajs.dom
+import com.talestonini.buttonfootball.service.ChampionshipService.numQualif
 
 @main
 def ButtonFootballFrontEnd(): Unit =
@@ -20,7 +21,7 @@ def ButtonFootballFrontEnd(): Unit =
     div(
       cls := "container",
       styleAttr := "height: 110px;",
-      renderStateForInspection(false),
+      renderStateForInspection(true),
       h1("Jogo de Botão"),
       div(
         cls := "row h-100",
@@ -28,7 +29,7 @@ def ButtonFootballFrontEnd(): Unit =
         renderChampionshipTypeSelect().wrap("col h-100 d-flex"),
       ),
       renderChampionshipEditionsRange().wrap("row h-100"),
-      renderMatchGroups()
+      renderMatchesTabs(),
       // input(
       //   typ := "text",
       //   value <-- teamName,
@@ -68,10 +69,13 @@ def renderStateForInspection(isEnabled: Boolean) =
           .map(c => "Championship edition: " + c.getOrElse(NO_CHAMPIONSHIP).numEdition)
       ),
       div(
-        child.text <-- groups.map(gs => "Group count: " + gs.length)
+        child.text <-- tabs.map(ts => "Tab count: " + ts.length)
       ),
       div(
-        child.text <-- activeGroup.signal.map(ag => "Active group: " + ag)
+        child.text <-- activeTab.signal.map(at => "Active tab: " + at)
+      ),
+      div(
+        child.text <-- assertCorrectNumQualifAndFinalsMatches()
       )
     )
 
@@ -148,7 +152,7 @@ def renderChampionshipEditionsRange(): Element =
             (if (!cs.isEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION).toString()
           ),
           maxAttr <-- championships.signal.map(cs => 
-            if (!cs.isEmpty) cs.length.toString() else NO_CHAMPIONSHIP_EDITION.toString()),
+            (if (!cs.isEmpty) cs.length else NO_CHAMPIONSHIP_EDITION).toString()),
           onChange.mapToValue --> { edition =>
             selectedChampionship.update(_ => championships.now().find((ce) => ce.numEdition == edition.toInt))
             seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
@@ -163,45 +167,109 @@ def renderChampionshipEditionsRange(): Element =
     )
   )
 
-def renderMatchGroups(): Element =
+def renderMatchesTabs(): Element =
   div(
     cls := "row h-100 justify-content-center",
     ul(
       cls := "nav nav-tabs",
-      children <-- groups.map(gs => gs.map(g =>
+      children <-- tabs.map(ts => ts.map(t =>
         li(
           cls := "nav-item",
           button(
             cls := "nav-link",
-            cls <-- activeGroup.signal.map(ag => if (g == ag) "active" else ""),
-            onClick --> activeGroup.update(ev => g),
-            b(g)
+            cls <-- activeTab.signal.map(at => if (t == at) "active" else ""),
+            onClick --> activeTab.update(ev => t),
+            b(t)
           )
         )
       )),
     ),
     div(
       cls := "tab-content",
-      child <-- activeGroup.signal.map(renderMatchGroup)
+      child <-- activeTab.signal.map(renderMatchesTabContent)
     )
   )
 
-def renderMatchGroup(groupName: String): Element =
+def renderMatchesTabContent(tabName: String): Element =
   div(
     cls := "text-center",
     table(
       cls := "table",
-      tbody(
-        children <-- matches.signal.map(ms => ms.filter(m => m.`type` == groupName).map(renderMatch))
-      )
+      if (tabName.startsWith(GROUP)) renderGroupMatchesTabContent(tabName) else renderFinalsMatchesTabContent()
     )
   )
 
-def renderMatch(m: Match): Element =
+def renderGroupMatchesTabContent(tabName: String): Element =
+  tbody(
+    children <-- matches.signal.map(ms => ms.filter(m => m.`type` == tabName).map(m => renderMatch(m)))
+  )
+
+/**
+  * Renders the tab for the finals, which has its own unique layout.  Follow the schematic below for a general
+  * understanding of the logic:
+  * 
+  *    | A        B        C        D
+  *  0 ------------------------------------- emtpy row
+  *  1 | match           |        |        |
+  *  2 |          match  |        |        |
+  *  3 | match           |        |        |
+  *  4 |          match? | match  |        |
+  *    -------------------        |        |
+  *  5 | match                    |        |
+  *  6 |          match           |        |
+  *  7 | match                    |        |
+  *  8 |          match?   match? | match  |
+  *    ----------------------------        |
+  *  9 | match                             |
+  * 10 |          match                    |
+  * 11 | match                             |
+  * 12 |          match?   match           |
+  * 13 | match                             |
+  * 14 |          match                    |
+  * 15 | match                             |
+  * 16 |          match?   match?   match  |
+  * 17 ------------------------------------- empty row
+  * 
+  * It's a table, and it has repeatable sections, depending on how many finals matches there are in a given
+  * championship.  That in turn is determined by how many teams qualify from the groups stage, and this number comes
+  * from field 'numQualif' in the Championship model.  Remember the table needs to be rendered top to bottom, and not by
+  * indexing a cell.
+  *
+  * @return the finals matches tab content
+  */
+def renderFinalsMatchesTabContent(): Element =
+  def emptyRow() = ???
+
+  tbody(
+  )
+end renderFinalsMatchesTabContent
+
+def renderMatch(m: Match, isFinalsStage: Boolean = false): Element =
+  def displayInFinals() = display(if (isFinalsStage) "table-cell" else "none")
   tr(
     td(cls := "col text-end", styleAttr := "width: 200px;", m.teamA),
+    td(cls := "col-auto text-center", m.numGoalsPntA, displayInFinals()),
+    td(cls := "col-auto text-center", m.numGoalsExtraA, displayInFinals()),
     td(cls := "col-auto text-center", m.numGoalsTeamA),
     td(cls := "col-auto text-center", " x "),
     td(cls := "col-auto text-center", m.numGoalsTeamB),
+    td(cls := "col-auto text-center", m.numGoalsExtraB, displayInFinals()),
+    td(cls := "col-auto text-center", m.numGoalsPntB, displayInFinals()),
     td(cls := "col text-start", styleAttr := "width: 200px;", m.teamB)
   )
+end renderMatch
+
+// --- assertions functions ------------------------------------------------------------------------------------------
+
+def assertCorrectNumQualifAndFinalsMatches(): Signal[String] =
+  selectedChampionship.signal
+    .combineWith(numFinalsMatches)
+    .combineWith(numTeams)
+    .map { case (sc, nfm, nt) => "Number of qualified teams: " + (numQualif(nt) match {
+      case Left(e) =>
+        s"error (${e.getMessage()})"
+      case Right(calcNumQualif) =>
+        val dbNumQualif = sc.getOrElse(NO_CHAMPIONSHIP).numQualif
+        val res = if (dbNumQualif == calcNumQualif && nfm == calcNumQualif) "" else "in"
+        s"${res}correct (db: $dbNumQualif, calculated: $calcNumQualif, number of finals matches: $nfm)"
+    })}
