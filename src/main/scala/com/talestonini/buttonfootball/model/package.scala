@@ -28,6 +28,7 @@ package object model:
   val GROUP         = "Grupo"
   val FIRST_TAB     = s"$GROUP A"
   val FINALS_TAB    = "Finais"
+  val LAST_TAB      = FINALS_TAB
   val NO_ACTIVE_TAB = "(no active tab)"
 
   // --- state ---------------------------------------------------------------------------------------------------------
@@ -143,7 +144,7 @@ package object model:
       .onComplete({
         case s: Success[List[Match]] =>
           matches.update(_ => s.value)
-          activeTab.update(_ => FIRST_TAB)
+          activeTab.update(_ => LAST_TAB)
         case f: Failure[List[Match]] => {
           println(s"failed fetching matches: ${f.exception.getMessage()}")
           matches.update(_ => List.empty)

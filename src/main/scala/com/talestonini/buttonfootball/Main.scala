@@ -21,7 +21,7 @@ def ButtonFootballFrontEnd(): Unit =
     div(
       cls := "container",
       styleAttr := "height: 110px;",
-      renderStateForInspection(true),
+      renderStateForInspection(false),
       h1("Jogo de Botão"),
       div(
         cls := "row h-100",
@@ -193,15 +193,15 @@ def renderMatchesTabs(): Element =
 def renderMatchesTabContent(tabName: String): Element =
   div(
     cls := "text-center",
-    table(
-      cls := "table",
-      if (tabName.startsWith(GROUP)) renderGroupMatchesTabContent(tabName) else renderFinalsMatchesTabContent()
-    )
+    if (tabName.startsWith(GROUP)) renderGroupMatchesTabContent(tabName) else renderFinalsMatchesTabContent()
   )
 
 def renderGroupMatchesTabContent(tabName: String): Element =
-  tbody(
-    children <-- matches.signal.map(ms => ms.filter(m => m.`type` == tabName).map(m => renderMatch(m)))
+  table(
+    cls := "table",
+    tbody(
+      children <-- matches.signal.map(ms => ms.filter(m => m.`type` == tabName).map(m => renderMatch(m)))
+    )
   )
 
 /**
@@ -237,12 +237,72 @@ def renderGroupMatchesTabContent(tabName: String): Element =
   *
   * @return the finals matches tab content
   */
-def renderFinalsMatchesTabContent(): Element =
-  def emptyRow() = ???
+val cellAddressFn = (col: Char, row: Int) => s"$col$row"
 
-  tbody(
+case class Cell(col: Char, row: Int) {
+  def cellAddress(): String = cellAddressFn(col, row)
+  def getCellRect() = dom.document.getElementById(cellAddress()).getBoundingClientRect()
+}
+
+val links: List[(String, Cell, Cell)] = List(
+  ("link1", Cell('A', 1), Cell('B', 2)),
+  ("link2", Cell('B', 2), Cell('C', 4))
+)
+
+def pathData(fromCell: Cell, toCell: Cell): String =
+  val fromCellRect = fromCell.getCellRect()
+  val toCellRect = toCell.getCellRect()
+  val (startX, startY, endX, endY) = (
+    fromCellRect.right - 50,
+    fromCellRect.top + fromCellRect.height/2,
+    toCellRect.left + 50,
+    toCellRect.top + toCellRect.height/2
   )
-end renderFinalsMatchesTabContent
+  s"M${startX},${startY} C${startX},${(startY + endY) / 2} ${endX},${(startY + endY) / 2} ${endX},${endY}"
+end pathData
+
+def renderFinalsMatchesTabContent(): Element =
+  div(
+    table(
+      cls := "table table-borderless",
+      tbody(
+        (0 to 17).map(row => 
+          tr(
+            ('A' to 'D').map(col =>
+              td(
+                idAttr := cellAddressFn(col, row),
+                cls := "col text-center",
+                Cell(col, row).cellAddress()
+              )
+            )
+          )
+        )
+      )
+    ),
+    renderSvgLinks(),
+    onClick --> {
+      println("table clicked")
+      links.foreach(l => {
+        dom.document.getElementById(l._1).setAttribute("d", pathData(l._2, l._3))
+      })
+    }
+  )
+
+def renderSvgLinks(): List[Element] =
+  links.map(l =>
+    svg.svg(
+      svg.style := "position: absolute; top: 0; left: 0; pointer-events: none;",
+      svg.width := "100%",
+      svg.height := "100%",
+      svg.path(
+        svg.idAttr := l._1,
+        svg.stroke := "black",
+        svg.strokeWidth := "2",
+        svg.fill := "transparent",
+        // svg.d := pathData(l._2, l._3)
+      )
+    )
+  )
 
 def renderMatch(m: Match, isFinalsStage: Boolean = false): Element =
   def displayInFinals() = display(if (isFinalsStage) "table-cell" else "none")
