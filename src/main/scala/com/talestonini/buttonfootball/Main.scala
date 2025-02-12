@@ -16,6 +16,7 @@ import com.talestonini.buttonfootball.service.ChampionshipService.numQualif
 @main
 def ButtonFootballFrontEnd(): Unit =
   seGetTeamTypes()
+  setupRedraw()
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
     div(
@@ -237,6 +238,11 @@ def renderGroupMatchesTabContent(tabName: String): Element =
   *
   * @return the finals matches tab content
   */
+def setupRedraw(): Unit = {
+  dom.window.addEventListener("resize", (_: dom.Event) => renderSvgCurves())
+  dom.window.addEventListener("scroll", (_: dom.Event) => renderSvgCurves())
+}
+
 val cellAddressFn = (col: Char, row: Int) => s"$col$row"
 
 case class Cell(col: Char, row: Int) {
@@ -279,16 +285,11 @@ def renderFinalsMatchesTabContent(): Element =
         )
       )
     ),
-    renderSvgLinks(),
-    onClick --> {
-      println("table clicked")
-      links.foreach(l => {
-        dom.document.getElementById(l._1).setAttribute("d", pathData(l._2, l._3))
-      })
-    }
+    renderSvgElements(),
+    onMountCallback(context => renderSvgCurves())
   )
 
-def renderSvgLinks(): List[Element] =
+def renderSvgElements(): List[Element] =
   links.map(l =>
     svg.svg(
       svg.style := "position: absolute; top: 0; left: 0; pointer-events: none;",
@@ -297,12 +298,13 @@ def renderSvgLinks(): List[Element] =
       svg.path(
         svg.idAttr := l._1,
         svg.stroke := "black",
-        svg.strokeWidth := "2",
-        svg.fill := "transparent",
-        // svg.d := pathData(l._2, l._3)
+        svg.strokeWidth := "3",
+        svg.fill := "transparent"
       )
     )
   )
+
+def renderSvgCurves() = links.foreach(l => dom.document.getElementById(l._1).setAttribute("d", pathData(l._2, l._3)))
 
 def renderMatch(m: Match, isFinalsStage: Boolean = false): Element =
   def displayInFinals() = display(if (isFinalsStage) "table-cell" else "none")
