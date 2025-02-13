@@ -2,6 +2,7 @@ package com.talestonini.buttonfootball
 
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.api.features.unitArrows
+import com.talestonini.buttonfootball.component.FinalsMatchesTabContent
 import com.talestonini.buttonfootball.component.TTTable
 import com.talestonini.buttonfootball.component.TTTable.TTHeader
 import com.talestonini.buttonfootball.model.*
@@ -10,13 +11,13 @@ import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import com.talestonini.buttonfootball.model.Matches.*
 import com.talestonini.buttonfootball.model.Teams.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
-import org.scalajs.dom
 import com.talestonini.buttonfootball.service.ChampionshipService.numQualif
+import org.scalajs.dom
 
 @main
 def ButtonFootballFrontEnd(): Unit =
   seGetTeamTypes()
-  setupRedraw()
+  FinalsMatchesTabContent.setupSvgCurvesAutoRender()
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
     div(
@@ -194,7 +195,7 @@ def renderMatchesTabs(): Element =
 def renderMatchesTabContent(tabName: String): Element =
   div(
     cls := "text-center",
-    if (tabName.startsWith(GROUP)) renderGroupMatchesTabContent(tabName) else renderFinalsMatchesTabContent()
+    if (tabName.startsWith(GROUP)) renderGroupMatchesTabContent(tabName) else FinalsMatchesTabContent()
   )
 
 def renderGroupMatchesTabContent(tabName: String): Element =
@@ -204,107 +205,6 @@ def renderGroupMatchesTabContent(tabName: String): Element =
       children <-- matches.signal.map(ms => ms.filter(m => m.`type` == tabName).map(m => renderMatch(m)))
     )
   )
-
-/**
-  * Renders the tab for the finals, which has its own unique layout.  Follow the schematic below for a general
-  * understanding of the logic:
-  * 
-  *    | A        B        C        D
-  *  0 ------------------------------------- emtpy row
-  *  1 | match           |        |        |
-  *  2 |          match  |        |        |
-  *  3 | match           |        |        |
-  *  4 |          match? | match  |        |
-  *    -------------------        |        |
-  *  5 | match                    |        |
-  *  6 |          match           |        |
-  *  7 | match                    |        |
-  *  8 |          match?   match? | match  |
-  *    ----------------------------        |
-  *  9 | match                             |
-  * 10 |          match                    |
-  * 11 | match                             |
-  * 12 |          match?   match           |
-  * 13 | match                             |
-  * 14 |          match                    |
-  * 15 | match                             |
-  * 16 |          match?   match?   match  |
-  * 17 ------------------------------------- empty row
-  * 
-  * It's a table, and it has repeatable sections, depending on how many finals matches there are in a given
-  * championship.  That in turn is determined by how many teams qualify from the groups stage, and this number comes
-  * from field 'numQualif' in the Championship model.  Remember the table needs to be rendered top to bottom, and not by
-  * indexing a cell.
-  *
-  * @return the finals matches tab content
-  */
-def setupRedraw(): Unit = {
-  dom.window.addEventListener("resize", (_: dom.Event) => renderSvgCurves())
-  dom.window.addEventListener("scroll", (_: dom.Event) => renderSvgCurves())
-}
-
-val cellAddressFn = (col: Char, row: Int) => s"$col$row"
-
-case class Cell(col: Char, row: Int) {
-  def cellAddress(): String = cellAddressFn(col, row)
-  def getCellRect() = dom.document.getElementById(cellAddress()).getBoundingClientRect()
-}
-
-val links: List[(String, Cell, Cell)] = List(
-  ("link1", Cell('A', 1), Cell('B', 2)),
-  ("link2", Cell('B', 2), Cell('C', 4))
-)
-
-def pathData(fromCell: Cell, toCell: Cell): String =
-  val fromCellRect = fromCell.getCellRect()
-  val toCellRect = toCell.getCellRect()
-  val (startX, startY, endX, endY) = (
-    fromCellRect.right - 50,
-    fromCellRect.top + fromCellRect.height/2,
-    toCellRect.left + 50,
-    toCellRect.top + toCellRect.height/2
-  )
-  s"M${startX},${startY} C${startX},${(startY + endY) / 2} ${endX},${(startY + endY) / 2} ${endX},${endY}"
-end pathData
-
-def renderFinalsMatchesTabContent(): Element =
-  div(
-    table(
-      cls := "table table-borderless",
-      tbody(
-        (0 to 17).map(row => 
-          tr(
-            ('A' to 'D').map(col =>
-              td(
-                idAttr := cellAddressFn(col, row),
-                cls := "col text-center",
-                Cell(col, row).cellAddress()
-              )
-            )
-          )
-        )
-      )
-    ),
-    renderSvgElements(),
-    onMountCallback(context => renderSvgCurves())
-  )
-
-def renderSvgElements(): List[Element] =
-  links.map(l =>
-    svg.svg(
-      svg.style := "position: absolute; top: 0; left: 0; pointer-events: none;",
-      svg.width := "100%",
-      svg.height := "100%",
-      svg.path(
-        svg.idAttr := l._1,
-        svg.stroke := "black",
-        svg.strokeWidth := "3",
-        svg.fill := "transparent"
-      )
-    )
-  )
-
-def renderSvgCurves() = links.foreach(l => dom.document.getElementById(l._1).setAttribute("d", pathData(l._2, l._3)))
 
 def renderMatch(m: Match, isFinalsStage: Boolean = false): Element =
   def displayInFinals() = display(if (isFinalsStage) "table-cell" else "none")
