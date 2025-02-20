@@ -16,16 +16,17 @@ object ChampionshipService extends CommonService:
 
   // NOTE: As a rule, let's make all calculations in this app as a function of the number of teams in a championship.
 
-  def isValidNumberOfTeamsInChampionship(numTeams: Int): Boolean =
-    if (numTeams <= 0) throw new IllegalArgumentException("input must be a positive integer")
-    numTeams % NUM_TEAMS_PER_GROUP == 0
-  end isValidNumberOfTeamsInChampionship
+  def isValidNumberOfTeamsInChampionship(numTeams: Int): Either[Exception, Boolean] =
+    if (numTeams <= 0)
+      Left(IllegalArgumentException("input must be a positive integer"))
+    else
+      Right(numTeams % NUM_TEAMS_PER_GROUP == 0)
 
   def numGroups(numTeams: Int): Either[Exception, Int] =
-    if (!isValidNumberOfTeamsInChampionship(numTeams))
-      Left(InvalidNumberOfTeams(numTeams))
-    else
-      Right(numTeams/NUM_TEAMS_PER_GROUP)
+    isValidNumberOfTeamsInChampionship(numTeams) match {
+      case Left(e) => Left(InvalidNumberOfTeams(numTeams))
+      case Right(isValid) => Right(numTeams/NUM_TEAMS_PER_GROUP)
+    }
 
   /**
     * The closest to half of the number of teams, so that not all teams in a group are able to qualify to the finals.

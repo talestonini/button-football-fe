@@ -63,7 +63,7 @@ object FinalsMatchesTabContent:
   val cols: Signal[NumericRange.Exclusive[Char]] = numQualif.map(nq => ('A' until lastCol(nq)))
   val rows: Signal[Range.Inclusive] = numQualif.map(nq => 0 to nq)
 
-  private case class CellLink(id: String, fromCell: Cell, toCell: Cell)
+  case class CellLink(id: String, fromCell: Cell, toCell: Cell)
   private val INIT_CELL_LINKS: List[CellLink] = List(
     // round of sixteen to quarter finals
     CellLink("link1", Cell('A', 1), Cell('C', 2)),
@@ -85,15 +85,14 @@ object FinalsMatchesTabContent:
     CellLink("link13", Cell('E', 4), Cell('G', 8)),
     CellLink("link14", Cell('E', 12), Cell('G', 8))
   )
-  private val cellLinks: List[CellLink] = INIT_CELL_LINKS
-  // private val cellLinks: Signal[List[CellLink]] = Var(INIT_CELL_LINKS).signal.combineWith(rows).combineWith(cols).map {
-  //   case (cls, rs, cs) => cls.filter(cl => rs.contains(cl.toCell.row) && cs.contains(cl.toCell.col))
-  // }
+  val cellLinks: Signal[List[CellLink]] = Var(INIT_CELL_LINKS).signal.combineWith(rows).combineWith(cols).map {
+    case (cls, rs, cs) => cls.filter(cl => rs.contains(cl.toCell.row) && cs.contains(cl.toCell.col))
+  }
+  var staticCellLinks: List[CellLink] = List.empty
 
-  private val matchCells: List[Cell] = (cellLinks.map(cl => cl.fromCell) :++ cellLinks.map(cl => cl.toCell)).distinct
-  // private val matchCells: Signal[List[Cell]] = cellLinks.map(cls => {
-  //   (cls.map(cl => cl.fromCell) :++ cls.map(cl => cl.toCell)).distinct
-  // })
+  private val matchCells: Signal[List[Cell]] = cellLinks.map(cls => {
+    (cls.map(cl => cl.fromCell) :++ cls.map(cl => cl.toCell)).distinct
+  })
   
   def apply(): Element =
     deriveConfigFromState()
@@ -107,20 +106,17 @@ object FinalsMatchesTabContent:
                 td(
                   idAttr := cellAddressFn(c, r),
                   cls := "col text-center",
-                  if (matchCells.exists(cell => cell == Cell(c, r))) Cell(c, r).render() else ""
-                  // child <-- matchCells.map(mcs =>
-                  //   if (mcs.exists(cell => cell == Cell(c, r))) Cell(c, r).render() else ""
-                  // )
+                  child <-- matchCells.map(mcs =>
+                    if (mcs.exists(cell => cell == Cell(c, r))) Cell(c, r).render() else ""
+                  )
                 )
               ))
             )
           ))
         )
       ),
-      //children <--
-      renderSvgElements(), // SVG elements "host" Bezier curves that link cells, drawing the funelling of finals matches
-      onMountCallback(context => renderSvgCurves()), // renders the curves only after the SVG elements are rendered
-      //onUnmountCallback(context => removeSvgCurves())
+      // SVG elements "host" Bezier curves that link cells, drawing the funelling of finals matches
+      children <-- renderSvgElements()
     )
   end apply
 
@@ -134,7 +130,7 @@ object FinalsMatchesTabContent:
   
   private val cellAddressFn = (col: Char, row: Int) => s"$col$row"
   
-  private case class Cell(col: Char, row: Int) {
+  case class Cell(col: Char, row: Int) {
     def address(): String = cellAddressFn(col, row)
     def rect() = dom.document.getElementById(address()).getBoundingClientRect()
     def render(): Element =
@@ -147,48 +143,44 @@ object FinalsMatchesTabContent:
       )
   }
   
-  private def renderSvgElements(): List[Element] =
-  // private def renderSvgElements(): Signal[List[Element]] =
-    import svg.*
-    cellLinks.map(/*cls => cls.map(*/cl =>
-      svg(
-        style := "position: fixed; top: 0; left: 0; pointer-events: none;",
-        width := "100%",
-        height := "100%",
-        path(
-          idAttr := cl.id,
-          stroke := "lightgrey",
-          strokeWidth := "3",
-          fill := "transparent"
+  private def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
+    val fromRect = fromCell.rect()
+    val toRect = toCell.rect()
+    val startingPoint = s"${fromRect.right},${fromRect.top + fromRect.height/2}"
+    val controlPoint1 = s"${toRect.left},${fromRect.top + fromRect.height/2}"
+    val controlPoint2 = s"${fromRect.right},${toRect.top + toRect.height/2}"
+    val endingPoint   = s"${toRect.left},${toRect.top + toRect.height/2}"
+    s"M$startingPoint C$controlPoint1 $controlPoint2 $endingPoint"
+  }
+
+  private def renderSvgElements(): Signal[List[Element]] =
+    activeTab.signal.combineWith(cellLinks).map { case (at, cls) => cls.map(cl =>
+      // save "static" cell links
+      staticCellLinks = cls
+
+      import svg.*
+      if (at != FINALS_TAB) 
+        div()
+      else
+        svg(
+          style := "position: fixed; top: 0; left: 0; pointer-events: none;",
+          width := "100%",
+          height := "100%",
+          path(
+            idAttr := cl.id,
+            stroke := "lightgrey",
+            strokeWidth := "3",
+            fill := "transparent",
+            d := bezierCurveCommands(cl.fromCell, cl.toCell)
+          )
         )
-      )
-    )//)
+    )}
   end renderSvgElements
   
   private def renderSvgCurves(): Unit =
-    def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
-      val fromRect = fromCell.rect()
-      val toRect = toCell.rect()
-      val startingPoint = s"${fromRect.right},${fromRect.top + fromRect.height/2}"
-      val controlPoint1 = s"${toRect.left},${fromRect.top + fromRect.height/2}"
-      val controlPoint2 = s"${fromRect.right},${toRect.top + toRect.height/2}"
-      val endingPoint   = s"${toRect.left},${toRect.top + toRect.height/2}"
-      s"M$startingPoint C$controlPoint1 $controlPoint2 $endingPoint"
-    }
-
-    if (activeTab.now() == FINALS_TAB) cellLinks.map(cl => 
+    staticCellLinks.map(cl => 
       dom.document.getElementById(cl.id).setAttribute("d", bezierCurveCommands(cl.fromCell, cl.toCell))
     )
-    // if (activeTab.now() == FINALS_TAB) cellLinks.map(cls => cls.foreach(cl => 
-    //   dom.document.getElementById(cl.id).setAttribute("d", bezierCurveCommands(cl.fromCell, cl.toCell))
-    // ))
   end renderSvgCurves
 
-  // private def removeSvgCurves(): Unit =
-  //   cellLinks.foreach(cl => {
-  //     val curve = dom.document.getElementById(cl.id)
-  //     curve.remove()
-  //   })
-  // end removeSvgCurves
-  
 end FinalsMatchesTabContent

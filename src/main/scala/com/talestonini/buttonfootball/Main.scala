@@ -12,7 +12,7 @@ import com.talestonini.buttonfootball.model.Matches.*
 import com.talestonini.buttonfootball.model.Teams.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
 import com.talestonini.buttonfootball.service.ChampionshipService.calcNumQualif
-import com.talestonini.buttonfootball.component.FinalsMatchesTabContent.{rows, cols}
+import com.talestonini.buttonfootball.component.FinalsMatchesTabContent.{rows, cols, cellLinks}
 import org.scalajs.dom
 
 @main
@@ -84,6 +84,9 @@ def renderStateForInspection(isEnabled: Boolean) =
         child.text <-- rows.combineWith(cols).map {
           case(r, c) => s"Finals rows: $r, Finals cols: $c"
         }
+      ),
+      div(
+        child.text <-- cellLinks.map(cls => "Number of cellLinks: " + cls.size)
       )
     )
 
