@@ -18,7 +18,7 @@ import org.scalajs.dom
 @main
 def ButtonFootballFrontEnd(): Unit =
   seGetTeamTypes()
-  FinalsMatchesTabContent.setupSvgCurvesAutoRender()
+  FinalsMatchesTabContent.setupAutoReRenderOfCellLinksOnWindowScrollAndResize()
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
     div(

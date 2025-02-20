@@ -45,11 +45,6 @@ import scala.collection.immutable.NumericRange
   */
 object FinalsMatchesTabContent:
 
-  private def deriveConfigFromState(): Unit =
-    println("configuring finals matches tab")
-    // println(s"number of qualified teams: ${numQualif.}")
-  end deriveConfigFromState
-
   /**
     * There are 'A' until last col columns in the table.  Last col is a function of the number of qualified teams.  For
     * example: if 16 teams qualify, then we need 4 colums to transition all the way from the round-of-sixteen matches to
@@ -63,6 +58,20 @@ object FinalsMatchesTabContent:
   val cols: Signal[NumericRange.Exclusive[Char]] = numQualif.map(nq => ('A' until lastCol(nq)))
   val rows: Signal[Range.Inclusive] = numQualif.map(nq => 0 to nq)
 
+  private val cellAddressFn = (col: Char, row: Int) => s"$col$row"
+  case class Cell(col: Char, row: Int) {
+    def address(): String = cellAddressFn(col, row)
+    def rect() = dom.document.getElementById(address()).getBoundingClientRect()
+    def render(): Element =
+      div(
+        cls := "card h-100 w-100",
+        div(
+          cls := "card-body",
+          renderCardTitle(address())
+        )
+      )
+  }
+  
   case class CellLink(id: String, fromCell: Cell, toCell: Cell)
   private val INIT_CELL_LINKS: List[CellLink] = List(
     // round of sixteen to quarter finals
@@ -88,14 +97,20 @@ object FinalsMatchesTabContent:
   val cellLinks: Signal[List[CellLink]] = Var(INIT_CELL_LINKS).signal.combineWith(rows).combineWith(cols).map {
     case (cls, rs, cs) => cls.filter(cl => rs.contains(cl.toCell.row) && cs.contains(cl.toCell.col))
   }
-  var staticCellLinks: List[CellLink] = List.empty
+  
+  /**
+    * Used to re-render cell links when the window is scrolled or resized.  The first time cell links are rendered 
+    * driven by signals, the static cell links are saved as a copy of the current cell links.  If then the window is
+    * scrolled or resized, re-render of the cell links (curves) is driven by the saved static cell links, as opposed to
+    * signals, which are not available then.
+    */
+  private var staticCellLinks: List[CellLink] = List.empty
 
   private val matchCells: Signal[List[Cell]] = cellLinks.map(cls => {
     (cls.map(cl => cl.fromCell) :++ cls.map(cl => cl.toCell)).distinct
   })
   
   def apply(): Element =
-    deriveConfigFromState()
     div(
       table(
         cls := "table table-borderless",
@@ -116,44 +131,10 @@ object FinalsMatchesTabContent:
         )
       ),
       // SVG elements "host" Bezier curves that link cells, drawing the funelling of finals matches
-      children <-- renderSvgElements()
+      children <-- renderCellLinks()
     )
-  end apply
 
-  /**
-    * Sets up redrawing of the SVG Bezier curves when the window is resized or scrolled.
-    */
-  def setupSvgCurvesAutoRender(): Unit = {
-    dom.window.addEventListener("resize", (_: dom.Event) => renderSvgCurves())
-    dom.window.addEventListener("scroll", (_: dom.Event) => renderSvgCurves())
-  }
-  
-  private val cellAddressFn = (col: Char, row: Int) => s"$col$row"
-  
-  case class Cell(col: Char, row: Int) {
-    def address(): String = cellAddressFn(col, row)
-    def rect() = dom.document.getElementById(address()).getBoundingClientRect()
-    def render(): Element =
-      div(
-        cls := "card h-100 w-100",
-        div(
-          cls := "card-body",
-          renderCardTitle(address())
-        )
-      )
-  }
-  
-  private def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
-    val fromRect = fromCell.rect()
-    val toRect = toCell.rect()
-    val startingPoint = s"${fromRect.right},${fromRect.top + fromRect.height/2}"
-    val controlPoint1 = s"${toRect.left},${fromRect.top + fromRect.height/2}"
-    val controlPoint2 = s"${fromRect.right},${toRect.top + toRect.height/2}"
-    val endingPoint   = s"${toRect.left},${toRect.top + toRect.height/2}"
-    s"M$startingPoint C$controlPoint1 $controlPoint2 $endingPoint"
-  }
-
-  private def renderSvgElements(): Signal[List[Element]] =
+  private def renderCellLinks(): Signal[List[Element]] =
     activeTab.signal.combineWith(cellLinks).map { case (at, cls) => cls.map(cl =>
       // save "static" cell links
       staticCellLinks = cls
@@ -175,12 +156,28 @@ object FinalsMatchesTabContent:
           )
         )
     )}
-  end renderSvgElements
   
-  private def renderSvgCurves(): Unit =
+  /**
+    * Sets up re-rendering of the SVG Bezier curves when the window is resized or scrolled.
+    */
+  def setupAutoReRenderOfCellLinksOnWindowScrollAndResize(): Unit = {
+    dom.window.addEventListener("scroll", (_: dom.Event) => renderStaticCellLinks())
+    dom.window.addEventListener("resize", (_: dom.Event) => renderStaticCellLinks())
+  }
+  
+  private def renderStaticCellLinks(): Unit =
     staticCellLinks.map(cl => 
       dom.document.getElementById(cl.id).setAttribute("d", bezierCurveCommands(cl.fromCell, cl.toCell))
     )
-  end renderSvgCurves
+
+  private def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
+    val fromRect = fromCell.rect()
+    val toRect = toCell.rect()
+    val startingPoint = s"${fromRect.right},${fromRect.top + fromRect.height/2}"
+    val controlPoint1 = s"${toRect.left},${fromRect.top + fromRect.height/2}"
+    val controlPoint2 = s"${fromRect.right},${toRect.top + toRect.height/2}"
+    val endingPoint   = s"${toRect.left},${toRect.top + toRect.height/2}"
+    s"M$startingPoint C$controlPoint1 $controlPoint2 $endingPoint"
+  }
 
 end FinalsMatchesTabContent
