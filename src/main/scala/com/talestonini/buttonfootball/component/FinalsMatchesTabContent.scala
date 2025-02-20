@@ -1,9 +1,12 @@
 package com.talestonini.buttonfootball.component
 
 import com.raquo.laminar.api.L.{*, given}
-import com.talestonini.buttonfootball.model.activeTab
-import com.talestonini.buttonfootball.model.FINALS_TAB
+import com.talestonini.buttonfootball.model.*
+import com.talestonini.buttonfootball.renderCardTitle
+import com.talestonini.buttonfootball.service.ChampionshipService.calcNumQualif
+import java.lang.Math.log
 import org.scalajs.dom
+import scala.collection.immutable.NumericRange
 
 /**
   * Renders the tab for the finals matches, which has its own unique layout.  Follow the schematic below for a general
@@ -28,7 +31,7 @@ import org.scalajs.dom
   * 13 | match                             |
   * 14 |          match                    |
   * 15 | match                             |
-  * 16 |          match?   match?   match  |
+  * 16 |          match?   match?   match? |
   * 17 ------------------------------------- (empty row)
   *               
   * It's a table, and it has repeatable sections, depending on how many finals matches there are in a given
@@ -42,11 +45,26 @@ import org.scalajs.dom
   */
 object FinalsMatchesTabContent:
 
-  private val BLANK_COLS = List('B', 'D', 'F')
-  private val cols = ('A' to 'G')
-  private val rows = (0 to 16)
+  private def deriveConfigFromState(): Unit =
+    println("configuring finals matches tab")
+    // println(s"number of qualified teams: ${numQualif.}")
+  end deriveConfigFromState
 
-  private val cellLinks: List[CellLink] = List(
+  /**
+    * There are 'A' until last col columns in the table.  Last col is a function of the number of qualified teams.  For
+    * example: if 16 teams qualify, then we need 4 colums to transition all the way from the round-of-sixteen matches to
+    * the grand final.  But because we use an in-between col to draw the links in SVG, we double the number of cols.  In
+    * the example above, last col is 8.  Then there are basic conversions to Char involved.
+    *
+    * @param numQualif the number of qualified teams to the finals
+    * @return the last column as a Char
+    */
+  private def lastCol(numQualif: Int): Char = ('A'.toInt + (log(numQualif)/log(2)).toInt * 2 - 1).toChar
+  val cols: Signal[NumericRange.Exclusive[Char]] = numQualif.map(nq => ('A' until lastCol(nq)))
+  val rows: Signal[Range.Inclusive] = numQualif.map(nq => 0 to nq)
+
+  private case class CellLink(id: String, fromCell: Cell, toCell: Cell)
+  private val INIT_CELL_LINKS: List[CellLink] = List(
     // round of sixteen to quarter finals
     CellLink("link1", Cell('A', 1), Cell('C', 2)),
     CellLink("link2", Cell('A', 3), Cell('C', 2)),
@@ -67,28 +85,44 @@ object FinalsMatchesTabContent:
     CellLink("link13", Cell('E', 4), Cell('G', 8)),
     CellLink("link14", Cell('E', 12), Cell('G', 8))
   )
+  private val cellLinks: List[CellLink] = INIT_CELL_LINKS
+  // private val cellLinks: Signal[List[CellLink]] = Var(INIT_CELL_LINKS).signal.combineWith(rows).combineWith(cols).map {
+  //   case (cls, rs, cs) => cls.filter(cl => rs.contains(cl.toCell.row) && cs.contains(cl.toCell.col))
+  // }
+
+  private val matchCells: List[Cell] = (cellLinks.map(cl => cl.fromCell) :++ cellLinks.map(cl => cl.toCell)).distinct
+  // private val matchCells: Signal[List[Cell]] = cellLinks.map(cls => {
+  //   (cls.map(cl => cl.fromCell) :++ cls.map(cl => cl.toCell)).distinct
+  // })
   
-  def apply() =
+  def apply(): Element =
+    deriveConfigFromState()
     div(
       table(
         cls := "table table-borderless",
         tbody(
-          rows.map(r => 
+          children <-- rows.map(rs => rs.map(r =>
             tr(
-              cols.map(c =>
+              children <-- cols.map(cs => cs.map(c =>
                 td(
                   idAttr := cellAddressFn(c, r),
                   cls := "col text-center",
-                  if (BLANK_COLS.contains(c)) "" else Cell(c, r).address()
+                  if (matchCells.exists(cell => cell == Cell(c, r))) Cell(c, r).render() else ""
+                  // child <-- matchCells.map(mcs =>
+                  //   if (mcs.exists(cell => cell == Cell(c, r))) Cell(c, r).render() else ""
+                  // )
                 )
-              )
+              ))
             )
-          )
+          ))
         )
       ),
+      //children <--
       renderSvgElements(), // SVG elements "host" Bezier curves that link cells, drawing the funelling of finals matches
-      onMountCallback(context => renderSvgCurves()) // renders the curves only after the SVG elements are rendered
+      onMountCallback(context => renderSvgCurves()), // renders the curves only after the SVG elements are rendered
+      //onUnmountCallback(context => removeSvgCurves())
     )
+  end apply
 
   /**
     * Sets up redrawing of the SVG Bezier curves when the window is resized or scrolled.
@@ -103,15 +137,22 @@ object FinalsMatchesTabContent:
   private case class Cell(col: Char, row: Int) {
     def address(): String = cellAddressFn(col, row)
     def rect() = dom.document.getElementById(address()).getBoundingClientRect()
+    def render(): Element =
+      div(
+        cls := "card h-100 w-100",
+        div(
+          cls := "card-body",
+          renderCardTitle(address())
+        )
+      )
   }
   
-  private case class CellLink(id: String, fromCell: Cell, toCell: Cell)
-
   private def renderSvgElements(): List[Element] =
+  // private def renderSvgElements(): Signal[List[Element]] =
     import svg.*
-    cellLinks.map(cl =>
+    cellLinks.map(/*cls => cls.map(*/cl =>
       svg(
-        style := "position: absolute; top: 0; left: 0; pointer-events: none;",
+        style := "position: fixed; top: 0; left: 0; pointer-events: none;",
         width := "100%",
         height := "100%",
         path(
@@ -121,7 +162,7 @@ object FinalsMatchesTabContent:
           fill := "transparent"
         )
       )
-    )
+    )//)
   end renderSvgElements
   
   private def renderSvgCurves(): Unit =
@@ -135,9 +176,19 @@ object FinalsMatchesTabContent:
       s"M$startingPoint C$controlPoint1 $controlPoint2 $endingPoint"
     }
 
-    if (activeTab.now() == FINALS_TAB) cellLinks.foreach(cl => 
+    if (activeTab.now() == FINALS_TAB) cellLinks.map(cl => 
       dom.document.getElementById(cl.id).setAttribute("d", bezierCurveCommands(cl.fromCell, cl.toCell))
     )
+    // if (activeTab.now() == FINALS_TAB) cellLinks.map(cls => cls.foreach(cl => 
+    //   dom.document.getElementById(cl.id).setAttribute("d", bezierCurveCommands(cl.fromCell, cl.toCell))
+    // ))
   end renderSvgCurves
+
+  // private def removeSvgCurves(): Unit =
+  //   cellLinks.foreach(cl => {
+  //     val curve = dom.document.getElementById(cl.id)
+  //     curve.remove()
+  //   })
+  // end removeSvgCurves
   
 end FinalsMatchesTabContent

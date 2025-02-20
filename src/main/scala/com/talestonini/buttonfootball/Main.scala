@@ -11,7 +11,8 @@ import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import com.talestonini.buttonfootball.model.Matches.*
 import com.talestonini.buttonfootball.model.Teams.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
-import com.talestonini.buttonfootball.service.ChampionshipService.numQualif
+import com.talestonini.buttonfootball.service.ChampionshipService.calcNumQualif
+import com.talestonini.buttonfootball.component.FinalsMatchesTabContent.{rows, cols}
 import org.scalajs.dom
 
 @main
@@ -78,14 +79,13 @@ def renderStateForInspection(isEnabled: Boolean) =
       ),
       div(
         child.text <-- assertCorrectNumQualifAndFinalsMatches()
+      ),
+      div(
+        child.text <-- rows.combineWith(cols).map {
+          case(r, c) => s"Finals rows: $r, Finals cols: $c"
+        }
       )
     )
-
-def renderCardTitle(title: String) =
-  h6(
-    cls := "card-subtitle mb-2 text-muted",
-    b(title)
-  )
 
 def renderTeamTypeRadios(): Element =
   div(
@@ -158,6 +158,7 @@ def renderChampionshipEditionsRange(): Element =
           onChange.mapToValue --> { edition =>
             selectedChampionship.update(_ => championships.now().find((ce) => ce.numEdition == edition.toInt))
             seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+            seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
           },
           value <-- selectedChampionship.signal.map(_.getOrElse(NO_CHAMPIONSHIP).numEdition.toString())
         )
@@ -227,7 +228,7 @@ def assertCorrectNumQualifAndFinalsMatches(): Signal[String] =
   selectedChampionship.signal
     .combineWith(numFinalsMatches)
     .combineWith(numTeams)
-    .map { case (sc, nfm, nt) => "Number of qualified teams: " + (numQualif(nt) match {
+    .map { case (sc, nfm, nt) => "Number of qualified teams: " + (calcNumQualif(nt) match {
       case Left(e) =>
         s"error (${e.getMessage()})"
       case Right(calcNumQualif) =>

@@ -5,6 +5,7 @@ import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import com.talestonini.buttonfootball.model.Matches.*
+import com.talestonini.buttonfootball.model.Standings.*
 import org.http4s.dom.FetchClientBuilder
 import org.http4s.FormDataDecoder.formEntityDecoder
 import org.http4s.{Header, Method, Request}
@@ -33,7 +34,7 @@ object ChampionshipService extends CommonService:
     * @param numTeams the number of teams
     * @return
     */
-  def numQualif(numTeams: Int): Either[Exception, Int] =
+  def calcNumQualif(numTeams: Int): Either[Exception, Int] =
     def closestPowerOfTwoToHalfOf(n: Int): Int = {
       val half = n / 2.0
       var power = 1
@@ -52,7 +53,7 @@ object ChampionshipService extends CommonService:
       case Left(e) => Left(e)
       case Right(ng) => Right(closestPowerOfTwoToHalfOf(numTeams))
     }
-  end numQualif
+  end calcNumQualif
 
   def getChampionships(codChampionshipType: Option[Code]): IO[List[Championship]] =
     val uri = toButtonFootballApiUri("championships").withOptionQueryParam("codChampionshipType", codChampionshipType)
@@ -69,5 +70,13 @@ object ChampionshipService extends CommonService:
       .expectOr[List[Match]](request)(errorResponse =>
         IO(RuntimeException(s"failed getting matches: $errorResponse")))
   end getMatches
+
+  def getGroupStandings(championshipId: Id): IO[List[Standing]] =
+    val uri = toButtonFootballApiUri("championships")/(championshipId)/("groupStandings")
+    val request = Request[IO](Method.GET, uri)
+    FetchClientBuilder[IO].create
+      .expectOr[List[Standing]](request)(errorResponse =>
+        IO(RuntimeException(s"failed getting group standings: $errorResponse")))
+  end getGroupStandings
 
 end ChampionshipService

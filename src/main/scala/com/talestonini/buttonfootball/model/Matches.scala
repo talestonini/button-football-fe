@@ -12,7 +12,29 @@ object Matches:
   case class Match(id: Id, championship: String, numEdition: Int, `type`: String, teamA: String, teamB: String,
                    teamALogoImgFile: String, teamBLogoImgFile: String, numGoalsTeamA: Int, numGoalsTeamB: Int,
                    numGoalsExtraA: Option[Int], numGoalsExtraB: Option[Int], numGoalsPntA: Option[Int],
-                   numGoalsPntB: Option[Int]) extends Model
+                   numGoalsPntB: Option[Int]) extends Model {
+
+    def winner(): Option[String] =
+      if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt >
+          s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}$numGoalsTeamB".toInt)
+        Some(teamA)
+      else if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt <
+               s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}$numGoalsTeamB".toInt)
+        Some(teamB)
+      else
+        None
+
+    def looser(): Option[String] =
+      if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt >
+          s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}$numGoalsTeamB".toInt)
+        Some(teamA)
+      else if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt <
+               s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}$numGoalsTeamB".toInt)
+        Some(teamB)
+      else
+        None
+
+  }
   
   implicit val matchDecoder: EntityDecoder[IO, Match] = jsonOf[IO, Match]
   implicit val matchEncoder: EntityEncoder[IO, Match] = jsonEncoderOf[IO, Match]

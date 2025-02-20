@@ -44,3 +44,8 @@ In another terminal:
 Have the JSON key file path of a Firebase service account pointed by an env var `GOOGLE_APPLICATION_CREDENTIALS` and:
 
     ./deploy.sh
+
+## TODOs/FIXMEs
+
+- In standings, check the correct name between either "numGoalDiff" or "numGoalsDiff".
+- In standings, the championship field is just the championship type, missing the edition.

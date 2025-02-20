@@ -5,12 +5,14 @@ import com.raquo.airstream.state.Var
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import com.talestonini.buttonfootball.model.Matches.*
+import com.talestonini.buttonfootball.model.Standings.*
 import com.talestonini.buttonfootball.model.Teams.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
 import com.talestonini.buttonfootball.service.*
+import com.talestonini.buttonfootball.service.ChampionshipService.calcNumQualif
+import com.raquo.airstream.core.Signal
 import scala.scalajs.concurrent.JSExecutionContext.queue
 import scala.util.{Failure, Success}
-import com.raquo.airstream.core.Signal
 
 package object model:
 
@@ -42,9 +44,6 @@ package object model:
   val championships: Var[List[Championship]] = Var(List.empty)
   val selectedChampionship: Var[Option[Championship]] = Var(None)
 
-  val teams: Var[List[Team]] = Var(List.empty)
-  val teamName: Var[String] = Var("")
-
   val groupFilterFn = (matchType: String) => matchType.startsWith(GROUP)
 
   val matches: Var[List[Match]] = Var(List.empty)
@@ -55,6 +54,11 @@ package object model:
   val numFinalsMatches: Signal[Int] = finalsMatches.map(fms => fms.length)
   val tabs: Signal[List[String]] = groups.signal.map(gs => gs :+ FINALS_TAB)
   val activeTab: Var[String] = Var(NO_ACTIVE_TAB)
+  val numQualif: Signal[Int] = numTeams.map(nt => calcNumQualif(nt).getOrElse(0))
+  val groupStandings: Var[List[Standing]] = Var(List.empty)
+
+  val teams: Var[List[Team]] = Var(List.empty)
+  val teamName: Var[String] = Var("")
 
   // --- side-effect functions -------------------------------------------------------------------------------------------
   
@@ -106,6 +110,7 @@ package object model:
             championships.now().find(_.numEdition == edition)
           )
           seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+          seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
         }
         case f: Failure[List[Championship]] => {
           println(s"failed fetching championships: ${f.exception.getMessage()}")
@@ -115,27 +120,6 @@ package object model:
         }
       })(queue)
   end seGetChampionships
-  
-  // def seGetChampionships(championshipTypeId: Id): Unit =
-  //   println(s"fetching championships with championship type id '$championshipTypeId'")
-  //   ChampionshipTypeService.getChampionships(championshipTypeId)
-  //     .unsafeToFuture()
-  //     .onComplete({
-  //       case s: Success[List[Championship]] => {
-  //         championships.update(_ => s.value)
-  //         selectedChampionship.update(_ => 
-  //           val edition = if (!championships.now().isEmpty) s.value.length else NO_CHAMPIONSHIP_EDITION
-  //           championships.now().find(_.numEdition == edition)
-  //         )
-  //         seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-  //       }
-  //       case f: Failure[List[Championship]] => {
-  //         println(s"failed fetching championships: ${f.exception.getMessage()}")
-  //         championships.update(_ => List.empty)
-  //         selectedChampionship.update(_ => None)
-  //       }
-  //     })(queue)
-  // end seGetChampionships
   
   def seGetMatches(championshipId: Id): Unit =
     println(s"fetching matches with championship id '$championshipId'")
@@ -152,6 +136,20 @@ package object model:
         }
       })(queue)
   end seGetMatches
+
+  def seGetGroupStandings(championshipId: Id): Unit =
+    println(s"fetching group standings with championship id '$championshipId'")
+    ChampionshipService.getGroupStandings(championshipId)
+      .unsafeToFuture()
+      .onComplete({
+        case s: Success[List[Standing]] =>
+          groupStandings.update(_ => s.value)
+        case f: Failure[List[Standing]] => {
+          println(s"failed fetching matches: ${f.exception.getMessage()}")
+          groupStandings.update(_ => List.empty)
+        }
+      })(queue)
+  end seGetGroupStandings
 
   def seGetTeams(name: String): Unit =
     println(s"fetching team with name '$name'")
