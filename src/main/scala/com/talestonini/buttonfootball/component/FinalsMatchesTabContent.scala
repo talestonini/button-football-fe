@@ -79,8 +79,6 @@ object FinalsMatchesTabContent:
       )
   }
   
-  case class CellLink(id: String, fromCell: Cell, toCell: Cell)
-
   /**
    * General algorithm:
    *
@@ -110,7 +108,7 @@ object FinalsMatchesTabContent:
 
   private case class MatchCell(seedA: Int, seedB: Int, cell: Cell, toCells: List[Cell], `match`: Var[Option[Match]])
 
-  private def buildFunnelingTree(): Signal[Tree[MatchCell]] =
+  private val funnelingTree: Signal[Tree[MatchCell]] =
     numQualif.combineWith(cols).combineWith(rows).map { case (nq, cs, rs) =>
       if (nq == 0) Empty
       else {
@@ -139,46 +137,6 @@ object FinalsMatchesTabContent:
       }
     }
 
-  private val INIT_CELL_LINKS: List[CellLink] = List(
-    // round of sixteen to quarter finals
-    CellLink("link1", Cell('A', 1), Cell('C', 2)),
-    CellLink("link2", Cell('A', 3), Cell('C', 2)),
-    CellLink("link3", Cell('A', 5), Cell('C', 6)),
-    CellLink("link4", Cell('A', 7), Cell('C', 6)),
-    CellLink("link5", Cell('A', 9), Cell('C', 10)),
-    CellLink("link6", Cell('A', 11), Cell('C', 10)),
-    CellLink("link7", Cell('A', 13), Cell('C', 14)),
-    CellLink("link8", Cell('A', 15), Cell('C', 14)),
-
-    // quarter finals to semifinals
-    CellLink("link9", Cell('C', 2), Cell('E', 4)),
-    CellLink("link10", Cell('C', 6), Cell('E', 4)),
-    CellLink("link11", Cell('C', 10), Cell('E', 12)),
-    CellLink("link12", Cell('C', 14), Cell('E', 12)),
-  
-    // semifinals to final
-    CellLink("link13", Cell('E', 4), Cell('G', 8)),
-    CellLink("link14", Cell('E', 12), Cell('G', 8))
-  )
-  val cellLinks: Signal[List[CellLink]] = Var(INIT_CELL_LINKS).signal.combineWith(rows).combineWith(cols).map {
-    case (cls, rs, cs) => cls.filter(cl => rs.contains(cl.toCell.row) && cs.contains(cl.toCell.col))
-  }
-  // val cellLinks2: Signal[List[CellLink]] = buildFunnelingTree().map(tree => tree.map(n =>
-  //   CellLink(s"link${n.cell.address()}", n.cell, n.toCells.head)
-  // ))
-  
-  /**
-    * Used to re-render cell links when the window is scrolled or resized.  The first time cell links are rendered 
-    * driven by signals, the static cell links are saved as a copy of the current cell links.  If then the window is
-    * scrolled or resized, re-render of the cell links (curves) is driven by the saved static cell links, as opposed to
-    * signals, which are not available then.
-    */
-  private var staticCellLinks: List[CellLink] = List.empty
-
-  private val matchCells: Signal[List[Cell]] = cellLinks.map(cls => {
-    (cls.map(cl => cl.fromCell) :++ cls.map(cl => cl.toCell)).distinct
-  })
-  
   def apply(): Element =
     div(
       table(
@@ -190,8 +148,8 @@ object FinalsMatchesTabContent:
                 td(
                   idAttr := cellAddressFn(c, r),
                   cls := "col text-center",
-                  child <-- matchCells.map(mcs =>
-                    if (mcs.exists(cell => cell == Cell(c, r))) Cell(c, r).render() else ""
+                  child <-- funnelingTree.map(ft =>
+                    if (ft.findFirst(mc => mc.cell == Cell(c, r)).isDefined) Cell(c, r).render() else ""
                   )
                 )
               ))
@@ -203,33 +161,50 @@ object FinalsMatchesTabContent:
       children <-- renderCellLinks()
     )
 
-  private def renderCellLinks(): Signal[List[Element]] =
-    activeTab.signal.combineWith(buildFunnelingTree()).map { case (at, cls) => treeToList(cls.map(cl =>
-      // save "static" cell links
-      // staticCellLinks = cls
+  /**
+    * Used to re-render cell links when the window is scrolled or resized.  The first time cell links are rendered 
+    * driven by signals, the static cell links are saved as a copy of the current cell links.  If then the window is
+    * scrolled or resized, re-render of the cell links (curves) is driven by the saved static cell links, as opposed to
+    * signals, which are not available then.
+    */
+  private var staticCellLinks: List[(Cell, Cell)] = List.empty
 
-      def svgForCurve(id: String, curveCommands: String): Element =
+  private val cellLinkAddressFn = (fromCell: Cell, toCell: Cell) => s"${fromCell.address()}-${toCell.address()}"
+  private def renderCellLinks(): Signal[List[Element]] =
+    activeTab.signal.combineWith(funnelingTree).map { case (at, ft) => ft.map(n =>
+      def saveStaticCellLinks() =
+        staticCellLinks = ft.toList().flatMap(n =>
+          if (n.toCells.isEmpty)
+            List.empty
+          else
+            List((n.cell, n.toCells.head), (n.cell, n.toCells.tail.head))
+        )
+    
+      def svgForCurve(fromCell: Cell, toCell: Cell): Element =
         import svg.*
         svg(
           style := "position: fixed; top: 0; left: 0; pointer-events: none;",
           width := "100%",
           height := "100%",
           path(
-            idAttr := id,
+            idAttr := cellLinkAddressFn(fromCell, toCell),
             stroke := "lightgrey",
             strokeWidth := "3",
             fill := "transparent",
-            d := curveCommands
+            d := bezierCurveCommands(fromCell, toCell)
           )
         )
       end svgForCurve
 
-      if (at != FINALS_TAB || cl.toCells.isEmpty) div()
-      else div(
-        svgForCurve(s"${cl.cell.address()}-${cl.toCells.head.address()}", bezierCurveCommands(cl.cell, cl.toCells.head)),
-        svgForCurve(s"${cl.cell.address()}-${cl.toCells.tail.head.address()}", bezierCurveCommands(cl.cell, cl.toCells.tail.head))
-      )
-    ))}
+      saveStaticCellLinks()
+      if (at != FINALS_TAB || n.toCells.isEmpty)
+        div()
+      else 
+        div(
+          svgForCurve(n.cell, n.toCells.head),
+          svgForCurve(n.cell, n.toCells.tail.head)
+        )
+    ).toList()}
   
   /**
     * Sets up re-rendering of the SVG Bezier curves when the window is resized or scrolled.
@@ -239,10 +214,10 @@ object FinalsMatchesTabContent:
     dom.window.addEventListener("resize", (_: dom.Event) => renderStaticCellLinks())
   }
   
-  private def renderStaticCellLinks(): Unit =
-    staticCellLinks.map(cl => 
-      dom.document.getElementById(cl.id).setAttribute("d", bezierCurveCommands(cl.fromCell, cl.toCell))
-    )
+  private def renderStaticCellLinks(): Unit = staticCellLinks.map(cl => dom.document
+    .getElementById(cellLinkAddressFn(cl._1, cl._2))
+    .setAttribute("d", bezierCurveCommands(cl._1, cl._2))
+  )
 
   private def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
     val fromRect = fromCell.rect()
