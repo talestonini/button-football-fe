@@ -1,16 +1,14 @@
 package com.talestonini.buttonfootball.service
 
 import cats.effect.IO
+import com.talestonini.buttonfootball.exception.InvalidNumberOfTeams
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
-import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import com.talestonini.buttonfootball.model.Matches.*
 import com.talestonini.buttonfootball.model.Standings.*
 import org.http4s.dom.FetchClientBuilder
-import org.http4s.FormDataDecoder.formEntityDecoder
 import org.http4s.{Header, Method, Request}
 import org.typelevel.ci.CIString
-import com.talestonini.buttonfootball.exception.InvalidNumberOfTeams
 
 object ChampionshipService extends CommonService:
 

@@ -5,7 +5,6 @@ import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import org.http4s.dom.FetchClientBuilder
-import org.http4s.FormDataDecoder.formEntityDecoder
 import org.http4s.{Header, Method, Request}
 import org.typelevel.ci.CIString
 

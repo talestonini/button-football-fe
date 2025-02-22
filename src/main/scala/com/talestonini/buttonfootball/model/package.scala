@@ -44,18 +44,25 @@ package object model:
   val championships: Var[List[Championship]] = Var(List.empty)
   val selectedChampionship: Var[Option[Championship]] = Var(None)
 
-  val groupFilterFn = (matchType: String) => matchType.startsWith(GROUP)
+  private val groupFilterFn = (matchType: String) => matchType.startsWith(GROUP)
 
   val matches: Var[List[Match]] = Var(List.empty)
-  val groupsMatches: Signal[List[Match]] = matches.signal.map(ms => ms.filter(m => groupFilterFn(m.`type`)))
+  private val groupsMatches: Signal[List[Match]] = matches.signal.map(ms => ms.filter(m => groupFilterFn(m.`type`)))
+  val finalsMatches: Signal[List[Match]] = matches.signal.map(ms => ms.filter(m => !groupFilterFn(m.`type`)))
   val groups: Signal[List[String]] = groupsMatches.map(gms => gms.map(_.`type`).distinct)
   val numTeams: Signal[Int] = groups.signal.map(gm => gm.length * NUM_TEAMS_PER_GROUP)
-  val finalsMatches: Signal[List[Match]] = matches.signal.map(ms => ms.filter(m => !groupFilterFn(m.`type`)))
   val numFinalsMatches: Signal[Int] = finalsMatches.map(fms => fms.length)
   val tabs: Signal[List[String]] = groups.signal.map(gs => gs :+ FINALS_TAB)
   val activeTab: Var[String] = Var(NO_ACTIVE_TAB)
   val numQualif: Signal[Int] = numTeams.map(nt => calcNumQualif(nt).getOrElse(0))
-  val groupStandings: Var[List[Standing]] = Var(List.empty)
+  private val groupStandings: Var[List[Standing]] = Var(List.empty)
+  
+  case class Finalist(pos: Int, team: String)
+  val finalists: Signal[List[Finalist]] = groupStandings.signal.map(gss => gss
+    .map(gs => if (gs.numExtraGrpPos.isDefined) Some(Finalist(gs.numExtraGrpPos.get, gs.team)) else None)
+    .filter(finalist => finalist.isDefined)
+    .map(_.get)
+  )
 
   val teams: Var[List[Team]] = Var(List.empty)
   val teamName: Var[String] = Var("")
@@ -73,7 +80,7 @@ package object model:
           seGetChampionshipTypes(s.value.head.code)
         }
         case f: Failure[List[TeamType]] => {
-          println(s"failed fetching team types: ${f.exception.getMessage()}")
+          println(s"failed fetching team types: ${f.exception.getMessage}")
           teamTypes.update(_ => List.empty)
           selectedTeamType.update(_ => None)
         }
@@ -91,7 +98,7 @@ package object model:
           seGetChampionships(s.value.head.code)
         }
         case f: Failure[List[ChampionshipType]] => {
-          println(s"failed fetching championship type: ${f.exception.getMessage()}")
+          println(s"failed fetching championship type: ${f.exception.getMessage}")
           championshipTypes.update(_ => List.empty)
           selectedChampionshipType.update(_ => None)
         }
@@ -106,14 +113,14 @@ package object model:
         case s: Success[List[Championship]] => {
           championships.update(_ => s.value)
           selectedChampionship.update(_ => 
-            val edition = if (!championships.now().isEmpty) s.value.length else NO_CHAMPIONSHIP_EDITION
+            val edition = if (championships.now().nonEmpty) s.value.length else NO_CHAMPIONSHIP_EDITION
             championships.now().find(_.numEdition == edition)
           )
           seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
           seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
         }
         case f: Failure[List[Championship]] => {
-          println(s"failed fetching championships: ${f.exception.getMessage()}")
+          println(s"failed fetching championships: ${f.exception.getMessage}")
           championships.update(_ => List.empty)
           selectedChampionship.update(_ => None)
           matches.update(_ => List.empty)
@@ -130,7 +137,7 @@ package object model:
           matches.update(_ => s.value)
           activeTab.update(_ => LAST_TAB)
         case f: Failure[List[Match]] => {
-          println(s"failed fetching matches: ${f.exception.getMessage()}")
+          println(s"failed fetching matches: ${f.exception.getMessage}")
           matches.update(_ => List.empty)
           activeTab.update(_ => NO_ACTIVE_TAB)
         }
@@ -145,7 +152,7 @@ package object model:
         case s: Success[List[Standing]] =>
           groupStandings.update(_ => s.value)
         case f: Failure[List[Standing]] => {
-          println(s"failed fetching matches: ${f.exception.getMessage()}")
+          println(s"failed fetching matches: ${f.exception.getMessage}")
           groupStandings.update(_ => List.empty)
         }
       })(queue)
@@ -158,7 +165,7 @@ package object model:
       .unsafeToFuture()
       .onComplete({
         case s: Success[List[Team]] => teams.update(_ => s.value)
-        case f: Failure[List[Team]] => println(s"failed fetching team: ${f.exception.getMessage()}")
+        case f: Failure[List[Team]] => println(s"failed fetching team: ${f.exception.getMessage}")
       })(queue)
   end seGetTeams
 

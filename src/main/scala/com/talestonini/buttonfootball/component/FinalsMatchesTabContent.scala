@@ -1,11 +1,14 @@
 package com.talestonini.buttonfootball.component
 
 import com.raquo.laminar.api.L.{*, given}
+import com.talestonini.buttonfootball.datastructure.*
 import com.talestonini.buttonfootball.model.*
+import com.talestonini.buttonfootball.model.Matches.Match
 import com.talestonini.buttonfootball.renderCardTitle
-import com.talestonini.buttonfootball.service.ChampionshipService.calcNumQualif
-import java.lang.Math.log
 import org.scalajs.dom
+import org.scalajs.dom.DOMRect
+
+import java.lang.Math.{log, pow}
 import scala.collection.immutable.NumericRange
 
 /**
@@ -13,7 +16,7 @@ import scala.collection.immutable.NumericRange
   * understanding of the logic:
   * 
   *    | A        C        E        G        (cols B, D and F are empty)
-  *  0 ------------------------------------- (emtpy row)
+  *  0 ------------------------------------- (empty row)
   *  1 | match           |        |        |
   *  2 |          match  |        |        |
   *  3 | match           |        |        |
@@ -39,29 +42,33 @@ import scala.collection.immutable.NumericRange
   * from field 'numQualif' in the Championship model.  Remember the table needs to be rendered top to bottom, and not by
   * indexing a cell.
   * 
-  * The funelling effect of a cup-format championship is represented by curves drawn from matches that qualify winners
+  * The funneling effect of a cup-format championship is represented by curves drawn from matches that qualify winners
   * of the round-of-sixteen to quarter-finals then to semi-finals and so on.  The table cells' bounding boxes are used
-  * to calculate the positions of such curves and we need empty columns B, D and F to help accomplish the effect.
+  * to calculate the positions of such curves, and we need empty columns B, D and F to help accomplish the effect.
   */
 object FinalsMatchesTabContent:
 
+  private def calcNumLevels(numQualif: Int): Int =
+    if (numQualif == 0) 0
+    else (log(numQualif)/log(2)).toInt
+
   /**
     * There are 'A' until last col columns in the table.  Last col is a function of the number of qualified teams.  For
-    * example: if 16 teams qualify, then we need 4 colums to transition all the way from the round-of-sixteen matches to
-    * the grand final.  But because we use an in-between col to draw the links in SVG, we double the number of cols.  In
-    * the example above, last col is 8.  Then there are basic conversions to Char involved.
+    * example: if 16 teams qualify, then we need 4 columns to transition all the way from the round-of-sixteen matches
+    * to the grand final.  But because we use an in-between col to draw the links in SVG, we double the number of cols.
+    * In the example above, last col is 8.  Then there are basic conversions to Char involved.
     *
     * @param numQualif the number of qualified teams to the finals
     * @return the last column as a Char
     */
-  private def lastCol(numQualif: Int): Char = ('A'.toInt + (log(numQualif)/log(2)).toInt * 2 - 1).toChar
+  private def lastCol(numQualif: Int): Char = ('A'.toInt + calcNumLevels(numQualif) * 2 - 1).toChar
   val cols: Signal[NumericRange.Exclusive[Char]] = numQualif.map(nq => ('A' until lastCol(nq)))
   val rows: Signal[Range.Inclusive] = numQualif.map(nq => 0 to nq)
 
   private val cellAddressFn = (col: Char, row: Int) => s"$col$row"
   case class Cell(col: Char, row: Int) {
     def address(): String = cellAddressFn(col, row)
-    def rect() = dom.document.getElementById(address()).getBoundingClientRect()
+    def rect(): DOMRect = dom.document.getElementById(address()).getBoundingClientRect()
     def render(): Element =
       div(
         cls := "card h-100 w-100",
@@ -73,6 +80,65 @@ object FinalsMatchesTabContent:
   }
   
   case class CellLink(id: String, fromCell: Cell, toCell: Cell)
+
+  /**
+   * General algorithm:
+   *
+   * 1) Build the funneling tree deriving from the number of qualified teams and the qualified teams themselves (com-
+   * bination of the 2 signals).  Build starts from the grand final match, and progresses to the first stage after
+   * the groups stage (eg round of sixteen or quarter-finals).  Nodes contain:
+   * a) match seeding, eg seed 1 vs 8, 2 vs 7, etc (calculated)
+   * b) table cell where to render the node, eg A1, C2 (calculated)
+   * c) cells where 'to' render linking curve, eg the grand final cell links to the semifinals cells (calculated)
+   * d) teams A and B (when hitting the leaf, fetch the qualified team by the seed number of the node)
+   *
+   * 2) While building the table (main Element above), traverse the tree (map) for each cell to:
+   * a) render cell links
+   * b) render teams A and B (here we fetch the match by team names to get scores, etc)
+   *
+   * NOTES:
+   * 1) As we traverse the tree, we must save the 'static' cell links into a list, so that curves can be re-rendered
+   * when the window is scrolled or resized.
+   * 2) The beauty of the algorithm lies in the fact that we can calculate everything at tree build time and have it
+   * ready to be traversed (multiple times) when rendering the table.  It's not easy to avoid traversing the tree
+   * many times, because the algorithm is essentially crossing a table (HTML Element) with the data plotted on it
+   * from a tree.  We could render the table in one passage and then traverse the tree once, indexing the table
+   * cells to "pinpoint" where to render elements from the tree, but that would involve naming cells with indexes
+   * and doing "dom.document.getElementById", which is not native Laminar (so I'll limit that technique only to
+   * rendering Bézier curves for now).  Plus, I'm betting traversing a small tree many times will be cheap.
+   */
+
+  private case class MatchCell(seedA: Int, seedB: Int, cell: Cell, toCells: List[Cell], `match`: Var[Option[Match]])
+
+  private def buildFunnelingTree(): Signal[Tree[MatchCell]] =
+    numQualif.combineWith(cols).combineWith(rows).map { case (nq, cs, rs) =>
+      if (nq == 0) Empty
+      else {
+        val numLevels = calcNumLevels(nq)
+
+        def insertNode(level: Int, seed: Int, fromCell: Cell): Tree[MatchCell] =
+          if (level > numLevels)
+            Empty
+          else {
+            val seedA   = seed
+            val seedB   = pow(2, level).toInt - seed + 1
+            val toCol   = (fromCell.col - 2).toChar  // there's a column gap
+            val toRow1  = fromCell.row - nq/pow(2, level+1).toInt
+            val toRow2  = fromCell.row + nq/pow(2, level+1).toInt
+            val toCell1 = Cell(toCol, toRow1)
+            val toCell2 = Cell(toCol, toRow2)
+            val toCells = if (level < numLevels) List(toCell1, toCell2) else List.empty
+            Node(
+              MatchCell(seedA, seedB, fromCell, toCells, Var(None)),
+              insertNode(level+1, seedA, toCell1),
+              insertNode(level+1, seedB, toCell2)
+            )
+          }
+
+        insertNode(1, 1, Cell(cs.last, rs.last/2))
+      }
+    }
+
   private val INIT_CELL_LINKS: List[CellLink] = List(
     // round of sixteen to quarter finals
     CellLink("link1", Cell('A', 1), Cell('C', 2)),
@@ -97,6 +163,9 @@ object FinalsMatchesTabContent:
   val cellLinks: Signal[List[CellLink]] = Var(INIT_CELL_LINKS).signal.combineWith(rows).combineWith(cols).map {
     case (cls, rs, cs) => cls.filter(cl => rs.contains(cl.toCell.row) && cs.contains(cl.toCell.col))
   }
+  // val cellLinks2: Signal[List[CellLink]] = buildFunnelingTree().map(tree => tree.map(n =>
+  //   CellLink(s"link${n.cell.address()}", n.cell, n.toCells.head)
+  // ))
   
   /**
     * Used to re-render cell links when the window is scrolled or resized.  The first time cell links are rendered 
@@ -135,27 +204,32 @@ object FinalsMatchesTabContent:
     )
 
   private def renderCellLinks(): Signal[List[Element]] =
-    activeTab.signal.combineWith(cellLinks).map { case (at, cls) => cls.map(cl =>
+    activeTab.signal.combineWith(buildFunnelingTree()).map { case (at, cls) => treeToList(cls.map(cl =>
       // save "static" cell links
-      staticCellLinks = cls
+      // staticCellLinks = cls
 
-      import svg.*
-      if (at != FINALS_TAB) 
-        div()
-      else
+      def svgForCurve(id: String, curveCommands: String): Element =
+        import svg.*
         svg(
           style := "position: fixed; top: 0; left: 0; pointer-events: none;",
           width := "100%",
           height := "100%",
           path(
-            idAttr := cl.id,
+            idAttr := id,
             stroke := "lightgrey",
             strokeWidth := "3",
             fill := "transparent",
-            d := bezierCurveCommands(cl.fromCell, cl.toCell)
+            d := curveCommands
           )
         )
-    )}
+      end svgForCurve
+
+      if (at != FINALS_TAB || cl.toCells.isEmpty) div()
+      else div(
+        svgForCurve(s"${cl.cell.address()}-${cl.toCells.head.address()}", bezierCurveCommands(cl.cell, cl.toCells.head)),
+        svgForCurve(s"${cl.cell.address()}-${cl.toCells.tail.head.address()}", bezierCurveCommands(cl.cell, cl.toCells.tail.head))
+      )
+    ))}
   
   /**
     * Sets up re-rendering of the SVG Bezier curves when the window is resized or scrolled.
@@ -173,10 +247,10 @@ object FinalsMatchesTabContent:
   private def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
     val fromRect = fromCell.rect()
     val toRect = toCell.rect()
-    val startingPoint = s"${fromRect.right},${fromRect.top + fromRect.height/2}"
-    val controlPoint1 = s"${toRect.left},${fromRect.top + fromRect.height/2}"
-    val controlPoint2 = s"${fromRect.right},${toRect.top + toRect.height/2}"
-    val endingPoint   = s"${toRect.left},${toRect.top + toRect.height/2}"
+    val startingPoint = s"${fromRect.left},${fromRect.top + fromRect.height/2}"
+    val controlPoint1 = s"${toRect.right},${fromRect.top + fromRect.height/2}"
+    val controlPoint2 = s"${fromRect.left},${toRect.top + toRect.height/2}"
+    val endingPoint   = s"${toRect.right},${toRect.top + toRect.height/2}"
     s"M$startingPoint C$controlPoint1 $controlPoint2 $endingPoint"
   }
 

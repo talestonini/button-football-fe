@@ -13,7 +13,7 @@ object TTTable:
 
   case class TTHeader(label: String, modelFieldPos: Int, sorting: Var[Sorting] = Var(None)):
 
-    val labelVar: Var[String] = Var(label)
+    private val labelVar: Var[String] = Var(label)
 
     implicit val anyOrdering: Ordering[Any] = new Ordering[Any]:
       val stringOrdering: Ordering[String] = Ordering.String
