@@ -57,12 +57,11 @@ package object model:
   val numQualif: Signal[Int] = numTeams.map(nt => calcNumQualif(nt).getOrElse(0))
   private val groupStandings: Var[List[Standing]] = Var(List.empty)
   
-  case class Finalist(pos: Int, team: String)
-  val finalists: Signal[List[Finalist]] = groupStandings.signal.map(gss => gss
-    .map(gs => if (gs.numExtraGrpPos.isDefined) Some(Finalist(gs.numExtraGrpPos.get, gs.team)) else None)
-    .filter(finalist => finalist.isDefined)
-    .map(_.get)
-  )
+  case class Qualified(pos: Int, team: String)
+  val qualifiedTeams: Signal[List[Qualified]] = groupStandings.signal.combineWith(numQualif).map { case (gss, nq) => gss
+    .filter(gs => gs.numExtraGrpPos.isDefined && gs.numExtraGrpPos.get <= nq)
+    .map(gs => Qualified(gs.numExtraGrpPos.get, gs.team))
+  }
 
   val teams: Var[List[Team]] = Var(List.empty)
   val teamName: Var[String] = Var("")

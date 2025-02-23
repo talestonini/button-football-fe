@@ -3,6 +3,7 @@ package com.talestonini.buttonfootball
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.api.features.unitArrows
 import com.talestonini.buttonfootball.component.FinalsMatchesTabContent
+import com.talestonini.buttonfootball.component.MatchElement
 import com.talestonini.buttonfootball.component.TTTable
 import com.talestonini.buttonfootball.component.TTTable.TTHeader
 import com.talestonini.buttonfootball.model.*
@@ -203,24 +204,9 @@ def renderGroupMatchesTabContent(tabName: String): Element =
   table(
     cls := "table",
     tbody(
-      children <-- matches.signal.map(ms => ms.filter(m => m.`type` == tabName).map(m => renderMatch(m)))
+      children <-- matches.signal.map(ms => ms.filter(m => m.`type` == tabName).map(m => MatchElement(m)))
     )
   )
-
-def renderMatch(m: Match, isFinalsStage: Boolean = false): Element =
-  def displayInFinals() = display(if (isFinalsStage) "table-cell" else "none")
-  tr(
-    td(cls := "col text-end", styleAttr := "width: 200px;", m.teamA),
-    td(cls := "col-auto text-center", m.numGoalsPntA, displayInFinals()),
-    td(cls := "col-auto text-center", m.numGoalsExtraA, displayInFinals()),
-    td(cls := "col-auto text-center", m.numGoalsTeamA),
-    td(cls := "col-auto text-center", " x "),
-    td(cls := "col-auto text-center", m.numGoalsTeamB),
-    td(cls := "col-auto text-center", m.numGoalsExtraB, displayInFinals()),
-    td(cls := "col-auto text-center", m.numGoalsPntB, displayInFinals()),
-    td(cls := "col text-start", styleAttr := "width: 200px;", m.teamB)
-  )
-end renderMatch
 
 // --- assertions functions ------------------------------------------------------------------------------------------
 

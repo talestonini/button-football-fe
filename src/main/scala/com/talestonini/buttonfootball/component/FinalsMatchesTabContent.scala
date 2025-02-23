@@ -69,14 +69,6 @@ object FinalsMatchesTabContent:
   case class Cell(col: Char, row: Int) {
     def address(): String = cellAddressFn(col, row)
     def rect(): DOMRect = dom.document.getElementById(address()).getBoundingClientRect()
-    def render(): Element =
-      div(
-        cls := "card h-100 w-100",
-        div(
-          cls := "card-body",
-          renderCardTitle(address())
-        )
-      )
   }
   
   /**
@@ -106,36 +98,88 @@ object FinalsMatchesTabContent:
    * rendering Bézier curves for now).  Plus, I'm betting traversing a small tree many times will be cheap.
    */
 
-  private case class MatchCell(seedA: Int, seedB: Int, cell: Cell, toCells: List[Cell], `match`: Var[Option[Match]])
+  private case class MatchCell(seed: Int, otherSeed: Int, cell: Cell, toCells: List[Cell], var `match`: Option[Match])
 
   private val funnelingTree: Signal[Tree[MatchCell]] =
-    numQualif.combineWith(cols).combineWith(rows).map { case (nq, cs, rs) =>
-      if (nq == 0) Empty
-      else {
-        val numLevels = calcNumLevels(nq)
+    numQualif
+      .combineWith(cols)
+      .combineWith(rows)
+      .combineWith(qualifiedTeams)
+      .combineWith(finalsMatches).map { case (nq, cs, rs, qts, fms) =>
+        // build the tree
+        val tree = if (nq == 0) Empty
+        else {
+          val numLevels = calcNumLevels(nq)
 
-        def insertNode(level: Int, seed: Int, fromCell: Cell): Tree[MatchCell] =
-          if (level > numLevels)
-            Empty
-          else {
-            val seedA   = seed
-            val seedB   = pow(2, level).toInt - seed + 1
-            val toCol   = (fromCell.col - 2).toChar  // there's a column gap
-            val toRow1  = fromCell.row - nq/pow(2, level+1).toInt
-            val toRow2  = fromCell.row + nq/pow(2, level+1).toInt
-            val toCell1 = Cell(toCol, toRow1)
-            val toCell2 = Cell(toCol, toRow2)
-            val toCells = if (level < numLevels) List(toCell1, toCell2) else List.empty
-            Node(
-              MatchCell(seedA, seedB, fromCell, toCells, Var(None)),
-              insertNode(level+1, seedA, toCell1),
-              insertNode(level+1, seedB, toCell2)
-            )
+          def insertNode(level: Int, seed: Int, fromCell: Cell): Tree[MatchCell] =
+            if (level > numLevels)
+              Empty
+            else {
+              val otherSeed = pow(2, level).toInt - seed + 1
+              val toCol     = (fromCell.col - 2).toChar  // there's a column gap
+              val rowDiff   = nq/pow(2, level + 1).toInt
+              val toCell1   = Cell(toCol, fromCell.row - rowDiff)
+              val toCell2   = Cell(toCol, fromCell.row + rowDiff)
+              val (toCells, theMatch) = 
+                if (level == numLevels) {
+                  // there must be a match between qualified teams (this is the level right after the group stage)
+                  val teamA = qts.find(qt => qt.pos == seed).map(_.team).getOrElse("")
+                  val teamB = qts.find(qt => qt.pos == otherSeed).map(_.team).getOrElse("")
+                  (List.empty, fms.find(m => m.teamA == teamA && m.teamB == teamB))
+                } else {
+                  (List(toCell1, toCell2), None)
+                }
+              Node(
+                MatchCell(seed, otherSeed, fromCell, toCells, theMatch),
+                insertNode(level+1, seed, toCell1),
+                insertNode(level+1, otherSeed, toCell2)
+              )
+            }
+
+          insertNode(1, 1, Cell(cs.last, rs.last/2))
+        }
+
+        // traverse the tree to set all remaining matches (needs to be done after building the tree as opposed to on the
+        // same passage, because we only know about each match by navigating from the leaves)
+        def setTreeRootFinalMatch(treeRoot: Tree[MatchCell]): Unit =
+          def getTreeWinner(tree: Tree[MatchCell]): Option[String] = tree match {
+            case Empty => None
+            case Node(value, left, right) =>
+              if (value.`match`.isEmpty) None
+              else value.`match`.get.winner()
           }
+          
+          treeRoot match {
+            case Node(value, left, right) => 
+              if (value.`match`.isEmpty) {
+                setTreeRootFinalMatch(left)
+                setTreeRootFinalMatch(right)
+                val leftWinner  = getTreeWinner(left).getOrElse("")
+                val rightWinner = getTreeWinner(right).getOrElse("")
+                val finalMatch = fms.find(m => m.teamA == leftWinner && m.teamB == rightWinner)
+                value.`match` = finalMatch
+              }
+          }
+        end setTreeRootFinalMatch
 
-        insertNode(1, 1, Cell(cs.last, rs.last/2))
+        setTreeRootFinalMatch(tree)
+        tree
       }
-    }
+
+  end funnelingTree
+
+  def renderFinalsMatch(m: Match): Element =
+    div(
+      cls := "card h-100 w-100",
+      div(
+        cls := "card-body",
+        renderCardTitle(m.`type`),
+        table(
+          cls := "table",
+          tbody(MatchElement(m, isFinalsStage = true))
+        )
+      )
+    )
 
   def apply(): Element =
     div(
@@ -148,9 +192,11 @@ object FinalsMatchesTabContent:
                 td(
                   idAttr := cellAddressFn(c, r),
                   cls := "col text-center",
-                  child <-- funnelingTree.map(ft =>
-                    if (ft.findFirst(mc => mc.cell == Cell(c, r)).isDefined) Cell(c, r).render() else ""
-                  )
+                  child <-- funnelingTree.map(ft => {
+                    val mc = ft.findFirst(mc => mc.cell == Cell(c, r))
+                    if (mc.isEmpty || mc.get.`match`.isEmpty) ""
+                    else renderFinalsMatch(mc.get.`match`.get)
+                  })
                 )
               ))
             )
