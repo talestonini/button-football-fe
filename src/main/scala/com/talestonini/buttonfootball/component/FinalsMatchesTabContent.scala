@@ -12,31 +12,27 @@ import java.lang.Math.{log, pow}
 import scala.collection.immutable.NumericRange
 
 /**
-  * Renders the tab for the finals matches, which has its own unique layout.  Follow the schematic below for a general
-  * understanding of the logic:
+  * Renders the tab for the finals matches, which has its own unique layout.
   * 
-  *    | A        C        E        G        (cols B, D and F are empty)
-  *  0 ------------------------------------- (empty row)
-  *  1 | match           |        |        |
-  *  2 |          match  |        |        |
-  *  3 | match           |        |        |
-  *  4 |          match? | match  |        |
-  *    -------------------        |        |
-  *  5 | match                    |        |
-  *  6 |          match           |        |
-  *  7 | match                    |        |
-  *  8 |          match?   match? | match  |
-  *    ----------------------------        |
-  *  9 | match                             |
-  * 10 |          match                    |
-  * 11 | match                             |
-  * 12 |          match?   match           |
-  * 13 | match                             |
-  * 14 |          match                    |
-  * 15 | match                             |
-  * 16 |          match?   match?   match? |
-  * 17 ------------------------------------- (empty row)
-  *               
+  *    | A       C       E       G       |  (cols B, D and F are used to render linking curves)
+  *  0 -----------------------------------  (empty row)
+  *  1 | match                           |
+  *  2 |         match                   |
+  *  3 | match                           |
+  *  4 |                 match           |
+  *  5 | match                           |
+  *  6 |         match                   |
+  *  7 | match                           |
+  *  8 |                         match   |
+  *  9 | match                           |
+  * 10 |         match                   |
+  * 11 | match                           |
+  * 12 |                 match           |
+  * 13 | match                           |
+  * 14 |         match                   |
+  * 15 | match                           |
+  * 16 |                         match   |
+  *
   * It's a table, and it has repeatable sections, depending on how many finals matches there are in a given
   * championship.  That in turn is determined by how many teams qualify from the groups stage, and this number comes
   * from field 'numQualif' in the Championship model.  Remember the table needs to be rendered top to bottom, and not by
@@ -62,11 +58,13 @@ object FinalsMatchesTabContent:
     * @return the last column as a Char
     */
   private def lastCol(numQualif: Int): Char = ('A'.toInt + calcNumLevels(numQualif) * 2 - 1).toChar
-  val cols: Signal[NumericRange.Exclusive[Char]] = numQualif.map(nq => ('A' until lastCol(nq)))
-  val rows: Signal[Range.Inclusive] = numQualif.map(nq => 0 to nq)
+  val cols: Signal[NumericRange.Exclusive[Char]] = numQualif.map(nq => 'A' until lastCol(nq))
+  val rows: Signal[Range] = numQualif.map(nq => 0 until nq)
+  val maxCol: Signal[Char] = cols.map(cs => cs.last)
+  val maxRow: Signal[Int] = rows.map(rs => rs.last)
 
   private val cellAddressFn = (col: Char, row: Int) => s"$col$row"
-  case class Cell(col: Char, row: Int) {
+  private case class Cell(col: Char, row: Int) {
     def address(): String = cellAddressFn(col, row)
     def rect(): DOMRect = dom.document.getElementById(address()).getBoundingClientRect()
   }
@@ -131,8 +129,8 @@ object FinalsMatchesTabContent:
                 }
               Node(
                 MatchCell(seed, otherSeed, fromCell, toCells, theMatch),
-                insertNode(level+1, seed, toCell1),
-                insertNode(level+1, otherSeed, toCell2)
+                insertNode(level + 1, seed, toCell1),
+                insertNode(level + 1, otherSeed, toCell2)
               )
             }
 
@@ -141,26 +139,17 @@ object FinalsMatchesTabContent:
 
         // traverse the tree to set all remaining matches (needs to be done after building the tree as opposed to on the
         // same passage, because we only know about each match by navigating from the leaves)
-        def setTreeRootFinalMatch(treeRoot: Tree[MatchCell]): Unit =
-          def getTreeWinner(tree: Tree[MatchCell]): Option[String] = tree match {
-            case Empty => None
-            case Node(value, left, right) =>
-              if (value.`match`.isEmpty) None
-              else value.`match`.get.winner()
-          }
-          
-          treeRoot match {
-            case Node(value, left, right) => 
-              if (value.`match`.isEmpty) {
-                setTreeRootFinalMatch(left)
-                setTreeRootFinalMatch(right)
-                val leftWinner  = getTreeWinner(left).getOrElse("")
-                val rightWinner = getTreeWinner(right).getOrElse("")
-                val finalMatch = fms.find(m => m.teamA == leftWinner && m.teamB == rightWinner)
-                value.`match` = finalMatch
-              }
-          }
-        end setTreeRootFinalMatch
+        def setTreeRootFinalMatch(tree: Tree[MatchCell]): Unit = tree match {
+          case Node(value, left, right) => 
+            if (value.`match`.isEmpty) {
+              setTreeRootFinalMatch(left)
+              setTreeRootFinalMatch(right)
+              val leftWinner  = getFromSubtreeRootMatch(left, m => m.winner()).getOrElse("")
+              val rightWinner = getFromSubtreeRootMatch(right, m => m.winner()).getOrElse("")
+              val finalMatch  = fms.find(m => m.teamA == leftWinner && m.teamB == rightWinner)
+              value.`match`   = finalMatch
+            }
+        }
 
         setTreeRootFinalMatch(tree)
         tree
@@ -168,34 +157,60 @@ object FinalsMatchesTabContent:
 
   end funnelingTree
 
-  def renderFinalsMatch(m: Match): Element =
-    div(
-      cls := "card h-100 w-100",
-      div(
-        cls := "card-body",
-        renderCardTitle(m.`type`),
-        table(
-          cls := "table",
-          tbody(MatchElement(m, isFinalsStage = true))
-        )
-      )
-    )
+  private def getFromSubtreeRootMatch[T](subtree: Tree[MatchCell], whatToGet: Match => Option[T]): Option[T] =
+    subtree match {
+      case Empty => None
+      case Node(value, left, right) =>
+        if (value.`match`.isEmpty) None
+        else whatToGet(value.`match`.get)
+    }
+          
+  private def thirdPlacePlayoff(tree: Tree[MatchCell], finalsMatches: List[Match]): Option[Match] =
+    tree match {
+      case Empty => None
+      case Node(value, left, right) => 
+        if (value.`match`.isEmpty) None
+        else {
+          val leftLooser  = getFromSubtreeRootMatch(left, m => m.looser()).getOrElse("")
+          val rightLooser = getFromSubtreeRootMatch(right, m => m.looser()).getOrElse("")
+          finalsMatches.find(m => m.teamA == leftLooser && m.teamB == right)
+        }
+    }
 
   def apply(): Element =
+    def renderFinalsMatch(m: Match): Element =
+      div(
+        cls := "card h-100 w-100",
+        div(
+          cls := "card-body",
+          renderCardTitle(m.`type`),
+          table(
+            cls := "table",
+            tbody(MatchElement(m, isFinalsStage = true))
+          )
+        )
+      )
+
     div(
       table(
         cls := "table table-borderless",
         tbody(
-          children <-- rows.map(rs => rs.map(r =>
+          children <-- rows.combineWith(maxRow).map((rs, maxr) => rs.map(r =>
             tr(
-              children <-- cols.map(cs => cs.map(c =>
+              children <-- cols.combineWith(maxCol).map((cs, maxc) => cs.map(c =>
                 td(
                   idAttr := cellAddressFn(c, r),
                   cls := "col text-center",
-                  child <-- funnelingTree.map(ft => {
-                    val mc = ft.findFirst(mc => mc.cell == Cell(c, r))
-                    if (mc.isEmpty || mc.get.`match`.isEmpty) ""
-                    else renderFinalsMatch(mc.get.`match`.get)
+                  child <-- funnelingTree.combineWith(finalsMatches).map((ft, fms) => {
+                    if (c == maxc && r == maxr) {
+                      val tpp = thirdPlacePlayoff(ft, fms)
+                      if (tpp.isEmpty) ""
+                      else renderFinalsMatch(tpp.get)
+                    } else {
+                      val mc = ft.findFirst(mc => mc.cell == Cell(c, r))
+                      if (mc.isEmpty || mc.get.`match`.isEmpty) ""
+                      else renderFinalsMatch(mc.get.`match`.get)
+                    }
                   })
                 )
               ))
@@ -203,9 +218,10 @@ object FinalsMatchesTabContent:
           ))
         )
       ),
-      // SVG elements "host" Bezier curves that link cells, drawing the funelling of finals matches
+      // SVG elements "host" Bézier curves that link cells, drawing the funneling of finals matches
       children <-- renderCellLinks()
     )
+  end apply
 
   /**
     * Used to re-render cell links when the window is scrolled or resized.  The first time cell links are rendered 
@@ -218,12 +234,10 @@ object FinalsMatchesTabContent:
   private val cellLinkAddressFn = (fromCell: Cell, toCell: Cell) => s"${fromCell.address()}-${toCell.address()}"
   private def renderCellLinks(): Signal[List[Element]] =
     activeTab.signal.combineWith(funnelingTree).map { case (at, ft) => ft.map(n =>
-      def saveStaticCellLinks() =
+      def saveStaticCellLinks(): Unit =
         staticCellLinks = ft.toList().flatMap(n =>
-          if (n.toCells.isEmpty)
-            List.empty
-          else
-            List((n.cell, n.toCells.head), (n.cell, n.toCells.tail.head))
+          if (n.toCells.isEmpty) List.empty
+          else List((n.cell, n.toCells.head), (n.cell, n.toCells.tail.head))
         )
     
       def svgForCurve(fromCell: Cell, toCell: Cell): Element =
@@ -253,21 +267,22 @@ object FinalsMatchesTabContent:
     ).toList()}
   
   /**
-    * Sets up re-rendering of the SVG Bezier curves when the window is resized or scrolled.
+    * Sets up re-rendering of the SVG Bézier curves when the window is resized or scrolled.
     */
   def setupAutoReRenderOfCellLinksOnWindowScrollAndResize(): Unit = {
     dom.window.addEventListener("scroll", (_: dom.Event) => renderStaticCellLinks())
     dom.window.addEventListener("resize", (_: dom.Event) => renderStaticCellLinks())
   }
   
-  private def renderStaticCellLinks(): Unit = staticCellLinks.map(cl => dom.document
-    .getElementById(cellLinkAddressFn(cl._1, cl._2))
-    .setAttribute("d", bezierCurveCommands(cl._1, cl._2))
-  )
+  private def renderStaticCellLinks(): Unit = staticCellLinks.foreach { cl =>
+    dom.document
+      .getElementById(cellLinkAddressFn(cl._1, cl._2))
+      .setAttribute("d", bezierCurveCommands(cl._1, cl._2))
+  }
 
   private def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
-    val fromRect = fromCell.rect()
-    val toRect = toCell.rect()
+    val fromRect      = fromCell.rect()
+    val toRect        = toCell.rect()
     val startingPoint = s"${fromRect.left},${fromRect.top + fromRect.height/2}"
     val controlPoint1 = s"${toRect.right},${fromRect.top + fromRect.height/2}"
     val controlPoint2 = s"${fromRect.left},${toRect.top + toRect.height/2}"

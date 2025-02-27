@@ -24,10 +24,10 @@ object Matches:
         None
 
     def looser(): Option[String] =
-      if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt >
+      if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt <
           s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}$numGoalsTeamB".toInt)
         Some(teamA)
-      else if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt <
+      else if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt >
                s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}$numGoalsTeamB".toInt)
         Some(teamB)
       else
