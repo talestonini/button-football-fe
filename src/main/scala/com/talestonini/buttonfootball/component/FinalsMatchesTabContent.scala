@@ -173,7 +173,7 @@ object FinalsMatchesTabContent:
         else {
           val leftLooser  = getFromSubtreeRootMatch(left, m => m.looser()).getOrElse("")
           val rightLooser = getFromSubtreeRootMatch(right, m => m.looser()).getOrElse("")
-          finalsMatches.find(m => m.teamA == leftLooser && m.teamB == right)
+          finalsMatches.find(m => m.teamA == leftLooser && m.teamB == rightLooser)
         }
     }
 
