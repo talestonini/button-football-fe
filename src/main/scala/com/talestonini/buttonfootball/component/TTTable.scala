@@ -44,7 +44,7 @@ object TTTable:
 
   end TTHeader
 
-  def renderTable[M <: Model](data: Var[List[M]], headers: List[TTHeader]): Element =
+  def apply[M <: Model](data: Var[List[M]], headers: List[TTHeader]): Element =
     def renderTr(r: M): Element =
       tr(headers.map(h => td(r.productElement(h.modelFieldPos).toString())))
 
@@ -55,9 +55,9 @@ object TTTable:
         tr(headers.map(h => TTHeader(h.label, h.modelFieldPos).renderTh(data)))
       ),
       tbody(
-        children <-- data.signal.map(data => data.map(r => renderTr(r)))
+        children <-- data.signal.map(ms => ms.map(r => renderTr(r)))
       )
     )
-  end renderTable
+  end apply 
 
 end TTTable
