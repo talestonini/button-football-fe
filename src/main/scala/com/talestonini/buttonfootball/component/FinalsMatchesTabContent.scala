@@ -96,7 +96,7 @@ object FinalsMatchesTabContent:
    *
    * NOTES:
    * 1) As we traverse the tree, we must save the 'static' cell links into a list, so that curves can be re-rendered
-   * when the window is scrolled or resized.
+   * when the window is scrolled or resized or double-clicked.
    * 2) The beauty of the algorithm lies in the fact that we can calculate everything at tree build time and have it
    * ready to be traversed (multiple times) when rendering the table.  It's not easy to avoid traversing the tree many
    * times, because the algorithm is essentially crossing a table (HTML Element) with the data plotted on it from a
@@ -248,9 +248,9 @@ object FinalsMatchesTabContent:
   // --- public API ----------------------------------------------------------------------------------------------------
 
   /**
-    * Sets up re-rendering of the SVG Bézier curves when the window is resized or scrolled.
+    * Sets up re-rendering of the SVG Bézier curves when the window is resized or scrolled or double-clicked (mobile).
     */
-  def setupAutoReRenderOfCellLinksOnWindowScrollAndResize(): Unit = {
+  def setupAutoReRenderOfCellLinksOnWindowEvents(): Unit = {
     dom.window.addEventListener("scroll", (_: dom.Event) => renderStaticCellLinks())
     dom.window.addEventListener("resize", (_: dom.Event) => renderStaticCellLinks())
     dom.window.addEventListener("dblclick", (_: dom.Event) => renderStaticCellLinks())
