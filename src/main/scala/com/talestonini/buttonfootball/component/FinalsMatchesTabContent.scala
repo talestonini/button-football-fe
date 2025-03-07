@@ -65,11 +65,13 @@ object FinalsMatchesTabContent:
     * to the grand final.  But because we use an in-between col to draw the links in SVG, we double the number of cols.
     * In the example above, last col is 8.  Then there are basic conversions to Char involved.
     */
-  private val lastColFn = (numQualif: Int) => ('A'.toInt + numLevelsFn(numQualif) * 2 - 1).toChar
-  val cols: Signal[NumericRange.Exclusive[Char]] = numQualif.map(nq => 'A' until lastColFn(nq))
-  val rows: Signal[Range] = numQualif.map(nq => 0 until nq)
-  private val maxCol: Signal[Char] = cols.map(cs => cs.last)
-  private val maxRow: Signal[Int] = rows.map(rs => rs.last)
+  private val minCol: Char = 'A'
+  private val minRow: Int = 0
+  private val lastColFn = (numQualif: Int) => (minCol.toInt + numLevelsFn(numQualif) * 2 - 1).toChar
+  val cols: Signal[NumericRange.Exclusive[Char]] = numQualif.map(nq => minCol until lastColFn(nq))
+  val rows: Signal[Range] = numQualif.map(nq => minRow until nq)
+  private val maxCol: Signal[Char] = cols.map(cs => if (!cs.isEmpty) cs.last else minCol)
+  private val maxRow: Signal[Int] = rows.map(rs => if (!rs.isEmpty) rs.last else minRow)
 
   private val cellAddressFn = (col: Char, row: Int) => s"$col$row"
   private case class Cell(col: Char, row: Int) {
@@ -271,34 +273,36 @@ object FinalsMatchesTabContent:
       )
 
     div(
-      table(
-        cls := "table table-borderless",
-        tbody(
-          children <-- rows.combineWith(maxRow).map((rs, maxr) => rs.map(r =>
-            tr(
-              children <-- cols.combineWith(maxCol).map((cs, maxc) => cs.map(c =>
-                td(
-                  idAttr := cellAddressFn(c, r),
-                  cls := "col text-center",
-                  child <-- funnelingTree.combineWith(finalsMatches).map((ft, fms) => {
-                    if (c == maxc && r == maxr) {
-                      val tpp = thirdPlacePlayoff(ft, fms)
-                      if (tpp.isEmpty) ""
-                      else renderFinalsMatch(tpp.get)
-                    } else {
-                      val mc = ft.findFirst(mc => mc.cell == Cell(c, r))
-                      if (mc.isEmpty || mc.get.`match`.isEmpty) ""
-                      else renderFinalsMatch(mc.get.`match`.get)
-                    }
-                  })
-                )
-              ))
-            )
-          ))
-        )
-      ),
-      // SVG elements "host" Bézier curves that link cells, drawing the funneling of finals matches
-      children <-- renderCellLinks()
+      child <-- numQualif.map(nq => if (nq <= 0) div() else div(
+        table(
+          cls := "table table-borderless",
+          tbody(
+            children <-- rows.combineWith(maxRow).map((rs, maxr) => rs.map(r =>
+              tr(
+                children <-- cols.combineWith(maxCol).map((cs, maxc) => cs.map(c =>
+                  td(
+                    idAttr := cellAddressFn(c, r),
+                    cls := "col text-center",
+                    child <-- funnelingTree.combineWith(finalsMatches).map((ft, fms) => {
+                      if (c == maxc && r == maxr) {
+                        val tpp = thirdPlacePlayoff(ft, fms)
+                        if (tpp.isEmpty) ""
+                        else renderFinalsMatch(tpp.get)
+                      } else {
+                        val mc = ft.findFirst(mc => mc.cell == Cell(c, r))
+                        if (mc.isEmpty || mc.get.`match`.isEmpty) ""
+                        else renderFinalsMatch(mc.get.`match`.get)
+                      }
+                    })
+                  )
+                ))
+              )
+            ))
+          )
+        ),
+        // SVG elements "host" Bézier curves that link cells, drawing the funneling of finals matches
+        children <-- renderCellLinks()
+      ))
     )
   end apply
 

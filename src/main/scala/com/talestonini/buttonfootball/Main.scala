@@ -10,6 +10,7 @@ import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import com.talestonini.buttonfootball.model.Matches.*
+import com.talestonini.buttonfootball.model.Standings.*
 import com.talestonini.buttonfootball.model.Teams.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
 import com.talestonini.buttonfootball.service.ChampionshipService.calcNumQualif
@@ -201,10 +202,35 @@ def renderMatchesTabContent(tabName: String): Element =
   )
 
 def renderGroupMatchesTabContent(tabName: String): Element =
-  table(
-    cls := "table",
-    tbody(
-      children <-- matches.signal.map(ms => ms.filter(m => m.`type` == tabName).map(m => MatchElement(m)))
+  div(
+    table(
+      cls := "table",
+      tbody(
+        children <-- groupsMatches.signal.map(gms => gms.filter(gm => gm.`type` == tabName).map(gm => MatchElement(gm)))
+      )
+    ),
+    div(
+      cls := "container card h-100 w-100",
+      div(
+        cls := "card-body",
+        renderCardTitle("Classificação"),
+        child <-- groupsStandings.signal.map(gss => {
+          val groupStandings: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
+          TTTable[Standing](groupStandings, List(
+            TTHeader("Intra-Grupo", 4),
+            TTHeader("Extra-Grupo", 5),
+            TTHeader("Time", 2),
+            TTHeader("Pontos", 7),
+            TTHeader("Jogos", 8),
+            TTHeader("Vitórias", 9),
+            TTHeader("Empates", 10),
+            TTHeader("Derrotas", 11),
+            TTHeader("Gols Marcados", 12),
+            TTHeader("Gols Sofridos", 13),
+            TTHeader("Saldo de Gols", 14)
+          ))
+        })
+      )
     )
   )
 

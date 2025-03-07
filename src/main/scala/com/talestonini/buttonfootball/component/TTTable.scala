@@ -46,7 +46,11 @@ object TTTable:
 
   def apply[M <: Model](data: Var[List[M]], headers: List[TTHeader]): Element =
     def renderTr(r: M): Element =
-      tr(headers.map(h => td(r.productElement(h.modelFieldPos).toString())))
+      tr(headers.map(h => td(r.productElement(h.modelFieldPos) match {
+        case Some(o) => o.toString
+        case None    => ""
+        case a: Any  => a.toString
+      })))
 
     table(
       cls := "table",

@@ -47,7 +47,7 @@ package object model:
   private val groupFilterFn = (matchType: String) => matchType.startsWith(GROUP)
 
   val matches: Var[List[Match]] = Var(List.empty)
-  private val groupsMatches: Signal[List[Match]] = matches.signal.map(ms => ms.filter(m => groupFilterFn(m.`type`)))
+  val groupsMatches: Signal[List[Match]] = matches.signal.map(ms => ms.filter(m => groupFilterFn(m.`type`)))
   val finalsMatches: Signal[List[Match]] = matches.signal.map(ms => ms.filter(m => !groupFilterFn(m.`type`)))
   val groups: Signal[List[String]] = groupsMatches.map(gms => gms.map(_.`type`).distinct)
   val numTeams: Signal[Int] = groups.signal.map(gm => gm.length * NUM_TEAMS_PER_GROUP)
@@ -55,12 +55,12 @@ package object model:
   val tabs: Signal[List[String]] = groups.signal.map(gs => gs :+ FINALS_TAB)
   val activeTab: Var[String] = Var(NO_ACTIVE_TAB)
   val numQualif: Signal[Int] = numTeams.map(nt => calcNumQualif(nt).getOrElse(0))
-  private val groupStandings: Var[List[Standing]] = Var(List.empty)
+  val groupsStandings: Var[List[Standing]] = Var(List.empty)
   
   case class Qualified(pos: Int, team: String)
-  val qualifiedTeams: Signal[List[Qualified]] = groupStandings.signal.combineWith(numQualif).map { case (gss, nq) => gss
-    .filter(gs => gs.numExtraGrpPos.isDefined && gs.numExtraGrpPos.get <= nq)
-    .map(gs => Qualified(gs.numExtraGrpPos.get, gs.team))
+  val qualifiedTeams: Signal[List[Qualified]] = groupsStandings.signal.combineWith(numQualif).map { 
+    case (gss, nq) => gss.filter(gs => gs.numExtraGrpPos.isDefined && gs.numExtraGrpPos.get <= nq)
+      .map(gs => Qualified(gs.numExtraGrpPos.get, gs.team))
   }
 
   val teams: Var[List[Team]] = Var(List.empty)
@@ -134,7 +134,7 @@ package object model:
       .onComplete({
         case s: Success[List[Match]] =>
           matches.update(_ => s.value)
-          activeTab.update(_ => LAST_TAB)
+          activeTab.update(_ => FIRST_TAB)
         case f: Failure[List[Match]] => {
           println(s"failed fetching matches: ${f.exception.getMessage}")
           matches.update(_ => List.empty)
@@ -149,10 +149,10 @@ package object model:
       .unsafeToFuture()
       .onComplete({
         case s: Success[List[Standing]] =>
-          groupStandings.update(_ => s.value)
+          groupsStandings.update(_ => s.value)
         case f: Failure[List[Standing]] => {
           println(s"failed fetching matches: ${f.exception.getMessage}")
-          groupStandings.update(_ => List.empty)
+          groupsStandings.update(_ => List.empty)
         }
       })(queue)
   end seGetGroupStandings
