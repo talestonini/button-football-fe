@@ -26,7 +26,7 @@ def ButtonFootballFrontEnd(): Unit =
     div(
       cls := "container",
       styleAttr := "height: 110px;",
-      renderStateForInspection(false),
+      renderStateForInspection(),
       h1("Jogo de Botão"),
       div(
         cls := "row h-100",
@@ -57,7 +57,7 @@ def ButtonFootballFrontEnd(): Unit =
 extension (elem: Element)
   def wrap(className: String = ""): Element = div(cls := className, elem)
 
-def renderStateForInspection(isEnabled: Boolean) =
+def renderStateForInspection(isEnabled: Boolean = false) =
   if (!isEnabled)
     div()
   else
@@ -85,6 +85,11 @@ def renderStateForInspection(isEnabled: Boolean) =
       div(
         child.text <-- rows.combineWith(cols).map {
           case(r, c) => s"Finals rows: $r, Finals cols: $c"
+        }
+      ),
+      div(
+        child.text <-- groupStandings.signal.combineWith(finalStandings.signal).map {
+          case(gss, fss) => s"Group Standings: ${gss.size}, Final Standings: ${fss.size}"
         }
       )
     )
@@ -160,7 +165,11 @@ def renderChampionshipEditionsRange(): Element =
           onChange.mapToValue --> { edition =>
             selectedChampionship.update(_ => championships.now().find((ce) => ce.numEdition == edition.toInt))
             seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-            seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+            // TODO: check whether using 2 APIs is a cleaner design - this is currently not working as the following
+            //       quick succession of requests result in backend ConcurrentModificationException
+            // seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+            // seGetFinalStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+            seGetStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
           },
           value <-- selectedChampionship.signal.map(_.getOrElse(NO_CHAMPIONSHIP).numEdition.toString())
         )
@@ -198,7 +207,14 @@ def renderMatchesTabs(): Element =
 def renderMatchesTabContent(tabName: String): Element =
   div(
     cls := "text-center",
-    if (tabName.startsWith(GROUP)) renderGroupMatchesTabContent(tabName) else FinalsMatchesTabContent()
+    if (tabName.startsWith(GROUP))
+      renderGroupMatchesTabContent(tabName)
+    else if (tabName == FINALS_TAB)
+      FinalsMatchesTabContent()
+    else if (tabName == FINAL_STANDINGS_TAB)
+      renderFinalStandingsTabContent()
+    else
+      div("Invalid tab :(")
   )
 
 def renderGroupMatchesTabContent(tabName: String): Element =
@@ -214,9 +230,9 @@ def renderGroupMatchesTabContent(tabName: String): Element =
       div(
         cls := "card-body",
         renderCardTitle("Classificação"),
-        child <-- groupsStandings.signal.map(gss => {
-          val groupStandings: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
-          TTTable[Standing](groupStandings, List(
+        child <-- groupStandings.signal.map(gss => {
+          val groupStandingsVar: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
+          TTTable[Standing](groupStandingsVar, List(
             TTHeader("Intra-Grupo", 4),
             TTHeader("Extra-Grupo", 5),
             TTHeader("Time", 2),
@@ -232,6 +248,25 @@ def renderGroupMatchesTabContent(tabName: String): Element =
         })
       )
     )
+  )
+
+def renderFinalStandingsTabContent(): Element =
+  div(
+    child <-- finalStandings.signal.map(fss => {
+      val finalStandingsVar: Var[List[Standing]] = Var(fss)
+      TTTable[Standing](finalStandingsVar, List(
+        TTHeader("Final", 6),
+        TTHeader("Time", 2),
+        TTHeader("Pontos", 7),
+        TTHeader("Jogos", 8),
+        TTHeader("Vitórias", 9),
+        TTHeader("Empates", 10),
+        TTHeader("Derrotas", 11),
+        TTHeader("Gols Marcados", 12),
+        TTHeader("Gols Sofridos", 13),
+        TTHeader("Saldo de Gols", 14)
+      ))
+    })
   )
 
 // --- assertions functions ------------------------------------------------------------------------------------------

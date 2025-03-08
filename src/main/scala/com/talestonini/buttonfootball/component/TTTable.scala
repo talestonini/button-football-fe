@@ -17,11 +17,14 @@ object TTTable:
 
     implicit val anyOrdering: Ordering[Any] = new Ordering[Any]:
       val stringOrdering: Ordering[String] = Ordering.String
-      val intOrdering: Ordering[Int] = Ordering.Int
+      val numberOrdering: Ordering[BigDecimal] = Ordering.BigDecimal
 
       override def compare(x: Any, y: Any): Int = (x, y) match {
         case (a: String, b: String) => stringOrdering.compare(a, b)
-        case (a: Int, b: Int) => intOrdering.compare(a, b)
+        case (a: Int, b: Int) => numberOrdering.compare(a, b)
+        case (a: Some[Number], b : Some[Number]) =>
+          numberOrdering.compare(BigDecimal.valueOf(a.get.doubleValue()), b.get.doubleValue())
+        case (a: Some[String], b : Some[String]) => stringOrdering.compare(a.get, b.get)
         case _ => throw new IllegalArgumentException("unsupported header type")
       }
     end anyOrdering

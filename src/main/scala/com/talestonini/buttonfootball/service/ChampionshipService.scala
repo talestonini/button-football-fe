@@ -70,6 +70,14 @@ object ChampionshipService extends CommonService:
         IO(RuntimeException(s"failed getting matches: $errorResponse")))
   end getMatches
 
+  def getStandings(championshipId: Id): IO[List[Standing]] =
+    val uri = toButtonFootballApiUri("championships")/(championshipId)/("standings")
+    val request = Request[IO](Method.GET, uri)
+    FetchClientBuilder[IO].create
+      .expectOr[List[Standing]](request)(errorResponse =>
+        IO(RuntimeException(s"failed getting standings: $errorResponse")))
+  end getStandings
+
   def getGroupStandings(championshipId: Id): IO[List[Standing]] =
     val uri = toButtonFootballApiUri("championships")/(championshipId)/("groupStandings")
     val request = Request[IO](Method.GET, uri)
@@ -77,5 +85,13 @@ object ChampionshipService extends CommonService:
       .expectOr[List[Standing]](request)(errorResponse =>
         IO(RuntimeException(s"failed getting group standings: $errorResponse")))
   end getGroupStandings
+
+  def getFinalStandings(championshipId: Id): IO[List[Standing]] =
+    val uri = toButtonFootballApiUri("championships")/(championshipId)/("finalStandings")
+    val request = Request[IO](Method.GET, uri)
+    FetchClientBuilder[IO].create
+      .expectOr[List[Standing]](request)(errorResponse =>
+        IO(RuntimeException(s"failed getting final standings: $errorResponse")))
+  end getFinalStandings
 
 end ChampionshipService
