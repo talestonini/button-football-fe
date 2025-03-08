@@ -22,9 +22,10 @@ object TTTable:
       override def compare(x: Any, y: Any): Int = (x, y) match {
         case (a: String, b: String) => stringOrdering.compare(a, b)
         case (a: Int, b: Int) => numberOrdering.compare(a, b)
-        case (a: Some[Number], b : Some[Number]) =>
-          numberOrdering.compare(BigDecimal.valueOf(a.get.doubleValue()), b.get.doubleValue())
-        case (a: Some[String], b : Some[String]) => stringOrdering.compare(a.get, b.get)
+        case (Some(a), Some(b)) => (a, b) match {
+          case (a: Number, b: Number) => numberOrdering.compare(a.doubleValue(), b.doubleValue())
+          case (a: String, b: String) => stringOrdering.compare(a, b)
+        }
         case _ => throw new IllegalArgumentException("unsupported header type")
       }
     end anyOrdering
