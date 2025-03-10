@@ -8,9 +8,9 @@ import org.http4s.circe.CirceEntityCodec._
 
 object ChampionshipTypes:
 
-  case class ChampionshipType(id: Id, code: Code, description: String) extends Model
+  case class ChampionshipType(id: Id, code: Code, description: String, logoImgFile: String) extends Model
 
-  val NO_CHAMPIONSHIP_TYPE: ChampionshipType = ChampionshipType(-1, "-", "-")
+  val NO_CHAMPIONSHIP_TYPE: ChampionshipType = ChampionshipType(-1, "-", "-", "-")
 
   implicit val championshipTypeDecoder: EntityDecoder[IO, ChampionshipType] = jsonOf[IO, ChampionshipType]
   implicit val championshipTypeEncoder: EntityEncoder[IO, ChampionshipType] = jsonEncoderOf[IO, ChampionshipType]

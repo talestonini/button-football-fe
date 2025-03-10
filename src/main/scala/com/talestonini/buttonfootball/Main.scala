@@ -221,6 +221,7 @@ def renderGroupMatchesTabContent(tabName: String): Element =
   div(
     table(
       cls := "table",
+      styleAttr := "vertical-align: middle",
       tbody(
         children <-- groupsMatches.signal.map(gms => gms.filter(gm => gm.`type` == tabName).map(gm => MatchElement(gm)))
       )

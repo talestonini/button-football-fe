@@ -161,7 +161,14 @@ object FinalsMatchesTabContent:
             }
         }
 
+        def saveStaticCellLinks(tree: Tree[MatchCell]): Unit =
+          staticCellLinks = tree.toList().flatMap(n =>
+            if (n.toCells.isEmpty) List.empty
+            else List(CellLink(n.cell, n.toCells.head), CellLink(n.cell, n.toCells.tail.head))
+          )
+    
         setTreeRootFinalMatch(tree)
+        saveStaticCellLinks(tree)
         tree
       }
 
@@ -199,12 +206,6 @@ object FinalsMatchesTabContent:
   private val cellLinkAddressFn = (fromCell: Cell, toCell: Cell) => s"${fromCell.address()}-${toCell.address()}"
   private def renderCellLinks(): Signal[List[Element]] =
     activeTab.signal.combineWith(funnelingTree).map { case (at, ft) => ft.map(n =>
-      def saveStaticCellLinks(): Unit =
-        staticCellLinks = ft.toList().flatMap(n =>
-          if (n.toCells.isEmpty) List.empty
-          else List(CellLink(n.cell, n.toCells.head), CellLink(n.cell, n.toCells.tail.head))
-        )
-    
       def svgForCurve(fromCell: Cell, toCell: Cell): Element =
         import svg.*
         svg(
@@ -221,7 +222,6 @@ object FinalsMatchesTabContent:
         )
       end svgForCurve
 
-      saveStaticCellLinks()
       if (at != FINALS_TAB || n.toCells.isEmpty)
         div()
       else 
@@ -266,7 +266,8 @@ object FinalsMatchesTabContent:
           cls := "card-body",
           renderCardTitle(m.`type`),
           table(
-            cls := "table",
+            cls := "table table-borderless",
+            styleAttr := "vertical-align: middle",
             tbody(MatchElement(m, isFinalsStage = true))
           )
         )

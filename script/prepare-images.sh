@@ -1,0 +1,1 @@
+scala-cli PrepareImages.sc -- $1 $2
