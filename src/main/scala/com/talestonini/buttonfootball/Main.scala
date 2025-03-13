@@ -9,12 +9,10 @@ import com.talestonini.buttonfootball.component.TTTable.TTHeader
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.ChampionshipTypes.*
-import com.talestonini.buttonfootball.model.Matches.*
 import com.talestonini.buttonfootball.model.Standings.*
-import com.talestonini.buttonfootball.model.Teams.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
 import com.talestonini.buttonfootball.service.ChampionshipService.calcNumQualif
-import com.talestonini.buttonfootball.component.FinalsMatchesTabContent.{rows, cols}
+import com.talestonini.buttonfootball.component.FinalsMatchesTabContent.{rows, cols, staticCellLinks}
 import org.scalajs.dom
 
 @main
@@ -26,7 +24,7 @@ def ButtonFootballFrontEnd(): Unit =
     div(
       cls := "container",
       styleAttr := "height: 110px;",
-      renderStateForInspection(),
+      renderStateForInspection(true),
       h1("Jogo de Botão"),
       div(
         cls := "row h-100",
@@ -91,7 +89,8 @@ def renderStateForInspection(isEnabled: Boolean = false) =
         child.text <-- groupStandings.signal.combineWith(finalStandings.signal).map {
           case(gss, fss) => s"Group Standings: ${gss.size}, Final Standings: ${fss.size}"
         }
-      )
+      ),
+      div(child.text <-- staticCellLinks.signal.map(scl => s"Static cell links size: ${scl.size}")),
     )
 
 def renderTeamTypeRadios(): Element =
