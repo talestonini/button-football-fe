@@ -231,7 +231,7 @@ object FinalsMatchesTabContent:
         )
     ).toList()}
   
-  def renderStaticCellLinks(): Unit = 
+  private def renderStaticCellLinks(): Unit = 
     println("rendering static cell links...")
     staticCellLinks.now().foreach { cl => {
       val cellLinkElem = dom.document.getElementById(cellLinkAddressFn(cl.fromCell, cl.toCell))

@@ -165,10 +165,10 @@ def renderChampionshipEditionsRange(): Element =
           cls := "form-range",
           typ := "range",
           minAttr <-- championships.signal.map(cs =>
-            (if (!cs.isEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION).toString()
+            (if (cs.nonEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION).toString
           ),
           maxAttr <-- championships.signal.map(cs => 
-            (if (!cs.isEmpty) cs.length else NO_CHAMPIONSHIP_EDITION).toString()),
+            (if (cs.nonEmpty) cs.length else NO_CHAMPIONSHIP_EDITION).toString),
           onChange.mapToValue --> { edition =>
             selectedChampionship.update(_ => championships.now().find((ce) => ce.numEdition == edition.toInt))
             seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
@@ -285,7 +285,7 @@ def assertCorrectNumQualifAndFinalsMatches(): Signal[String] =
     .combineWith(numTeams)
     .map { case (sc, nfm, nt) => "Number of qualified teams: " + (calcNumQualif(nt) match {
       case Left(e) =>
-        s"error (${e.getMessage()})"
+        s"error (${e.getMessage})"
       case Right(calcNumQualif) =>
         val dbNumQualif = sc.getOrElse(NO_CHAMPIONSHIP).numQualif
         val res = if (dbNumQualif == calcNumQualif && nfm == calcNumQualif) "" else "in"
