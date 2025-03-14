@@ -8,7 +8,7 @@ object MatchElement:
 
   def apply(m: Match, isFinalsStage: Boolean = false): Element =
     def displayInFinals(condition: Boolean) = display(if (isFinalsStage && condition) "table-cell" else "none")
-    def logo(logoImgFile: String): Element = td(cls := "img-container-40", img(src := Logo.forTeam(logoImgFile)))
+    def logo(logoImgFile: String): Element = td(img(cls := "logo-40", src := Logo.forTeam(logoImgFile)))
 
     tr(
       cls := "text-center",

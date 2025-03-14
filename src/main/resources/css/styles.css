@@ -1,14 +1,5 @@
-.img-container-40 {
-  display: block;
-  justify-content: center;
-  align-items: center;
-  background-color: #f0f0f0;
-}
-
-.img-container-40 img {
+.logo-40 {
   width: 40px;
   height: 40px;
-  max-width: 100%;
-  max-height: 100%;
   object-fit: none;
 }
