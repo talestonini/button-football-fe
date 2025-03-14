@@ -232,12 +232,10 @@ object FinalsMatchesTabContent:
     ).toList()}
   
   private def renderStaticCellLinks(): Unit = 
-    println("rendering static cell links...")
     staticCellLinks.now().foreach { cl => {
       val cellLinkElem = dom.document.getElementById(cellLinkAddressFn(cl.fromCell, cl.toCell))
       if (cellLinkElem != null) cellLinkElem.setAttribute("d", bezierCurveCommands(cl.fromCell, cl.toCell))
     }}
-  end renderStaticCellLinks
 
   private def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
     val fromRect      = fromCell.rect()
