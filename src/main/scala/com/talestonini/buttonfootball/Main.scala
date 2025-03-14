@@ -17,37 +17,44 @@ import org.scalajs.dom
 
 @main
 def ButtonFootballFrontEnd(): Unit =
+  // seGetTeams()
   seGetTeamTypes()
   FinalsMatchesTabContent.setupAutoReRenderOfCellLinksOnWindowEvents()
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
     div(
-      cls := "container",
-      styleAttr := "height: 110px;",
-      renderStateForInspection(true),
-      h1("Jogo de Botão"),
-      div(
-        cls := "row h-100",
-        renderTeamTypeRadios().wrap("col-auto h-100 d-flex"),
-        renderChampionshipTypeSelect().wrap("col h-100 d-flex"),
-      ),
-      renderChampionshipEditionsRange().wrap("row h-100"),
-      renderMatchesTabs(),
-      // input(
-      //   typ := "text",
-      //   value <-- teamName,
-      //   onInput.mapToValue --> teamName,
-      //   onChange --> (ev => seGetTeams(teamName.now()))
-      // ),
-      // TTTable.renderTable(teams, List(
-      //   TTHeader("Nome", 1),
-      //   TTHeader("Tipo", 2),
-      //   TTHeader("Nome Completo", 3),
-      //   TTHeader("Fundação", 4),
-      //   TTHeader("Cidade", 5),
-      //   TTHeader("País", 6)
-      // ))
+      // children <-- teams.signal.map(ts => ts.map(t => img(src := Logo.forTeam(t.logoImgFile)))),
+      mainAppElement()
     )
+  )
+
+def mainAppElement(): Element =
+  div(
+    cls := "container",
+    styleAttr := "height: 110px;",
+    renderStateForInspection(),
+    h1("Jogo de Botão"),
+    div(
+      cls := "row h-100",
+      renderTeamTypeRadios().wrap("col-auto h-100 d-flex"),
+      renderChampionshipTypeSelect().wrap("col h-100 d-flex"),
+    ),
+    renderChampionshipEditionsRange().wrap("row h-100"),
+    renderMatchesTabs(),
+    // input(
+    //   typ := "text",
+    //   value <-- teamName,
+    //   onInput.mapToValue --> teamName,
+    //   onChange --> (ev => seGetTeams(teamName.now()))
+    // ),
+    // TTTable.renderTable(teams, List(
+    //   TTHeader("Nome", 1),
+    //   TTHeader("Tipo", 2),
+    //   TTHeader("Nome Completo", 3),
+    //   TTHeader("Fundação", 4),
+    //   TTHeader("Cidade", 5),
+    //   TTHeader("País", 6)
+    // ))
   )
 
 // --- rendering functions ---------------------------------------------------------------------------------------------
@@ -91,6 +98,7 @@ def renderStateForInspection(isEnabled: Boolean = false) =
         }
       ),
       div(child.text <-- staticCellLinks.signal.map(scl => s"Static cell links size: ${scl.size}")),
+      div(child.text <-- teams.signal.map(ts => s"Teams count: ${ts.size}"))
     )
 
 def renderTeamTypeRadios(): Element =

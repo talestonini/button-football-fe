@@ -195,7 +195,7 @@ package object model:
       })(queue)
   end seGetFinalStandings
 
-  def seGetTeams(name: String): Unit =
+  def seGetTeams(name: String = ""): Unit =
     println(s"fetching team with name '$name'")
     TeamService
       .getTeams(if (name.isBlank()) None else Some(name.trim()))
