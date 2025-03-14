@@ -9,47 +9,52 @@ import com.talestonini.buttonfootball.component.TTTable.TTHeader
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.ChampionshipTypes.*
-import com.talestonini.buttonfootball.model.Matches.*
 import com.talestonini.buttonfootball.model.Standings.*
-import com.talestonini.buttonfootball.model.Teams.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
 import com.talestonini.buttonfootball.service.ChampionshipService.calcNumQualif
-import com.talestonini.buttonfootball.component.FinalsMatchesTabContent.{rows, cols}
+import com.talestonini.buttonfootball.component.FinalsMatchesTabContent.{rows, cols, staticCellLinks}
 import org.scalajs.dom
 
 @main
 def ButtonFootballFrontEnd(): Unit =
+  // seGetTeams()
   seGetTeamTypes()
   FinalsMatchesTabContent.setupAutoReRenderOfCellLinksOnWindowEvents()
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
     div(
-      cls := "container",
-      styleAttr := "height: 110px;",
-      renderStateForInspection(),
-      h1("Jogo de Botão"),
-      div(
-        cls := "row h-100",
-        renderTeamTypeRadios().wrap("col-auto h-100 d-flex"),
-        renderChampionshipTypeSelect().wrap("col h-100 d-flex"),
-      ),
-      renderChampionshipEditionsRange().wrap("row h-100"),
-      renderMatchesTabs(),
-      // input(
-      //   typ := "text",
-      //   value <-- teamName,
-      //   onInput.mapToValue --> teamName,
-      //   onChange --> (ev => seGetTeams(teamName.now()))
-      // ),
-      // TTTable.renderTable(teams, List(
-      //   TTHeader("Nome", 1),
-      //   TTHeader("Tipo", 2),
-      //   TTHeader("Nome Completo", 3),
-      //   TTHeader("Fundação", 4),
-      //   TTHeader("Cidade", 5),
-      //   TTHeader("País", 6)
-      // ))
+      // children <-- teams.signal.map(ts => ts.map(t => img(src := Logo.forTeam(t.logoImgFile)))),
+      mainAppElement()
     )
+  )
+
+def mainAppElement(): Element =
+  div(
+    cls := "container",
+    styleAttr := "height: 110px;",
+    renderStateForInspection(),
+    h1("Jogo de Botão"),
+    div(
+      cls := "row h-100",
+      renderTeamTypeRadios().wrap("col-auto h-100 d-flex"),
+      renderChampionshipTypeSelect().wrap("col h-100 d-flex"),
+    ),
+    renderChampionshipEditionsRange().wrap("row h-100"),
+    renderMatchesTabs(),
+    // input(
+    //   typ := "text",
+    //   value <-- teamName,
+    //   onInput.mapToValue --> teamName,
+    //   onChange --> (ev => seGetTeams(teamName.now()))
+    // ),
+    // TTTable.renderTable(teams, List(
+    //   TTHeader("Nome", 1),
+    //   TTHeader("Tipo", 2),
+    //   TTHeader("Nome Completo", 3),
+    //   TTHeader("Fundação", 4),
+    //   TTHeader("Cidade", 5),
+    //   TTHeader("País", 6)
+    // ))
   )
 
 // --- rendering functions ---------------------------------------------------------------------------------------------
@@ -91,7 +96,9 @@ def renderStateForInspection(isEnabled: Boolean = false) =
         child.text <-- groupStandings.signal.combineWith(finalStandings.signal).map {
           case(gss, fss) => s"Group Standings: ${gss.size}, Final Standings: ${fss.size}"
         }
-      )
+      ),
+      div(child.text <-- staticCellLinks.signal.map(scl => s"Static cell links size: ${scl.size}")),
+      div(child.text <-- teams.signal.map(ts => s"Teams count: ${ts.size}"))
     )
 
 def renderTeamTypeRadios(): Element =
@@ -158,10 +165,10 @@ def renderChampionshipEditionsRange(): Element =
           cls := "form-range",
           typ := "range",
           minAttr <-- championships.signal.map(cs =>
-            (if (!cs.isEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION).toString()
+            (if (cs.nonEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION).toString
           ),
           maxAttr <-- championships.signal.map(cs => 
-            (if (!cs.isEmpty) cs.length else NO_CHAMPIONSHIP_EDITION).toString()),
+            (if (cs.nonEmpty) cs.length else NO_CHAMPIONSHIP_EDITION).toString),
           onChange.mapToValue --> { edition =>
             selectedChampionship.update(_ => championships.now().find((ce) => ce.numEdition == edition.toInt))
             seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
@@ -278,7 +285,7 @@ def assertCorrectNumQualifAndFinalsMatches(): Signal[String] =
     .combineWith(numTeams)
     .map { case (sc, nfm, nt) => "Number of qualified teams: " + (calcNumQualif(nt) match {
       case Left(e) =>
-        s"error (${e.getMessage()})"
+        s"error (${e.getMessage})"
       case Right(calcNumQualif) =>
         val dbNumQualif = sc.getOrElse(NO_CHAMPIONSHIP).numQualif
         val res = if (dbNumQualif == calcNumQualif && nfm == calcNumQualif) "" else "in"

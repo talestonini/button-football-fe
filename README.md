@@ -49,3 +49,4 @@ Have the JSON key file path of a Firebase service account pointed by an env var 
 
 - In standings, check the correct name between either "numGoalDiff" or "numGoalsDiff".
 - In standings, the championship field is just the championship type, missing the edition.
+- Delete counter.js

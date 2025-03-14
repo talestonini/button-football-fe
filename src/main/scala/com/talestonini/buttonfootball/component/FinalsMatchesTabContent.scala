@@ -74,7 +74,7 @@ object FinalsMatchesTabContent:
   private val maxRow: Signal[Int] = rows.map(rs => if (!rs.isEmpty) rs.last else minRow)
 
   private val cellAddressFn = (col: Char, row: Int) => s"$col$row"
-  private case class Cell(col: Char, row: Int) {
+  case class Cell(col: Char, row: Int) {
     def address(): String = cellAddressFn(col, row)
     def rect(): DOMRect = dom.document.getElementById(address()).getBoundingClientRect()
   }
@@ -162,10 +162,10 @@ object FinalsMatchesTabContent:
         }
 
         def saveStaticCellLinks(tree: Tree[MatchCell]): Unit =
-          staticCellLinks = tree.toList().flatMap(n =>
+          staticCellLinks.update(_ => tree.toList().flatMap(n =>
             if (n.toCells.isEmpty) List.empty
             else List(CellLink(n.cell, n.toCells.head), CellLink(n.cell, n.toCells.tail.head))
-          )
+          ))
     
         setTreeRootFinalMatch(tree)
         saveStaticCellLinks(tree)
@@ -200,8 +200,8 @@ object FinalsMatchesTabContent:
     * scrolled or resized, re-render of the cell links (curves) is driven by the saved static cell links, as opposed to
     * signals, which are not available then.
     */
-  private case class CellLink(fromCell: Cell, toCell: Cell)
-  private var staticCellLinks: List[CellLink] = List.empty
+  case class CellLink(fromCell: Cell, toCell: Cell)
+  val staticCellLinks: Var[List[CellLink]] = Var(List.empty)
 
   private val cellLinkAddressFn = (fromCell: Cell, toCell: Cell) => s"${fromCell.address()}-${toCell.address()}"
   private def renderCellLinks(): Signal[List[Element]] =
@@ -231,11 +231,11 @@ object FinalsMatchesTabContent:
         )
     ).toList()}
   
-  private def renderStaticCellLinks(): Unit = staticCellLinks.foreach { cl =>
-    dom.document
-      .getElementById(cellLinkAddressFn(cl.fromCell, cl.toCell))
-      .setAttribute("d", bezierCurveCommands(cl.fromCell, cl.toCell))
-  }
+  private def renderStaticCellLinks(): Unit = 
+    staticCellLinks.now().foreach { cl => {
+      val cellLinkElem = dom.document.getElementById(cellLinkAddressFn(cl.fromCell, cl.toCell))
+      if (cellLinkElem != null) cellLinkElem.setAttribute("d", bezierCurveCommands(cl.fromCell, cl.toCell))
+    }}
 
   private def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
     val fromRect      = fromCell.rect()
@@ -253,9 +253,10 @@ object FinalsMatchesTabContent:
     * Sets up re-rendering of the SVG Bézier curves when the window is resized or scrolled or double-clicked (mobile).
     */
   def setupAutoReRenderOfCellLinksOnWindowEvents(): Unit = {
-    dom.window.addEventListener("scroll", (_: dom.Event) => renderStaticCellLinks())
-    dom.window.addEventListener("resize", (_: dom.Event) => renderStaticCellLinks())
-    dom.window.addEventListener("dblclick", (_: dom.Event) => renderStaticCellLinks())
+    val eventFn: dom.Event => Unit = _ => renderStaticCellLinks()
+    dom.window.addEventListener("scroll", eventFn)
+    dom.window.addEventListener("resize", eventFn)
+    dom.window.addEventListener("dblclick", eventFn)
   }
   
   def apply(): Element =
