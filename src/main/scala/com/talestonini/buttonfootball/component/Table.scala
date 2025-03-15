@@ -4,14 +4,14 @@ import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.Model
 import scala.math.Ordering
 
-object TTTable:
+object Table:
 
   sealed trait Sorting
   case object None extends Sorting
   case object Asc extends Sorting
   case object Desc extends Sorting
 
-  case class TTHeader(label: String, modelFieldPos: Int, sorting: Var[Sorting] = Var(None)):
+  case class Header(label: String, modelFieldPos: Int, sorting: Var[Sorting] = Var(None)):
 
     private val labelVar: Var[String] = Var(label)
 
@@ -46,9 +46,9 @@ object TTTable:
         })
       )
 
-  end TTHeader
+  end Header
 
-  def apply[M <: Model](data: Var[List[M]], headers: List[TTHeader]): Element =
+  def apply[M <: Model](data: Var[List[M]], headers: List[Header]): Element =
     def renderTr(r: M): Element =
       tr(headers.map(h => td(r.productElement(h.modelFieldPos) match {
         case Some(o) => o.toString
@@ -60,7 +60,7 @@ object TTTable:
       cls := "table",
       thead(
         cls := "thead-light",
-        tr(headers.map(h => TTHeader(h.label, h.modelFieldPos).renderTh(data)))
+        tr(headers.map(h => Header(h.label, h.modelFieldPos).renderTh(data)))
       ),
       tbody(
         children <-- data.signal.map(ms => ms.map(r => renderTr(r)))
@@ -68,4 +68,4 @@ object TTTable:
     )
   end apply 
 
-end TTTable
+end Table

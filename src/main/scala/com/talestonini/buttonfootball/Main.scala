@@ -4,15 +4,13 @@ import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.api.features.unitArrows
 import com.talestonini.buttonfootball.component.FinalsMatchesTabContent
 import com.talestonini.buttonfootball.component.MatchElement
-import com.talestonini.buttonfootball.component.TTTable
-import com.talestonini.buttonfootball.component.TTTable.TTHeader
+import com.talestonini.buttonfootball.component.Table
+import com.talestonini.buttonfootball.component.Table.Header
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
-import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import com.talestonini.buttonfootball.model.Standings.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
-import com.talestonini.buttonfootball.service.ChampionshipService.calcNumQualif
-import com.talestonini.buttonfootball.component.FinalsMatchesTabContent.{rows, cols, staticCellLinks}
+import com.talestonini.buttonfootball.util.Debug
 import org.scalajs.dom
 
 @main
@@ -22,17 +20,17 @@ def ButtonFootballFrontEnd(): Unit =
   FinalsMatchesTabContent.setupAutoReRenderOfCellLinksOnWindowEvents()
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
-    div(
-      // children <-- teams.signal.map(ts => ts.map(t => img(src := Logo.forTeam(t.logoImgFile)))),
-      mainAppElement()
-    )
+    // div(
+    //   children <-- teams.signal.map(ts => ts.map(t => img(src := Logo.forTeam(t.logoImgFile)))),
+    //   mainAppElement()
+    // )
+    mainAppElement()
   )
 
 def mainAppElement(): Element =
   div(
-    cls := "container",
-    styleAttr := "height: 110px;",
-    renderStateForInspection(),
+    cls := "container p-2",
+    Debug.renderInternalState(),
     h1("Jogo de Botão"),
     div(
       cls := "row h-100",
@@ -61,45 +59,6 @@ def mainAppElement(): Element =
 
 extension (elem: Element)
   def wrap(className: String = ""): Element = div(cls := className, elem)
-
-def renderStateForInspection(isEnabled: Boolean = false) =
-  if (!isEnabled)
-    div()
-  else
-    div(
-      div(
-        child.text <-- selectedTeamType.signal.map(tt => "Team type: " + tt.getOrElse(NO_TEAM_TYPE).description)
-      ),
-      div(
-        child.text <-- selectedChampionshipType.signal
-          .map(ct => "Championship type: " + ct.getOrElse(NO_CHAMPIONSHIP_TYPE).description),
-      ),
-      div(
-        child.text <-- selectedChampionship.signal
-          .map(c => "Championship edition: " + c.getOrElse(NO_CHAMPIONSHIP).numEdition)
-      ),
-      div(
-        child.text <-- tabs.map(ts => "Tab count: " + ts.length)
-      ),
-      div(
-        child.text <-- activeTab.signal.map(at => "Active tab: " + at)
-      ),
-      div(
-        child.text <-- assertCorrectNumQualifAndFinalsMatches()
-      ),
-      div(
-        child.text <-- rows.combineWith(cols).map {
-          case(r, c) => s"Finals rows: $r, Finals cols: $c"
-        }
-      ),
-      div(
-        child.text <-- groupStandings.signal.combineWith(finalStandings.signal).map {
-          case(gss, fss) => s"Group Standings: ${gss.size}, Final Standings: ${fss.size}"
-        }
-      ),
-      div(child.text <-- staticCellLinks.signal.map(scl => s"Static cell links size: ${scl.size}")),
-      div(child.text <-- teams.signal.map(ts => s"Teams count: ${ts.size}"))
-    )
 
 def renderTeamTypeRadios(): Element =
   div(
@@ -206,7 +165,7 @@ def renderMatchesTabs(): Element =
       )),
     ),
     div(
-      cls := "tab-content",
+      cls := "tab-content p-0",
       child <-- activeTab.signal.map(renderMatchesTabContent)
     )
   )
@@ -221,73 +180,57 @@ def renderMatchesTabContent(tabName: String): Element =
     else if (tabName == FINAL_STANDINGS_TAB)
       renderFinalStandingsTabContent()
     else
-      div("Invalid tab :(")
+      div()
   )
 
 def renderGroupMatchesTabContent(tabName: String): Element =
   div(
-    table(
-      cls := "table",
-      styleAttr := "vertical-align: middle",
-      tbody(
-        children <-- groupsMatches.signal.map(gms => gms.filter(gm => gm.`type` == tabName).map(gm => MatchElement(gm)))
-      )
+    div(
+      cls := "container border bg-white p-3",
+      table(
+        cls := "table align-middle mb-0",
+        tbody(
+          children <-- groupsMatches.signal.map(gms => gms.filter(gm => gm.`type` == tabName).map(gm => MatchElement(gm)))
+        )
+      ),
     ),
     div(
-      cls := "container card h-100 w-100",
-      div(
-        cls := "card-body",
-        renderCardTitle("Classificação"),
-        child <-- groupStandings.signal.map(gss => {
-          val groupStandingsVar: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
-          TTTable[Standing](groupStandingsVar, List(
-            TTHeader("Intra-Grupo", 4),
-            TTHeader("Extra-Grupo", 5),
-            TTHeader("Time", 2),
-            TTHeader("Pontos", 7),
-            TTHeader("Jogos", 8),
-            TTHeader("Vitórias", 9),
-            TTHeader("Empates", 10),
-            TTHeader("Derrotas", 11),
-            TTHeader("Gols Marcados", 12),
-            TTHeader("Gols Sofridos", 13),
-            TTHeader("Saldo de Gols", 14)
-          ))
-        })
-      )
+      cls := "container border border-top-0 bg-white p-3",
+      child <-- groupStandings.signal.map(gss => {
+        val groupStandingsVar: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
+        Table[Standing](groupStandingsVar, List(
+          Header("Intra-Grupo", 4),
+          Header("Extra-Grupo", 5),
+          Header("Time", 2),
+          Header("Pontos", 7),
+          Header("Jogos", 8),
+          Header("Vitórias", 9),
+          Header("Empates", 10),
+          Header("Derrotas", 11),
+          Header("Gols Marcados", 12),
+          Header("Gols Sofridos", 13),
+          Header("Saldo de Gols", 14)
+        ))
+      })
     )
   )
 
 def renderFinalStandingsTabContent(): Element =
   div(
+    cls := "container border bg-white p-3",
     child <-- finalStandings.signal.map(fss => {
       val finalStandingsVar: Var[List[Standing]] = Var(fss)
-      TTTable[Standing](finalStandingsVar, List(
-        TTHeader("Final", 6),
-        TTHeader("Time", 2),
-        TTHeader("Pontos", 7),
-        TTHeader("Jogos", 8),
-        TTHeader("Vitórias", 9),
-        TTHeader("Empates", 10),
-        TTHeader("Derrotas", 11),
-        TTHeader("Gols Marcados", 12),
-        TTHeader("Gols Sofridos", 13),
-        TTHeader("Saldo de Gols", 14)
+      Table[Standing](finalStandingsVar, List(
+        Header("Final", 6),
+        Header("Time", 2),
+        Header("Pontos", 7),
+        Header("Jogos", 8),
+        Header("Vitórias", 9),
+        Header("Empates", 10),
+        Header("Derrotas", 11),
+        Header("Gols Marcados", 12),
+        Header("Gols Sofridos", 13),
+        Header("Saldo de Gols", 14)
       ))
     })
   )
-
-// --- assertions functions ------------------------------------------------------------------------------------------
-
-def assertCorrectNumQualifAndFinalsMatches(): Signal[String] =
-  selectedChampionship.signal
-    .combineWith(numFinalsMatches)
-    .combineWith(numTeams)
-    .map { case (sc, nfm, nt) => "Number of qualified teams: " + (calcNumQualif(nt) match {
-      case Left(e) =>
-        s"error (${e.getMessage})"
-      case Right(calcNumQualif) =>
-        val dbNumQualif = sc.getOrElse(NO_CHAMPIONSHIP).numQualif
-        val res = if (dbNumQualif == calcNumQualif && nfm == calcNumQualif) "" else "in"
-        s"${res}correct (db: $dbNumQualif, calculated: $calcNumQualif, number of finals matches: $nfm)"
-    })}
