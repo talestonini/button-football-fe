@@ -142,7 +142,7 @@ package object model:
       .onComplete({
         case s: Success[List[Match]] =>
           matches.update(_ => s.value)
-          activeTab.update(_ => LAST_TAB)
+          activeTab.update(_ => FIRST_TAB)
         case f: Failure[List[Match]] => {
           println(s"failed fetching matches: ${f.exception.getMessage}")
           matches.update(_ => List.empty)
