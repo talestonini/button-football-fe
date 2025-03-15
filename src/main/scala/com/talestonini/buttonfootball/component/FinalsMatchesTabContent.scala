@@ -262,13 +262,12 @@ object FinalsMatchesTabContent:
   def apply(): Element =
     def renderFinalsMatch(m: Match): Element =
       div(
-        cls := "card h-100 w-100",
+        cls := "card",
         div(
           cls := "card-body",
-          renderCardTitle(m.`type`),
+          renderCardTitle(m.`type`, "mb-0"),
           table(
-            cls := "table table-borderless",
-            styleAttr := "vertical-align: middle",
+            cls := "table mb-0 table-borderless align-middle",
             tbody(MatchElement(m, isFinalsStage = true))
           )
         )

@@ -4,9 +4,9 @@ import com.raquo.laminar.api.L.{*, given}
 
 package object buttonfootball:
 
-  def renderCardTitle(title: String): Element =
+  def renderCardTitle(title: String, marginBottom: String = "mb-2"): Element =
     h6(
-      cls := "card-subtitle mb-2 text-muted",
+      cls := s"card-subtitle ${marginBottom} text-muted",
       b(title)
     )
 

@@ -11,50 +11,27 @@ object MatchElement:
     def logo(logoImgFile: String): Element = td(img(cls := "logo-40", src := Logo.forTeam(logoImgFile)))
 
     tr(
-      cls := "text-center",
       if (isFinalsStage) "" else td(cls := "col text-end", styleAttr := "width: 200px;", m.teamA),
       logo(m.teamALogoImgFile),
-      td(
-        table(
-          cls := "table",
-          styleAttr := "vertical-align: middle; margin-bottom: 0",
-          tr(
-            cls := "text-center",
-            td(cls := "text-center", m.numGoalsTeamA)
-          ),
-          tr(
-            cls := "text-center",
-            td(cls := "text-center", m.numGoalsExtraA, displayInFinals(m.numGoalsTeamA == m.numGoalsTeamB))
-          ),
-          tr(
-            cls := "text-center",
-            td(cls := "text-center", m.numGoalsPntA,
-              displayInFinals(m.numGoalsTeamA == m.numGoalsTeamB && m.numGoalsExtraA == m.numGoalsExtraB)
-            )
-          )
-        )
-      ),
+      td(table(
+        cls := "table align-middle mb-0 text-center",
+        tr(td(m.numGoalsTeamA)),
+        tr(td(m.numGoalsExtraA, displayInFinals(m.numGoalsTeamA == m.numGoalsTeamB))),
+        tr(td(
+          m.numGoalsPntA,
+          displayInFinals(m.numGoalsTeamA == m.numGoalsTeamB && m.numGoalsExtraA == m.numGoalsExtraB)
+        ))
+      )),
       td(" x "),
-      td(
-        table(
-          cls := "table",
-          styleAttr := "vertical-align: middle; margin-bottom: 0",
-          tr(
-            cls := "text-center",
-            td(cls := "text-center", m.numGoalsTeamB)
-          ),
-          tr(
-            cls := "text-center",
-            td(cls := "text-center", m.numGoalsExtraB, displayInFinals(m.numGoalsTeamA == m.numGoalsTeamB))
-          ),
-          tr(
-            cls := "text-center",
-            td(cls := "text-center", m.numGoalsPntB,
-              displayInFinals(m.numGoalsTeamA == m.numGoalsTeamB && m.numGoalsExtraA == m.numGoalsExtraB)
-            )
-          ),
-        )
-      ),
+      td(table(
+        cls := "table align-middle mb-0 text-center",
+        tr(td(m.numGoalsTeamB)),
+        tr(td(m.numGoalsExtraB, displayInFinals(m.numGoalsTeamA == m.numGoalsTeamB))),
+        tr(td(
+          m.numGoalsPntB,
+          displayInFinals(m.numGoalsTeamA == m.numGoalsTeamB && m.numGoalsExtraA == m.numGoalsExtraB)
+        ))
+      )),
       logo(m.teamBLogoImgFile),
       if (isFinalsStage) "" else td(cls := "col text-start", styleAttr := "width: 200px;", m.teamB)
     )

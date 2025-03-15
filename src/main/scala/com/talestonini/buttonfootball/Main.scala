@@ -22,16 +22,16 @@ def ButtonFootballFrontEnd(): Unit =
   FinalsMatchesTabContent.setupAutoReRenderOfCellLinksOnWindowEvents()
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
-    div(
-      // children <-- teams.signal.map(ts => ts.map(t => img(src := Logo.forTeam(t.logoImgFile)))),
-      mainAppElement()
-    )
+    // div(
+    //   children <-- teams.signal.map(ts => ts.map(t => img(src := Logo.forTeam(t.logoImgFile)))),
+    //   mainAppElement()
+    // )
+    mainAppElement()
   )
 
 def mainAppElement(): Element =
   div(
     cls := "container",
-    styleAttr := "height: 110px;",
     renderStateForInspection(),
     h1("Jogo de Botão"),
     div(
@@ -227,8 +227,7 @@ def renderMatchesTabContent(tabName: String): Element =
 def renderGroupMatchesTabContent(tabName: String): Element =
   div(
     table(
-      cls := "table",
-      styleAttr := "vertical-align: middle",
+      cls := "table align-middle",
       tbody(
         children <-- groupsMatches.signal.map(gms => gms.filter(gm => gm.`type` == tabName).map(gm => MatchElement(gm)))
       )
