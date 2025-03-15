@@ -264,7 +264,7 @@ object FinalsMatchesTabContent:
       div(
         cls := "card",
         div(
-          cls := "card-body",
+          cls := "card-body p-2",
           renderCardTitle(m.`type`, "mb-0"),
           table(
             cls := "table mb-0 table-borderless align-middle",
@@ -277,13 +277,14 @@ object FinalsMatchesTabContent:
       child <-- numQualif.map(nq => if (nq <= 0) div() else div(
         table(
           cls := "table table-borderless",
+          styleAttr := "width: 0%",
           tbody(
             children <-- rows.combineWith(maxRow).map((rs, maxr) => rs.map(r =>
               tr(
                 children <-- cols.combineWith(maxCol).map((cs, maxc) => cs.map(c =>
                   td(
                     idAttr := cellAddressFn(c, r),
-                    cls := "col text-center",
+                    cls := "col text-center bg-light",
                     child <-- funnelingTree.combineWith(finalsMatches).map((ft, fms) => {
                       if (c == maxc && r == maxr) {
                         val tpp = thirdPlacePlayoff(ft, fms)

@@ -8,11 +8,9 @@ import com.talestonini.buttonfootball.component.TTTable
 import com.talestonini.buttonfootball.component.TTTable.TTHeader
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
-import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import com.talestonini.buttonfootball.model.Standings.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
-import com.talestonini.buttonfootball.service.ChampionshipService.calcNumQualif
-import com.talestonini.buttonfootball.component.FinalsMatchesTabContent.{rows, cols, staticCellLinks}
+import com.talestonini.buttonfootball.util.Debug
 import org.scalajs.dom
 
 @main
@@ -31,8 +29,8 @@ def ButtonFootballFrontEnd(): Unit =
 
 def mainAppElement(): Element =
   div(
-    cls := "container",
-    renderStateForInspection(),
+    cls := "container p-2",
+    Debug.renderInternalState(),
     h1("Jogo de Botão"),
     div(
       cls := "row h-100",
@@ -61,45 +59,6 @@ def mainAppElement(): Element =
 
 extension (elem: Element)
   def wrap(className: String = ""): Element = div(cls := className, elem)
-
-def renderStateForInspection(isEnabled: Boolean = false) =
-  if (!isEnabled)
-    div()
-  else
-    div(
-      div(
-        child.text <-- selectedTeamType.signal.map(tt => "Team type: " + tt.getOrElse(NO_TEAM_TYPE).description)
-      ),
-      div(
-        child.text <-- selectedChampionshipType.signal
-          .map(ct => "Championship type: " + ct.getOrElse(NO_CHAMPIONSHIP_TYPE).description),
-      ),
-      div(
-        child.text <-- selectedChampionship.signal
-          .map(c => "Championship edition: " + c.getOrElse(NO_CHAMPIONSHIP).numEdition)
-      ),
-      div(
-        child.text <-- tabs.map(ts => "Tab count: " + ts.length)
-      ),
-      div(
-        child.text <-- activeTab.signal.map(at => "Active tab: " + at)
-      ),
-      div(
-        child.text <-- assertCorrectNumQualifAndFinalsMatches()
-      ),
-      div(
-        child.text <-- rows.combineWith(cols).map {
-          case(r, c) => s"Finals rows: $r, Finals cols: $c"
-        }
-      ),
-      div(
-        child.text <-- groupStandings.signal.combineWith(finalStandings.signal).map {
-          case(gss, fss) => s"Group Standings: ${gss.size}, Final Standings: ${fss.size}"
-        }
-      ),
-      div(child.text <-- staticCellLinks.signal.map(scl => s"Static cell links size: ${scl.size}")),
-      div(child.text <-- teams.signal.map(ts => s"Teams count: ${ts.size}"))
-    )
 
 def renderTeamTypeRadios(): Element =
   div(
@@ -206,7 +165,7 @@ def renderMatchesTabs(): Element =
       )),
     ),
     div(
-      cls := "tab-content",
+      cls := "tab-content p-0",
       child <-- activeTab.signal.map(renderMatchesTabContent)
     )
   )
@@ -221,7 +180,7 @@ def renderMatchesTabContent(tabName: String): Element =
     else if (tabName == FINAL_STANDINGS_TAB)
       renderFinalStandingsTabContent()
     else
-      div("Invalid tab :(")
+      div()
   )
 
 def renderGroupMatchesTabContent(tabName: String): Element =
@@ -233,7 +192,7 @@ def renderGroupMatchesTabContent(tabName: String): Element =
       )
     ),
     div(
-      cls := "container card h-100 w-100",
+      cls := "container card",
       div(
         cls := "card-body",
         renderCardTitle("Classificação"),
@@ -275,18 +234,3 @@ def renderFinalStandingsTabContent(): Element =
       ))
     })
   )
-
-// --- assertions functions ------------------------------------------------------------------------------------------
-
-def assertCorrectNumQualifAndFinalsMatches(): Signal[String] =
-  selectedChampionship.signal
-    .combineWith(numFinalsMatches)
-    .combineWith(numTeams)
-    .map { case (sc, nfm, nt) => "Number of qualified teams: " + (calcNumQualif(nt) match {
-      case Left(e) =>
-        s"error (${e.getMessage})"
-      case Right(calcNumQualif) =>
-        val dbNumQualif = sc.getOrElse(NO_CHAMPIONSHIP).numQualif
-        val res = if (dbNumQualif == calcNumQualif && nfm == calcNumQualif) "" else "in"
-        s"${res}correct (db: $dbNumQualif, calculated: $calcNumQualif, number of finals matches: $nfm)"
-    })}
