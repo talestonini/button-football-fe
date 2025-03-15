@@ -274,6 +274,7 @@ object FinalsMatchesTabContent:
       )
 
     div(
+      cls := "border",
       child <-- numQualif.map(nq => if (nq <= 0) div() else div(
         table(
           cls := "table table-borderless",

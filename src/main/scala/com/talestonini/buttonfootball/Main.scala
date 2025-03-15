@@ -4,8 +4,8 @@ import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.api.features.unitArrows
 import com.talestonini.buttonfootball.component.FinalsMatchesTabContent
 import com.talestonini.buttonfootball.component.MatchElement
-import com.talestonini.buttonfootball.component.TTTable
-import com.talestonini.buttonfootball.component.TTTable.TTHeader
+import com.talestonini.buttonfootball.component.Table
+import com.talestonini.buttonfootball.component.Table.Header
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.Standings.*
@@ -185,52 +185,52 @@ def renderMatchesTabContent(tabName: String): Element =
 
 def renderGroupMatchesTabContent(tabName: String): Element =
   div(
-    table(
-      cls := "table align-middle",
-      tbody(
-        children <-- groupsMatches.signal.map(gms => gms.filter(gm => gm.`type` == tabName).map(gm => MatchElement(gm)))
-      )
+    div(
+      cls := "container border bg-white p-3",
+      table(
+        cls := "table align-middle mb-0",
+        tbody(
+          children <-- groupsMatches.signal.map(gms => gms.filter(gm => gm.`type` == tabName).map(gm => MatchElement(gm)))
+        )
+      ),
     ),
     div(
-      cls := "container card",
-      div(
-        cls := "card-body",
-        renderCardTitle("Classificação"),
-        child <-- groupStandings.signal.map(gss => {
-          val groupStandingsVar: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
-          TTTable[Standing](groupStandingsVar, List(
-            TTHeader("Intra-Grupo", 4),
-            TTHeader("Extra-Grupo", 5),
-            TTHeader("Time", 2),
-            TTHeader("Pontos", 7),
-            TTHeader("Jogos", 8),
-            TTHeader("Vitórias", 9),
-            TTHeader("Empates", 10),
-            TTHeader("Derrotas", 11),
-            TTHeader("Gols Marcados", 12),
-            TTHeader("Gols Sofridos", 13),
-            TTHeader("Saldo de Gols", 14)
-          ))
-        })
-      )
+      cls := "container border border-top-0 bg-white p-3",
+      child <-- groupStandings.signal.map(gss => {
+        val groupStandingsVar: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
+        Table[Standing](groupStandingsVar, List(
+          Header("Intra-Grupo", 4),
+          Header("Extra-Grupo", 5),
+          Header("Time", 2),
+          Header("Pontos", 7),
+          Header("Jogos", 8),
+          Header("Vitórias", 9),
+          Header("Empates", 10),
+          Header("Derrotas", 11),
+          Header("Gols Marcados", 12),
+          Header("Gols Sofridos", 13),
+          Header("Saldo de Gols", 14)
+        ))
+      })
     )
   )
 
 def renderFinalStandingsTabContent(): Element =
   div(
+    cls := "container border bg-white p-3",
     child <-- finalStandings.signal.map(fss => {
       val finalStandingsVar: Var[List[Standing]] = Var(fss)
-      TTTable[Standing](finalStandingsVar, List(
-        TTHeader("Final", 6),
-        TTHeader("Time", 2),
-        TTHeader("Pontos", 7),
-        TTHeader("Jogos", 8),
-        TTHeader("Vitórias", 9),
-        TTHeader("Empates", 10),
-        TTHeader("Derrotas", 11),
-        TTHeader("Gols Marcados", 12),
-        TTHeader("Gols Sofridos", 13),
-        TTHeader("Saldo de Gols", 14)
+      Table[Standing](finalStandingsVar, List(
+        Header("Final", 6),
+        Header("Time", 2),
+        Header("Pontos", 7),
+        Header("Jogos", 8),
+        Header("Vitórias", 9),
+        Header("Empates", 10),
+        Header("Derrotas", 11),
+        Header("Gols Marcados", 12),
+        Header("Gols Sofridos", 13),
+        Header("Saldo de Gols", 14)
       ))
     })
   )
