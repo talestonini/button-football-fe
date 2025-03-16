@@ -10,7 +10,7 @@ import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.Standings.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
-import com.talestonini.buttonfootball.util.Debug
+import com.talestonini.buttonfootball.util.*
 import org.scalajs.dom
 
 @main
@@ -29,16 +29,15 @@ def ButtonFootballFrontEnd(): Unit =
 
 def mainAppElement(): Element =
   div(
-    cls := "container p-2",
-    Debug.renderInternalState(),
-    h1("Jogo de Botão"),
+    cls := s"container ${spacingStyle("p")}",
+    h1("Jogo de Botão").wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
     div(
-      cls := "row h-100",
-      renderTeamTypeRadios().wrap("col-auto h-100 d-flex"),
-      renderChampionshipTypeSelect().wrap("col h-100 d-flex"),
+      cls := s"row ${spacingStyle("pb")} ${spacingStyle("g")}",
+      renderTeamTypeRadios().wrapInDiv("col-auto"),
+      renderChampionshipTypeSelect().wrapInDiv("col"),
     ),
-    renderChampionshipEditionsRange().wrap("row h-100"),
-    renderMatchesTabs(),
+    renderChampionshipEditionsRange().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
+    renderMatchesTabs().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
     // input(
     //   typ := "text",
     //   value <-- teamName,
@@ -53,16 +52,14 @@ def mainAppElement(): Element =
     //   TTHeader("Cidade", 5),
     //   TTHeader("País", 6)
     // ))
+    Debug.renderInternalState(false),
   )
 
 // --- rendering functions ---------------------------------------------------------------------------------------------
 
-extension (elem: Element)
-  def wrap(className: String = ""): Element = div(cls := className, elem)
-
 def renderTeamTypeRadios(): Element =
   div(
-    cls := "card h-100 w-100",
+    cls := "card",
     div(
       cls := "card-body",
       renderCardTitle("Tipo de Time"),
@@ -113,43 +110,47 @@ def renderChampionshipTypeSelect(): Element =
 
 def renderChampionshipEditionsRange(): Element =
   div(
-    cls := "container card h-100 w-100",
+    cls := "card",
     div(
-      cls := "row card-body",
+      cls := "card-body",
       renderCardTitle("Edição"),
       div(
-        cls := "col",
-        input(
-          idAttr := "championshipEditionsRange",
-          cls := "form-range",
-          typ := "range",
-          minAttr <-- championships.signal.map(cs =>
-            (if (cs.nonEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION).toString
-          ),
-          maxAttr <-- championships.signal.map(cs => 
-            (if (cs.nonEmpty) cs.length else NO_CHAMPIONSHIP_EDITION).toString),
-          onChange.mapToValue --> { edition =>
-            selectedChampionship.update(_ => championships.now().find((ce) => ce.numEdition == edition.toInt))
-            seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-            // TODO: check whether using 2 APIs is a cleaner design - this is currently not working as the following
-            //       quick succession of requests result in backend ConcurrentModificationException
-            // seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-            // seGetFinalStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-            seGetStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-          },
-          value <-- selectedChampionship.signal.map(_.getOrElse(NO_CHAMPIONSHIP).numEdition.toString())
+        cls := "row",
+        div(
+          cls := "col",
+          input(
+            idAttr := "championshipEditionsRange",
+            cls := "form-range",
+            typ := "range",
+            minAttr <-- championships.signal.map(cs =>
+              (if (cs.nonEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION).toString
+            ),
+            maxAttr <-- championships.signal.map(cs => 
+              (if (cs.nonEmpty) cs.length else NO_CHAMPIONSHIP_EDITION).toString),
+            onChange.mapToValue --> { edition =>
+              selectedChampionship.update(_ => championships.now().find((ce) => ce.numEdition == edition.toInt))
+              seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+              // TODO: check whether using 2 APIs is a cleaner design - this is currently not working as the following
+              //       quick succession of requests result in backend ConcurrentModificationException
+              // seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+              // seGetFinalStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+              seGetStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+            },
+            value <-- selectedChampionship.signal.map(_.getOrElse(NO_CHAMPIONSHIP).numEdition.toString())
+          )
+        ),
+        div(
+          cls := "col-auto",
+          div(
+            child.text <-- selectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).numEdition)
+          )
         )
-      ),
-      div(
-        cls := "col-auto",
-        child.text <-- selectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).numEdition)
       )
     )
   )
 
 def renderMatchesTabs(): Element =
   div(
-    cls := "row h-100 justify-content-center",
     ul(
       cls := "nav nav-tabs",
       children <-- tabs.map(ts => ts.map(t =>
