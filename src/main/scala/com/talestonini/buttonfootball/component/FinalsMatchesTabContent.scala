@@ -4,7 +4,7 @@ import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.datastructure.*
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Matches.Match
-import com.talestonini.buttonfootball.renderCardTitle
+import com.talestonini.buttonfootball.util.renderCardTitle
 import org.scalajs.dom
 import org.scalajs.dom.DOMRect
 

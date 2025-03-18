@@ -2,7 +2,9 @@ package com.talestonini.buttonfootball.component
 
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.Matches.Match
-import com.talestonini.buttonfootball.Logo
+import com.talestonini.buttonfootball.util.buildStyleAttr
+import com.talestonini.buttonfootball.util.Logo
+import com.talestonini.buttonfootball.util.scaleFont
 
 object MatchElement:
 
@@ -11,7 +13,7 @@ object MatchElement:
     def logo(logoImgFile: String): Element = td(img(cls := "logo-40", src := Logo.forTeam(logoImgFile)))
 
     tr(
-      if (isFinalsStage) "" else td(cls := "col text-end", styleAttr := "width: 200px;", m.teamA),
+      if (isFinalsStage) "" else td(cls := "col text-end", buildStyleAttr(scaleFont()), m.teamA),
       logo(m.teamALogoImgFile),
       td(table(
         cls := "table align-middle mb-0 text-center",
@@ -33,7 +35,7 @@ object MatchElement:
         ))
       )),
       logo(m.teamBLogoImgFile),
-      if (isFinalsStage) "" else td(cls := "col text-start", styleAttr := "width: 200px;", m.teamB)
+      if (isFinalsStage) "" else td(cls := "col text-start", buildStyleAttr(scaleFont()), m.teamB)
     )
   end apply 
 
