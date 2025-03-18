@@ -44,6 +44,7 @@ package object model:
 
   val championships: Var[List[Championship]] = Var(List.empty)
   val selectedChampionship: Var[Option[Championship]] = Var(None)
+  val selectedEdition: Var[Int] = Var(NO_CHAMPIONSHIP_EDITION)
 
   private val groupFilterFn = (matchType: String) => matchType.startsWith(GROUP)
 
@@ -114,8 +115,12 @@ package object model:
         case s: Success[List[Championship]] => {
           championships.update(_ => s.value)
           selectedChampionship.update(_ => 
-            val edition = if (championships.now().nonEmpty) s.value.length else NO_CHAMPIONSHIP_EDITION
-            championships.now().find(_.numEdition == edition)
+            val editionToUpdateWith =
+              if (championships.now().isEmpty) NO_CHAMPIONSHIP_EDITION
+              else
+                if (selectedEdition.now() == NO_CHAMPIONSHIP_EDITION) s.value.length
+                else selectedEdition.now()
+            championships.now().find(_.numEdition == editionToUpdateWith)
           )
           seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
           // TODO: check whether using 2 APIs is a cleaner design - this is currently not working as the following
@@ -142,7 +147,13 @@ package object model:
       .onComplete({
         case s: Success[List[Match]] =>
           matches.update(_ => s.value)
-          activeTab.update(_ => FIRST_TAB)
+          activeTab.update(_ => 
+            if (matches.now().isEmpty) NO_ACTIVE_TAB
+            else
+              if (activeTab.now().startsWith(GROUP)) s"$GROUP A"
+              else if (activeTab.now() == FINALS_TAB) FINALS_TAB
+              else FINAL_STANDINGS_TAB
+          )
         case f: Failure[List[Match]] => {
           println(s"failed fetching matches: ${f.exception.getMessage}")
           matches.update(_ => List.empty)

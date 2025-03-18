@@ -128,7 +128,8 @@ def renderChampionshipEditionsRange(): Element =
             maxAttr <-- championships.signal.map(cs => 
               (if (cs.nonEmpty) cs.length else NO_CHAMPIONSHIP_EDITION).toString),
             onChange.mapToValue --> { edition =>
-              selectedChampionship.update(_ => championships.now().find((ce) => ce.numEdition == edition.toInt))
+              selectedChampionship.update(_ => championships.now().find((c) => c.numEdition == edition.toInt))
+              selectedEdition.update(_ => edition.toInt)
               seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
               // TODO: check whether using 2 APIs is a cleaner design - this is currently not working as the following
               //       quick succession of requests result in backend ConcurrentModificationException
