@@ -49,7 +49,7 @@ import scala.collection.immutable.NumericRange
   */
 object FinalsMatchesTabContent:
 
-  private val coordinatesAnchorElementId = "coordinatesAnchorElemId"
+  private val coordsAnchorElemId = "coordinatesAnchorElementId"
 
   // --- funneling tree number of levels -------------------------------------------------------------------------------
 
@@ -193,8 +193,8 @@ object FinalsMatchesTabContent:
         import svg.*
         svg(
           style := "position: absolute; top: 0; left: 0; pointer-events: none;",
-          width := scrollWidthOfElem(coordinatesAnchorElementId),
-          height := scrollHeightOfElem(coordinatesAnchorElementId),
+          width := scrollWidthOfElem(coordsAnchorElemId),
+          height := scrollHeightOfElem(coordsAnchorElemId),
           path(
             idAttr := cellLinkAddressFn(fromCell, toCell),
             stroke := "lightgrey",
@@ -215,7 +215,7 @@ object FinalsMatchesTabContent:
     ).toList()}
   
   private def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
-    val anchorElem    = Some(coordinatesAnchorElementId)
+    val anchorElem    = Some(coordsAnchorElemId)
     val fromBox       = boundingBox(fromCell.address(), anchorElem)
     val toBox         = boundingBox(toCell.address(), anchorElem)
     val startingPoint = s"${fromBox.left},${fromBox.top + fromBox.height/2}"
@@ -242,9 +242,9 @@ object FinalsMatchesTabContent:
       )
 
     div(
-      cls := "border",
+      cls := "border d-flex justify-content-center",
       child <-- numQualif.map(nq => if (nq <= 0) div() else div(
-        idAttr := coordinatesAnchorElementId,
+        idAttr := coordsAnchorElemId,
         buildStyleAttr("overflow-x: auto", "position: relative"),
         table(
           cls := "table table-borderless",
