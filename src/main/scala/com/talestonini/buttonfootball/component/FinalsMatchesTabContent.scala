@@ -4,9 +4,7 @@ import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.datastructure.*
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Matches.Match
-import com.talestonini.buttonfootball.util.{buildStyleAttr, renderCardTitle}
-import org.scalajs.dom
-import org.scalajs.dom.DOMRect
+import com.talestonini.buttonfootball.util.*
 
 import java.lang.Math.{log, pow}
 import scala.collection.immutable.NumericRange
@@ -51,7 +49,7 @@ import scala.collection.immutable.NumericRange
   */
 object FinalsMatchesTabContent:
 
-  private val thisElementId = "finalsMatchesTabContentId"
+  private val coordinatesAnchorElementId = "coordinatesAnchorElemId"
 
   // --- funneling tree number of levels -------------------------------------------------------------------------------
 
@@ -78,7 +76,6 @@ object FinalsMatchesTabContent:
   private val cellAddressFn = (col: Char, row: Int) => s"$col$row"
   case class Cell(col: Char, row: Int) {
     def address(): String = cellAddressFn(col, row)
-    def rect(): DOMRect = dom.document.getElementById(address()).getBoundingClientRect()
   }
   
   // --- the funneling tree --------------------------------------------------------------------------------------------
@@ -163,14 +160,7 @@ object FinalsMatchesTabContent:
             }
         }
 
-        def saveStaticCellLinks(tree: Tree[MatchCell]): Unit =
-          staticCellLinks.update(_ => tree.toList().flatMap(n =>
-            if (n.toCells.isEmpty) List.empty
-            else List(CellLink(n.cell, n.toCells.head), CellLink(n.cell, n.toCells.tail.head))
-          ))
-    
         setTreeRootFinalMatch(tree)
-        saveStaticCellLinks(tree)
         tree
       }
 
@@ -196,24 +186,15 @@ object FinalsMatchesTabContent:
 
   // --- cell links ----------------------------------------------------------------------------------------------------
 
-  /**
-    * Used to re-render cell links when the window is scrolled or resized.  The first time cell links are rendered 
-    * driven by signals, the static cell links are saved as a copy of the current cell links.  If then the window is
-    * scrolled or resized, re-render of the cell links (curves) is driven by the saved static cell links, as opposed to
-    * signals, which are not available then.
-    */
-  case class CellLink(fromCell: Cell, toCell: Cell)
-  val staticCellLinks: Var[List[CellLink]] = Var(List.empty)
-
   private val cellLinkAddressFn = (fromCell: Cell, toCell: Cell) => s"${fromCell.address()}-${toCell.address()}"
   private def renderCellLinks(): Signal[List[Element]] =
     activeTab.signal.combineWith(funnelingTree).map { case (at, ft) => ft.map(n =>
       def svgForCurve(fromCell: Cell, toCell: Cell): Element =
         import svg.*
         svg(
-          style := "position: fixed; top: 0; left: 0; pointer-events: none;",
-          width := "100%",
-          height := "100%",
+          style := "position: absolute; top: 0; left: 0; pointer-events: none;",
+          width := scrollWidthOfElem(coordinatesAnchorElementId),
+          height := scrollHeightOfElem(coordinatesAnchorElementId),
           path(
             idAttr := cellLinkAddressFn(fromCell, toCell),
             stroke := "lightgrey",
@@ -233,37 +214,17 @@ object FinalsMatchesTabContent:
         )
     ).toList()}
   
-  private def renderStaticCellLinks(): Unit = 
-    staticCellLinks.now().foreach { cl => {
-      val cellLinkElem = dom.document.getElementById(cellLinkAddressFn(cl.fromCell, cl.toCell))
-      if (cellLinkElem != null) cellLinkElem.setAttribute("d", bezierCurveCommands(cl.fromCell, cl.toCell))
-    }}
-
   private def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
-    val fromRect      = fromCell.rect()
-    val toRect        = toCell.rect()
-    val startingPoint = s"${fromRect.left},${fromRect.top + fromRect.height/2}"
-    val controlPoint1 = s"${toRect.right},${fromRect.top + fromRect.height/2}"
-    val controlPoint2 = s"${fromRect.left},${toRect.top + toRect.height/2}"
-    val endingPoint   = s"${toRect.right},${toRect.top + toRect.height/2}"
+    val anchorElem    = Some(coordinatesAnchorElementId)
+    val fromBox       = boundingBox(fromCell.address(), anchorElem)
+    val toBox         = boundingBox(toCell.address(), anchorElem)
+    val startingPoint = s"${fromBox.left},${fromBox.top + fromBox.height/2}"
+    val controlPoint1 = s"${toBox.right},${fromBox.top + fromBox.height/2}"
+    val controlPoint2 = s"${fromBox.left},${toBox.top + toBox.height/2}"
+    val endingPoint   = s"${toBox.right},${toBox.top + toBox.height/2}"
     s"M$startingPoint C$controlPoint1 $controlPoint2 $endingPoint"
   }
 
-  /**
-    * Sets up re-rendering of the SVG Bézier curves when the window is resized or scrolled or double-clicked (mobile).
-    */
-  private def setupAutoReRenderOfCellLinksOnWindowEvents(): Unit = {
-    val eventFn: dom.Event => Unit = _ => renderStaticCellLinks()
-    dom.window.addEventListener("scroll", eventFn)
-    dom.window.addEventListener("resize", eventFn)
-    dom.window.addEventListener("dblclick", eventFn)
-    
-    // the div returned by apply() has its own horizontal scroll
-    val theFinalsMatchesTabContentElem = dom.document.getElementById(thisElementId)
-    if (theFinalsMatchesTabContentElem != null)
-      theFinalsMatchesTabContentElem.addEventListener("scroll", eventFn)
-  }
-  
   // --- public API ----------------------------------------------------------------------------------------------------
 
   def apply(): Element =
@@ -281,10 +242,10 @@ object FinalsMatchesTabContent:
       )
 
     div(
-      idAttr := thisElementId,
       cls := "border",
-      buildStyleAttr("overflow-x: auto", "position: relative"),
       child <-- numQualif.map(nq => if (nq <= 0) div() else div(
+        idAttr := coordinatesAnchorElementId,
+        buildStyleAttr("overflow-x: auto", "position: relative"),
         table(
           cls := "table table-borderless",
           styleAttr := "width: 0%",
@@ -314,8 +275,7 @@ object FinalsMatchesTabContent:
         ),
         // SVG elements "host" Bézier curves that link cells, drawing the funneling of finals matches
         children <-- renderCellLinks()
-      )),
-      onMountCallback((ctx) => setupAutoReRenderOfCellLinksOnWindowEvents())
+      ))
     )
   end apply
 

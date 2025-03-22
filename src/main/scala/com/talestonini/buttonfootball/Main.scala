@@ -11,14 +11,13 @@ import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.Standings.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
 import com.talestonini.buttonfootball.util.*
-import org.scalajs.dom
 
 @main
 def ButtonFootballFrontEnd(): Unit =
   // seGetTeams()
   seGetTeamTypes()
   renderOnDomContentLoaded(
-    dom.document.getElementById("app"),
+    elemById("app"),
     // div(
     //   children <-- teams.signal.map(ts => ts.map(t => img(src := Logo.forTeam(t.logoImgFile)))),
     //   mainAppElement()
