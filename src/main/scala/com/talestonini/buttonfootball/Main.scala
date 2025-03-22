@@ -17,7 +17,7 @@ def ButtonFootballFrontEnd(): Unit =
   // seGetTeams()
   seGetTeamTypes()
   renderOnDomContentLoaded(
-    elemById("app"),
+    Elem.byId("app"),
     // div(
     //   children <-- teams.signal.map(ts => ts.map(t => img(src := Logo.forTeam(t.logoImgFile)))),
     //   mainAppElement()

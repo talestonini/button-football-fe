@@ -193,8 +193,8 @@ object FinalsMatchesTabContent:
         import svg.*
         svg(
           style := "position: absolute; top: 0; left: 0; pointer-events: none;",
-          width := scrollWidthOfElem(coordsAnchorElemId),
-          height := scrollHeightOfElem(coordsAnchorElemId),
+          width := Elem.scrollWidth(coordsAnchorElemId),
+          height := Elem.scrollHeight(coordsAnchorElemId),
           path(
             idAttr := cellLinkAddressFn(fromCell, toCell),
             stroke := "lightgrey",
@@ -216,8 +216,8 @@ object FinalsMatchesTabContent:
   
   private def bezierCurveCommands(fromCell: Cell, toCell: Cell): String = {
     val anchorElem    = Some(coordsAnchorElemId)
-    val fromBox       = boundingBox(fromCell.address(), anchorElem)
-    val toBox         = boundingBox(toCell.address(), anchorElem)
+    val fromBox       = Bounding.box(fromCell.address(), anchorElem)
+    val toBox         = Bounding.box(toCell.address(), anchorElem)
     val startingPoint = s"${fromBox.left},${fromBox.top + fromBox.height/2}"
     val controlPoint1 = s"${toBox.right},${fromBox.top + fromBox.height/2}"
     val controlPoint2 = s"${fromBox.left},${toBox.top + toBox.height/2}"
