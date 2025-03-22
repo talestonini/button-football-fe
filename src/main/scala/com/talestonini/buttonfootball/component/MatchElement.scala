@@ -9,8 +9,16 @@ import com.talestonini.buttonfootball.util.scaleFont
 object MatchElement:
 
   def apply(m: Match, isFinalsStage: Boolean = false): Element =
-    def displayInFinals(condition: Boolean) = display(if (isFinalsStage && condition) "table-cell" else "none")
-    def logo(logoImgFile: String): Element = td(img(cls := "logo-40", src := Logo.forTeam(logoImgFile)))
+    def displayInFinals(condition: Boolean) =
+      display(if (isFinalsStage && condition) "table-cell" else "none")
+
+    def logo(logoImgFile: String): Element =
+      td(
+        img(
+          buildStyleAttr("width: 40px", "height: 40px", "object-fit: none"),
+          src := Logo.forTeam(logoImgFile)
+        )
+      )
 
     tr(
       if (isFinalsStage) "" else td(cls := "col text-end", buildStyleAttr(scaleFont()), m.teamA),

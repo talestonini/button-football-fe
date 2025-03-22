@@ -17,7 +17,6 @@ import org.scalajs.dom
 def ButtonFootballFrontEnd(): Unit =
   // seGetTeams()
   seGetTeamTypes()
-  FinalsMatchesTabContent.setupAutoReRenderOfCellLinksOnWindowEvents()
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
     // div(
@@ -29,7 +28,7 @@ def ButtonFootballFrontEnd(): Unit =
 
 def mainAppElement(): Element =
   div(
-    cls := s"container ${spacingStyle("p")}",
+    cls := s"container shadow ${spacingStyle("p")}",
     h1("Jogo de Botão").wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
     div(
       cls := s"row ${spacingStyle("pb")} ${spacingStyle("g")}",
@@ -52,14 +51,14 @@ def mainAppElement(): Element =
     //   TTHeader("Cidade", 5),
     //   TTHeader("País", 6)
     // ))
-    Debug.renderInternalState(false),
+    Debug.renderInternalState(false)
   )
 
 // --- rendering functions ---------------------------------------------------------------------------------------------
 
 def renderTeamTypeRadios(): Element =
   div(
-    cls := "card",
+    cls := "card shadow",
     div(
       cls := "card-body",
       renderCardTitle("Tipo de Time"),
@@ -88,7 +87,7 @@ def renderTeamTypeRadios(): Element =
 
 def renderChampionshipTypeSelect(): Element =
   div(
-    cls := "card h-100 w-100",
+    cls := "card shadow h-100 w-100",
     div(
       cls := "card-body",
       renderCardTitle("Campeonato"),
@@ -110,7 +109,7 @@ def renderChampionshipTypeSelect(): Element =
 
 def renderChampionshipEditionsRange(): Element =
   div(
-    cls := "card",
+    cls := "card shadow",
     div(
       cls := "card-body",
       renderCardTitle("Edição"),
@@ -152,6 +151,7 @@ def renderChampionshipEditionsRange(): Element =
 
 def renderMatchesTabs(): Element =
   div(
+    cls := "border rounded shadow",
     ul(
       cls := "nav nav-tabs",
       children <-- tabs.map(ts => ts.map(t =>

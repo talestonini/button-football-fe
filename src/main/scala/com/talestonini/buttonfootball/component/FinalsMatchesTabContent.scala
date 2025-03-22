@@ -4,7 +4,7 @@ import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.datastructure.*
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Matches.Match
-import com.talestonini.buttonfootball.util.renderCardTitle
+import com.talestonini.buttonfootball.util.{buildStyleAttr, renderCardTitle}
 import org.scalajs.dom
 import org.scalajs.dom.DOMRect
 
@@ -50,6 +50,8 @@ import scala.collection.immutable.NumericRange
   * from the number of qualified teams).
   */
 object FinalsMatchesTabContent:
+
+  private val thisElementId = "finalsMatchesTabContentId"
 
   // --- funneling tree number of levels -------------------------------------------------------------------------------
 
@@ -247,18 +249,23 @@ object FinalsMatchesTabContent:
     s"M$startingPoint C$controlPoint1 $controlPoint2 $endingPoint"
   }
 
-  // --- public API ----------------------------------------------------------------------------------------------------
-
   /**
     * Sets up re-rendering of the SVG Bézier curves when the window is resized or scrolled or double-clicked (mobile).
     */
-  def setupAutoReRenderOfCellLinksOnWindowEvents(): Unit = {
+  private def setupAutoReRenderOfCellLinksOnWindowEvents(): Unit = {
     val eventFn: dom.Event => Unit = _ => renderStaticCellLinks()
     dom.window.addEventListener("scroll", eventFn)
     dom.window.addEventListener("resize", eventFn)
     dom.window.addEventListener("dblclick", eventFn)
+    
+    // the div returned by apply() has its own horizontal scroll
+    val theFinalsMatchesTabContentElem = dom.document.getElementById(thisElementId)
+    if (theFinalsMatchesTabContentElem != null)
+      theFinalsMatchesTabContentElem.addEventListener("scroll", eventFn)
   }
   
+  // --- public API ----------------------------------------------------------------------------------------------------
+
   def apply(): Element =
     def renderFinalsMatch(m: Match): Element =
       div(
@@ -274,7 +281,9 @@ object FinalsMatchesTabContent:
       )
 
     div(
+      idAttr := thisElementId,
       cls := "border",
+      buildStyleAttr("overflow-x: auto", "position: relative"),
       child <-- numQualif.map(nq => if (nq <= 0) div() else div(
         table(
           cls := "table table-borderless",
@@ -305,7 +314,8 @@ object FinalsMatchesTabContent:
         ),
         // SVG elements "host" Bézier curves that link cells, drawing the funneling of finals matches
         children <-- renderCellLinks()
-      ))
+      )),
+      onMountCallback((ctx) => setupAutoReRenderOfCellLinksOnWindowEvents())
     )
   end apply
 
