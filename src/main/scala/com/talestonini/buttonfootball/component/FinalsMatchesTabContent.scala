@@ -236,7 +236,7 @@ object FinalsMatchesTabContent:
           renderCardTitle(m.`type`, "mb-0"),
           table(
             cls := "table mb-0 table-borderless align-middle",
-            tbody(MatchElement(m, isFinalsStage = true))
+            tbody(MatchTableRow(m, isFinalsStage = true))
           )
         )
       )

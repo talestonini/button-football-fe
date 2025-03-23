@@ -2,6 +2,7 @@ package com.talestonini.buttonfootball
 
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.modifiers.KeySetter.HtmlAttrSetter
+import com.talestonini.buttonfootball.model.teams
 import org.scalajs.dom
 import org.scalajs.dom.DOMRect
 
@@ -65,15 +66,20 @@ package object util {
 
   object Logo:
     private val EXTENSION = "bmp"
+    val SMALL_TEAM_LOGO_PX_SIZE = 40
 
-    def forChampionshipType(logoImgFile: String, isLarge: Boolean = false) =
+    def forChampionshipTypeImgFile(logoImgFile: String, isLarge: Boolean = false): String =
       s"/img/championships/${if (isLarge) "125" else "45"}/${treat(logoImgFile)}.$EXTENSION"
 
-    def forTrophy(logoImgFile: String) =
+    def forTrophyImgFile(logoImgFile: String): String =
       s"/img/championships/trophies/125/${treat(logoImgFile)}.$EXTENSION"
 
-    def forTeam(logoImgFile: String, isLarge: Boolean = false) =
-      s"/img/teams/${if (isLarge) "150" else "40"}/${treat(logoImgFile)}.$EXTENSION"
+    def forTeamImgFile(logoImgFile: String, isLarge: Boolean = false): String =
+      s"/img/teams/${if (isLarge) "150" else s"$SMALL_TEAM_LOGO_PX_SIZE"}/${treat(logoImgFile)}.$EXTENSION"
+
+    def forTeamName(teamName: String, isLarge: Boolean = false): Option[String] =
+      teams.now().find(t => t.name == teamName)
+        .map(t => forTeamImgFile(t.logoImgFile, isLarge))
 
     private def treat(name: String) = name.toLowerCase()
   end Logo

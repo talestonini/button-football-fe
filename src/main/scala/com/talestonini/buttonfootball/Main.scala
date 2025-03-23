@@ -3,18 +3,19 @@ package com.talestonini.buttonfootball
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.api.features.unitArrows
 import com.talestonini.buttonfootball.component.FinalsMatchesTabContent
-import com.talestonini.buttonfootball.component.MatchElement
+import com.talestonini.buttonfootball.component.MatchTableRow
 import com.talestonini.buttonfootball.component.Table
-import com.talestonini.buttonfootball.component.Table.Header
+import com.talestonini.buttonfootball.component.Table.Column
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.Standings.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
 import com.talestonini.buttonfootball.util.*
+import com.talestonini.buttonfootball.component.LogoImage
 
 @main
 def ButtonFootballFrontEnd(): Unit =
-  // seGetTeams()
+  seGetTeams()
   seGetTeamTypes()
   renderOnDomContentLoaded(
     Elem.byId("app"),
@@ -191,7 +192,7 @@ def renderGroupMatchesTabContent(tabName: String): Element =
       table(
         cls := "table align-middle mb-0",
         tbody(
-          children <-- groupsMatches.signal.map(gms => gms.filter(gm => gm.`type` == tabName).map(gm => MatchElement(gm)))
+          children <-- groupsMatches.signal.map(gms => gms.filter(gm => gm.`type` == tabName).map(gm => MatchTableRow(gm)))
         )
       ),
     ),
@@ -200,17 +201,17 @@ def renderGroupMatchesTabContent(tabName: String): Element =
       child <-- groupStandings.signal.map(gss => {
         val groupStandingsVar: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
         Table[Standing](groupStandingsVar, List(
-          Header("Intra-Grupo", 4),
-          Header("Extra-Grupo", 5),
-          Header("Time", 2),
-          Header("Pontos", 7),
-          Header("Jogos", 8),
-          Header("Vitórias", 9),
-          Header("Empates", 10),
-          Header("Derrotas", 11),
-          Header("Gols Marcados", 12),
-          Header("Gols Sofridos", 13),
-          Header("Saldo de Gols", 14)
+          Column("Intra-Grupo", 4),
+          Column("Extra-Grupo", 5),
+          Column("Time", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
+          Column("Pontos", 7),
+          Column("Jogos", 8),
+          Column("Vitórias", 9),
+          Column("Empates", 10),
+          Column("Derrotas", 11),
+          Column("Gols Marcados", 12),
+          Column("Gols Sofridos", 13),
+          Column("Saldo de Gols", 14)
         ))
       })
     )
@@ -222,16 +223,16 @@ def renderFinalStandingsTabContent(): Element =
     child <-- finalStandings.signal.map(fss => {
       val finalStandingsVar: Var[List[Standing]] = Var(fss)
       Table[Standing](finalStandingsVar, List(
-        Header("Final", 6),
-        Header("Time", 2),
-        Header("Pontos", 7),
-        Header("Jogos", 8),
-        Header("Vitórias", 9),
-        Header("Empates", 10),
-        Header("Derrotas", 11),
-        Header("Gols Marcados", 12),
-        Header("Gols Sofridos", 13),
-        Header("Saldo de Gols", 14)
+        Column("Final", 6),
+        Column("Time", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
+        Column("Pontos", 7),
+        Column("Jogos", 8),
+        Column("Vitórias", 9),
+        Column("Empates", 10),
+        Column("Derrotas", 11),
+        Column("Gols Marcados", 12),
+        Column("Gols Sofridos", 13),
+        Column("Saldo de Gols", 14)
       ))
     })
   )
