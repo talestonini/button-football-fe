@@ -66,7 +66,7 @@ object Table:
       )}))
 
     table(
-      cls := "table",
+      cls := "table align-middle",
       thead(
         cls := "thead-light",
         tr(headers.map(h => Column(h.header, h.modelFieldPos).renderTh(models)))
