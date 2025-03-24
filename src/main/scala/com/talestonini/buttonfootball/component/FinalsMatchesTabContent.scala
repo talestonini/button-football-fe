@@ -247,7 +247,7 @@ object FinalsMatchesTabContent:
         idAttr := coordsAnchorElemId,
         buildStyleAttr("overflow-x: auto", "position: relative"),
         table(
-          cls := "table table-borderless",
+          cls := "table table-borderless mt-3",
           styleAttr := "width: 0%",
           tbody(
             children <-- rows.combineWith(maxRow).map((rs, maxr) => rs.map(r =>
