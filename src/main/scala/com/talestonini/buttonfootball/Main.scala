@@ -201,7 +201,7 @@ def renderGroupMatchesTabContent(tabName: String): Element =
         val wz = Window.size()
         val sw = wz == Size.Small || wz == Size.Medium
         Table[Standing](groupStandingsVar, List(
-          Column(if (sw) "IG" else "Intra-Grupo", 4),
+          Column(if (sw) "" else "Intra-Grupo", 4),
           Column("", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
           Column(if (sw) "P" else "Pontos", 7),
           Column(if (sw) "J" else "Jogos", 8),
@@ -225,7 +225,7 @@ def renderFinalStandingsTabContent(): Element =
       val wz = Window.size()
       val sw = wz == Size.Small || wz == Size.Medium
       Table[Standing](finalStandingsVar, List(
-        Column("F", 6),
+        Column(if (sw) "" else "Final", 6),
         Column("", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
         Column(if (sw) "P" else "Pontos", 7),
         Column(if (sw) "J" else "Jogos", 8),
