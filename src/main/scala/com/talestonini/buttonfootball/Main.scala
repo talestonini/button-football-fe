@@ -202,8 +202,7 @@ def renderGroupMatchesTabContent(tabName: String): Element =
         val sw = wz == Size.Small || wz == Size.Medium
         Table[Standing](groupStandingsVar, List(
           Column(if (sw) "IG" else "Intra-Grupo", 4),
-          Column(if (sw) "EG" else "Extra-Grupo", 5),
-          Column("Time", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
+          Column("", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
           Column(if (sw) "P" else "Pontos", 7),
           Column(if (sw) "J" else "Jogos", 8),
           Column(if (sw) "V" else "Vitórias", 9),
@@ -211,7 +210,8 @@ def renderGroupMatchesTabContent(tabName: String): Element =
           Column(if (sw) "D" else "Derrotas", 11),
           Column(if (sw) "GM" else "Gols Marcados", 12),
           Column(if (sw) "GS" else "Gols Sofridos", 13),
-          Column(if (sw) "SG" else "Saldo de Gols", 14)
+          Column(if (sw) "S" else "Saldo de Gols", 14),
+          Column(if (sw) "EG" else "Extra-Grupo", 5)
         ))
       })
     )
@@ -225,8 +225,8 @@ def renderFinalStandingsTabContent(): Element =
       val wz = Window.size()
       val sw = wz == Size.Small || wz == Size.Medium
       Table[Standing](finalStandingsVar, List(
-        Column("Final", 6),
-        Column("Time", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
+        Column("F", 6),
+        Column("", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
         Column(if (sw) "P" else "Pontos", 7),
         Column(if (sw) "J" else "Jogos", 8),
         Column(if (sw) "V" else "Vitórias", 9),
@@ -234,7 +234,7 @@ def renderFinalStandingsTabContent(): Element =
         Column(if (sw) "D" else "Derrotas", 11),
         Column(if (sw) "GM" else "Gols Marcados", 12),
         Column(if (sw) "GS" else "Gols Sofridos", 13),
-        Column(if (sw) "SG" else "Saldo de Gols", 14)
+        Column(if (sw) "S" else "Saldo de Gols", 14)
       ))
     })
   )
