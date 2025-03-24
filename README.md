@@ -53,4 +53,5 @@ Have the JSON key file path of a Firebase service account pointed by an env var 
 - Zoomable overflow area of the Finals Matches tab content (while preserving rest of the page zoom aspect)?
 - Logos for championship types and trophies.
 - App icon.
-- Style app logo.
+- Style app title.
+- Vectorial logos.

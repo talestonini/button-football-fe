@@ -2,16 +2,14 @@ package com.talestonini.buttonfootball
 
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.api.features.unitArrows
-import com.talestonini.buttonfootball.component.FinalsMatchesTabContent
-import com.talestonini.buttonfootball.component.MatchTableRow
-import com.talestonini.buttonfootball.component.Table
-import com.talestonini.buttonfootball.component.Table.Column
+import com.talestonini.buttonfootball.component.*
+import com.talestonini.buttonfootball.component.Table.*
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.Standings.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
 import com.talestonini.buttonfootball.util.*
-import com.talestonini.buttonfootball.component.LogoImage
+import com.talestonini.buttonfootball.util.Window.Size
 
 @main
 def ButtonFootballFrontEnd(): Unit =
@@ -197,21 +195,23 @@ def renderGroupMatchesTabContent(tabName: String): Element =
       ),
     ),
     div(
-      cls := "container border border-top-0 bg-white p-3",
+      cls := "container border border-top-0 bg-white p-3 text-end",
       child <-- groupStandings.signal.map(gss => {
         val groupStandingsVar: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
+        val wz = Window.size()
+        val sw = wz == Size.Small || wz == Size.Medium
         Table[Standing](groupStandingsVar, List(
-          Column("Intra-Grupo", 4),
-          Column("Extra-Grupo", 5),
+          Column(if (sw) "IG" else "Intra-Grupo", 4),
+          Column(if (sw) "EG" else "Extra-Grupo", 5),
           Column("Time", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
-          Column("Pontos", 7),
-          Column("Jogos", 8),
-          Column("Vitórias", 9),
-          Column("Empates", 10),
-          Column("Derrotas", 11),
-          Column("Gols Marcados", 12),
-          Column("Gols Sofridos", 13),
-          Column("Saldo de Gols", 14)
+          Column(if (sw) "P" else "Pontos", 7),
+          Column(if (sw) "J" else "Jogos", 8),
+          Column(if (sw) "V" else "Vitórias", 9),
+          Column(if (sw) "E" else "Empates", 10),
+          Column(if (sw) "D" else "Derrotas", 11),
+          Column(if (sw) "GM" else "Gols Marcados", 12),
+          Column(if (sw) "GS" else "Gols Sofridos", 13),
+          Column(if (sw) "SG" else "Saldo de Gols", 14)
         ))
       })
     )
@@ -219,20 +219,22 @@ def renderGroupMatchesTabContent(tabName: String): Element =
 
 def renderFinalStandingsTabContent(): Element =
   div(
-    cls := "container border bg-white p-3",
+    cls := "container border bg-white p-3 text-end",
     child <-- finalStandings.signal.map(fss => {
       val finalStandingsVar: Var[List[Standing]] = Var(fss)
+      val wz = Window.size()
+      val sw = wz == Size.Small || wz == Size.Medium
       Table[Standing](finalStandingsVar, List(
         Column("Final", 6),
         Column("Time", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
-        Column("Pontos", 7),
-        Column("Jogos", 8),
-        Column("Vitórias", 9),
-        Column("Empates", 10),
-        Column("Derrotas", 11),
-        Column("Gols Marcados", 12),
-        Column("Gols Sofridos", 13),
-        Column("Saldo de Gols", 14)
+        Column(if (sw) "P" else "Pontos", 7),
+        Column(if (sw) "J" else "Jogos", 8),
+        Column(if (sw) "V" else "Vitórias", 9),
+        Column(if (sw) "E" else "Empates", 10),
+        Column(if (sw) "D" else "Derrotas", 11),
+        Column(if (sw) "GM" else "Gols Marcados", 12),
+        Column(if (sw) "GS" else "Gols Sofridos", 13),
+        Column(if (sw) "SG" else "Saldo de Gols", 14)
       ))
     })
   )
