@@ -10,7 +10,7 @@ object LogoImage:
 
   def apply(source: String, pxSize: Int = Logo.SMALL_TEAM_LOGO_PX_SIZE): ReactiveHtmlElement[HTMLImageElement] =
     img(
-      buildStyleAttr(s"width: ${pxSize}px", s"height: ${pxSize}px", "object-fit: none"),
+      buildStyleAttr(s"width: ${pxSize}px", s"height: ${pxSize}px", "object-fit: scale-down"),
       src := source
     )
 

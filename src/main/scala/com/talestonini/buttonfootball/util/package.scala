@@ -66,7 +66,7 @@ package object util {
 
   object Logo:
     private val EXTENSION = "bmp"
-    val SMALL_TEAM_LOGO_PX_SIZE = 40
+    val SMALL_TEAM_LOGO_PX_SIZE = 35
 
     def forChampionshipTypeImgFile(logoImgFile: String, isLarge: Boolean = false): String =
       s"/img/championships/${if (isLarge) "125" else "45"}/${treat(logoImgFile)}.$EXTENSION"
@@ -75,7 +75,7 @@ package object util {
       s"/img/championships/trophies/125/${treat(logoImgFile)}.$EXTENSION"
 
     def forTeamImgFile(logoImgFile: String, isLarge: Boolean = false): String =
-      s"/img/teams/${if (isLarge) "150" else s"$SMALL_TEAM_LOGO_PX_SIZE"}/${treat(logoImgFile)}.$EXTENSION"
+      s"/img/teams/${if (isLarge) "150" else "150"}/${treat(logoImgFile)}.$EXTENSION"
 
     def forTeamName(teamName: String, isLarge: Boolean = false): Option[String] =
       teams.now().find(t => t.name == teamName)
