@@ -12,7 +12,7 @@ import org.scalajs.dom.HTMLDivElement
 
 object Debug:
 
-  def renderInternalState(isEnabled: Boolean = false): ReactiveHtmlElement[HTMLDivElement] =
+  def internalStateView(isEnabled: Boolean = false): ReactiveHtmlElement[HTMLDivElement] =
     if (!isEnabled)
       div()
     else

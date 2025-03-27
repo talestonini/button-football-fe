@@ -187,7 +187,7 @@ object FinalsMatchesTabContent:
   // --- cell links ----------------------------------------------------------------------------------------------------
 
   private val cellLinkAddressFn = (fromCell: Cell, toCell: Cell) => s"${fromCell.address()}-${toCell.address()}"
-  private def renderCellLinks(): Signal[List[Element]] =
+  private def cellLinks(): Signal[List[Element]] =
     activeTab.signal.combineWith(funnelingTree).map { case (at, ft) => ft.map(n =>
       def svgForCurve(fromCell: Cell, toCell: Cell): Element =
         import svg.*
@@ -228,12 +228,12 @@ object FinalsMatchesTabContent:
   // --- public API ----------------------------------------------------------------------------------------------------
 
   def apply(): Element =
-    def renderFinalsMatch(m: Match): Element =
+    def finalsMatch(m: Match): Element =
       div(
         cls := "card",
         div(
           cls := "card-body p-2",
-          renderCardTitle(m.`type`, "mb-0"),
+          cardTitle(m.`type`, "mb-0"),
           table(
             cls := "table mb-0 table-borderless align-middle",
             tbody(MatchTableRow(m, isFinalsStage = true))
@@ -260,11 +260,11 @@ object FinalsMatchesTabContent:
                       if (c == maxc && r == maxr) {
                         val tpp = thirdPlacePlayoff(ft, fms)
                         if (tpp.isEmpty) ""
-                        else renderFinalsMatch(tpp.get)
+                        else finalsMatch(tpp.get)
                       } else {
                         val mc = ft.findFirst(mc => mc.cell == Cell(c, r))
                         if (mc.isEmpty || mc.get.`match`.isEmpty) ""
-                        else renderFinalsMatch(mc.get.`match`.get)
+                        else finalsMatch(mc.get.`match`.get)
                       }
                     })
                   )
@@ -274,7 +274,7 @@ object FinalsMatchesTabContent:
           )
         ),
         // SVG elements "host" Bézier curves that link cells, drawing the funneling of finals matches
-        children <-- renderCellLinks()
+        children <-- cellLinks()
       ))
     )
   end apply

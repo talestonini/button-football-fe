@@ -9,6 +9,7 @@ import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.Standings.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
 import com.talestonini.buttonfootball.util.*
+import com.talestonini.buttonfootball.util.Logo.*
 import com.talestonini.buttonfootball.util.Window.Size
 
 @main
@@ -30,11 +31,11 @@ def mainAppElement(): Element =
     h1("Jogo de Botão").wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
     div(
       cls := s"row ${spacingStyle("pb")} ${spacingStyle("g")}",
-      renderTeamTypeRadios().wrapInDiv("col-auto"),
-      renderChampionshipTypeSelect().wrapInDiv("col"),
+      teamTypeRadios().wrapInDiv("col-auto"),
+      championshipTypeSelect().wrapInDiv("col"),
     ),
-    renderChampionshipEditionsRange().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
-    renderMatchesTabs().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
+    championshipEditionsRange().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
+    matchesTabs().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
     // input(
     //   typ := "text",
     //   value <-- teamName,
@@ -49,17 +50,17 @@ def mainAppElement(): Element =
     //   TTHeader("Cidade", 5),
     //   TTHeader("País", 6)
     // ))
-    Debug.renderInternalState(false)
+    Debug.internalStateView()
   )
 
 // --- rendering functions ---------------------------------------------------------------------------------------------
 
-def renderTeamTypeRadios(): Element =
+def teamTypeRadios(): Element =
   div(
     cls := "card shadow",
     div(
       cls := "card-body",
-      renderCardTitle("Tipo de Time"),
+      cardTitle("Tipo de Time"),
       children <-- teamTypes.signal.map(tts => tts.map(tt =>
         div(
           cls := "form-check",
@@ -83,12 +84,12 @@ def renderTeamTypeRadios(): Element =
     )
   )
 
-def renderChampionshipTypeSelect(): Element =
+def championshipTypeSelect(): Element =
   div(
     cls := "card shadow h-100 w-100",
     div(
       cls := "card-body",
-      renderCardTitle("Campeonato"),
+      cardTitle("Campeonato"),
       select(
         cls := "form-select",
         children <-- championshipTypes.signal.map(cts => cts.map(ct =>
@@ -105,12 +106,12 @@ def renderChampionshipTypeSelect(): Element =
     )
   )
 
-def renderChampionshipEditionsRange(): Element =
+def championshipEditionsRange(): Element =
   div(
     cls := "card shadow",
     div(
       cls := "card-body",
-      renderCardTitle("Edição"),
+      cardTitle("Edição"),
       div(
         cls := "row",
         div(
@@ -147,7 +148,7 @@ def renderChampionshipEditionsRange(): Element =
     )
   )
 
-def renderMatchesTabs(): Element =
+def matchesTabs(): Element =
   div(
     cls := "border rounded shadow",
     ul(
@@ -166,27 +167,28 @@ def renderMatchesTabs(): Element =
     ),
     div(
       cls := "tab-content p-0",
-      child <-- activeTab.signal.map(renderMatchesTabContent)
+      child <-- activeTab.signal.map(matchesTabContent)
     )
   )
 
-def renderMatchesTabContent(tabName: String): Element =
+def matchesTabContent(tabName: String): Element =
   div(
     cls := "text-center",
     if (tabName.startsWith(GROUP))
-      renderGroupMatchesTabContent(tabName)
+      groupMatchesTabContent(tabName)
     else if (tabName == FINALS_TAB)
       FinalsMatchesTabContent()
     else if (tabName == FINAL_STANDINGS_TAB)
-      renderFinalStandingsTabContent()
+      finalStandingsTabContent()
     else
       div()
   )
 
-def renderGroupMatchesTabContent(tabName: String): Element =
+def groupMatchesTabContent(tabName: String): Element =
   div(
     div(
       cls := "container border bg-white p-3",
+      buildStyleAttr("overflow-x: auto"),
       table(
         cls := "table align-middle mb-0",
         tbody(
@@ -196,13 +198,14 @@ def renderGroupMatchesTabContent(tabName: String): Element =
     ),
     div(
       cls := "container border border-top-0 bg-white p-3 text-end",
+      buildStyleAttr("overflow-x: auto"),
       child <-- groupStandings.signal.map(gss => {
         val groupStandingsVar: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
         val wz = Window.size()
         val sw = wz == Size.Small || wz == Size.Medium
         Table[Standing](groupStandingsVar, List(
           Column(if (sw) "" else "Intra-Grupo", 4),
-          Column("", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
+          standingsTeamColumn(),
           Column(if (sw) "P" else "Pontos", 7),
           Column(if (sw) "J" else "Jogos", 8),
           Column(if (sw) "V" else "Vitórias", 9),
@@ -217,16 +220,17 @@ def renderGroupMatchesTabContent(tabName: String): Element =
     )
   )
 
-def renderFinalStandingsTabContent(): Element =
+def finalStandingsTabContent(): Element =
   div(
     cls := "container border bg-white p-3 text-end",
+    buildStyleAttr("overflow-x: auto"),
     child <-- finalStandings.signal.map(fss => {
       val finalStandingsVar: Var[List[Standing]] = Var(fss)
       val wz = Window.size()
       val sw = wz == Size.Small || wz == Size.Medium
       Table[Standing](finalStandingsVar, List(
         Column(if (sw) "" else "Final", 6),
-        Column("", 2, Some((teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse("")))),
+        standingsTeamColumn(),
         Column(if (sw) "P" else "Pontos", 7),
         Column(if (sw) "J" else "Jogos", 8),
         Column(if (sw) "V" else "Vitórias", 9),
@@ -237,4 +241,9 @@ def renderFinalStandingsTabContent(): Element =
         Column(if (sw) "S" else "Saldo de Gols", 14)
       ))
     })
+  )
+
+private def standingsTeamColumn() =
+  Column("", 2, Some(
+    (teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse(""), XSMALL_TEAM_LOGO_PX_SIZE))
   )

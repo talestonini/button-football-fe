@@ -33,7 +33,7 @@ object Table:
       }
     end anyOrdering
 
-    def renderTh[M <: Model](models: Var[List[M]]): Element =
+    def tableHeader[M <: Model](models: Var[List[M]]): Element =
       th(
         text <-- headerVar,
         onClick --> (ev => {
@@ -52,7 +52,7 @@ object Table:
   end Column
 
   def apply[M <: Model](models: Var[List[M]], headers: List[Column]): Element =
-    def renderTr(m: M): Element =
+    def tableRow(m: M): Element =
 
       tr(headers.map(h => {
         def valOrApplyElemFnToVal(value: String): Modifier[ReactiveHtmlElement[HTMLTableCellElement]] =
@@ -69,10 +69,10 @@ object Table:
       cls := "table align-middle",
       thead(
         cls := "thead-light",
-        tr(headers.map(h => Column(h.header, h.modelFieldPos).renderTh(models)))
+        tr(headers.map(h => Column(h.header, h.modelFieldPos).tableHeader(models)))
       ),
       tbody(
-        children <-- models.signal.map(ms => ms.map(m => renderTr(m)))
+        children <-- models.signal.map(ms => ms.map(m => tableRow(m)))
       )
     )
   end apply 
