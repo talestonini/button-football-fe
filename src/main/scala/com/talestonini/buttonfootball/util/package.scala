@@ -66,8 +66,10 @@ package object util {
 
   object Logo:
     private val EXTENSION        = "bmp"
-    val SMALL_TEAM_LOGO_PX_SIZE  = 40
     val XSMALL_TEAM_LOGO_PX_SIZE = 30
+    val SMALL_TEAM_LOGO_PX_SIZE  = 40
+    val MEDIUM_TEAM_LOGO_PX_SIZE = 50
+    val LARGE_TEAM_LOGO_PX_SIZE  = 60
 
     def forChampionshipTypeImgFile(logoImgFile: String, isLarge: Boolean = false): String =
       s"/img/championships/${if (isLarge) "125" else "45"}/${treat(logoImgFile)}.$EXTENSION"

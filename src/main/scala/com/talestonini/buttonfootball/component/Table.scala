@@ -13,8 +13,8 @@ object Table:
   case object Asc extends Sorting
   case object Desc extends Sorting
 
-  case class Column(header: String, modelFieldPos: Int, elem: Option[String => Element] = None,
-                    sorting: Var[Sorting] = Var(NoSorting)):
+  case class Column(header: String, modelFieldPos: Int, align: String = "text-end", isRender: Boolean = true,
+                    elem: Option[String => Element] = None, sorting: Var[Sorting] = Var(NoSorting)):
 
     private val headerVar: Var[String] = Var(header)
 
@@ -35,6 +35,7 @@ object Table:
 
     def tableHeader[M <: Model](models: Var[List[M]]): Element =
       th(
+        cls := align,
         text <-- headerVar,
         onClick --> (ev => {
           val currSorting = sorting.signal.now()
@@ -53,23 +54,25 @@ object Table:
 
   def apply[M <: Model](models: Var[List[M]], headers: List[Column]): Element =
     def tableRow(m: M): Element =
-
-      tr(headers.map(h => {
+      tr(headers.filter(h => h.isRender).map(h => {
         def valOrApplyElemFnToVal(value: String): Modifier[ReactiveHtmlElement[HTMLTableCellElement]] =
           if (h.elem.isEmpty) value else h.elem.get(value)
 
-        td(m.productElement(h.modelFieldPos) match {
-          case Some(optionalVal) => valOrApplyElemFnToVal(optionalVal.toString)
-          case None              => ""
-          case anythingElse: Any => valOrApplyElemFnToVal(anythingElse.toString())
-        }
-      )}))
+        td(
+          cls := h.align,
+          m.productElement(h.modelFieldPos) match {
+            case Some(optionalVal) => valOrApplyElemFnToVal(optionalVal.toString)
+            case None              => ""
+            case anythingElse: Any => valOrApplyElemFnToVal(anythingElse.toString())
+          }
+        )
+      }))
 
     table(
       cls := "table align-middle",
       thead(
         cls := "thead-light",
-        tr(headers.map(h => Column(h.header, h.modelFieldPos).tableHeader(models)))
+        tr(headers.filter(h => h.isRender).map(h => Column(h.header, h.modelFieldPos).tableHeader(models)))
       ),
       tbody(
         children <-- models.signal.map(ms => ms.map(m => tableRow(m)))

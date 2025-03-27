@@ -201,20 +201,20 @@ def groupMatchesTabContent(tabName: String): Element =
       buildStyleAttr("overflow-x: auto"),
       child <-- groupStandings.signal.map(gss => {
         val groupStandingsVar: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
-        val wz = Window.size()
-        val sw = wz == Size.Small || wz == Size.Medium
+        val ws = Window.size()
+        val smallish = ws == Size.Small || ws == Size.Medium
         Table[Standing](groupStandingsVar, List(
-          Column(if (sw) "" else "Intra-Grupo", 4),
-          standingsTeamColumn(),
-          Column(if (sw) "P" else "Pontos", 7),
-          Column(if (sw) "J" else "Jogos", 8),
-          Column(if (sw) "V" else "Vitórias", 9),
-          Column(if (sw) "E" else "Empates", 10),
-          Column(if (sw) "D" else "Derrotas", 11),
-          Column(if (sw) "GM" else "Gols Marcados", 12),
-          Column(if (sw) "GS" else "Gols Sofridos", 13),
-          Column(if (sw) "S" else "Saldo de Gols", 14),
-          Column(if (sw) "EG" else "Extra-Grupo", 5)
+          Column(if (smallish) "" else "Intra-Grupo", 4),
+          standingsTeamColumn(ws),
+          Column(if (smallish) "P" else "Pontos", 7),
+          Column(if (smallish) "J" else "Jogos", 8),
+          Column(if (smallish) "V" else "Vitórias", 9),
+          Column(if (smallish) "E" else "Empates", 10),
+          Column(if (smallish) "D" else "Derrotas", 11),
+          Column(if (smallish) "GM" else "Gols Marcados", 12),
+          Column(if (smallish) "GS" else "Gols Sofridos", 13),
+          Column(if (smallish) "S" else "Saldo de Gols", 14),
+          Column(if (smallish) "EG" else "Extra-Grupo", 5)
         ))
       })
     )
@@ -226,24 +226,25 @@ def finalStandingsTabContent(): Element =
     buildStyleAttr("overflow-x: auto"),
     child <-- finalStandings.signal.map(fss => {
       val finalStandingsVar: Var[List[Standing]] = Var(fss)
-      val wz = Window.size()
-      val sw = wz == Size.Small || wz == Size.Medium
+      val ws = Window.size()
+      val smallish = ws == Size.Small || ws == Size.Medium
       Table[Standing](finalStandingsVar, List(
-        Column(if (sw) "" else "Final", 6),
-        standingsTeamColumn(),
-        Column(if (sw) "P" else "Pontos", 7),
-        Column(if (sw) "J" else "Jogos", 8),
-        Column(if (sw) "V" else "Vitórias", 9),
-        Column(if (sw) "E" else "Empates", 10),
-        Column(if (sw) "D" else "Derrotas", 11),
-        Column(if (sw) "GM" else "Gols Marcados", 12),
-        Column(if (sw) "GS" else "Gols Sofridos", 13),
-        Column(if (sw) "S" else "Saldo de Gols", 14)
+        Column(if (smallish) "" else "Final", 6),
+        standingsTeamColumn(ws),
+        Column("", 2, "text-start", !smallish),
+        Column(if (smallish) "P" else "Pontos", 7),
+        Column(if (smallish) "J" else "Jogos", 8),
+        Column(if (smallish) "V" else "Vitórias", 9),
+        Column(if (smallish) "E" else "Empates", 10),
+        Column(if (smallish) "D" else "Derrotas", 11),
+        Column(if (smallish) "GM" else "Gols Marcados", 12),
+        Column(if (smallish) "GS" else "Gols Sofridos", 13),
+        Column(if (smallish) "S" else "Saldo de Gols", 14)
       ))
     })
   )
 
-private def standingsTeamColumn() =
-  Column("", 2, Some(
-    (teamName: String) => LogoImage(Logo.forTeamName(teamName).getOrElse(""), XSMALL_TEAM_LOGO_PX_SIZE))
-  )
+private def standingsTeamColumn(windowSize: Size) =
+  Column("", 2, "text-center", true, Some((teamName: String) =>
+    LogoImage(Logo.forTeamName(teamName).getOrElse(""), XSMALL_TEAM_LOGO_PX_SIZE)
+  ))
