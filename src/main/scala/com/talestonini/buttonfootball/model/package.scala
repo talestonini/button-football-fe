@@ -80,18 +80,17 @@ package object model:
     TeamTypeService.getTeamTypes()
       .unsafeToFuture()
       .onComplete({
-        case s: Success[List[TeamType]] => {
+        case s: Success[List[TeamType]] =>
           vTeamTypes.update(_ => s.value)
           vSelectedTeamType.update(_ => Some(s.value.head))
           seGetChampionshipTypes(s.value.head.code)
-        }
-        case f: Failure[List[TeamType]] => {
+          unsetLoading()
+        case f: Failure[List[TeamType]] =>
           println(s"failed fetching team types: ${f.exception.getMessage}")
           vTeamTypes.update(_ => List.empty)
           vSelectedTeamType.update(_ => None)
-        }
+          unsetLoading()
       })(queue)
-    unsetLoading()
   end seGetTeamTypes
   
   def seGetChampionshipTypes(codTeamType: String): Unit =
@@ -100,18 +99,17 @@ package object model:
     ChampionshipTypeService.getChampionshipTypes(Some(codTeamType))
       .unsafeToFuture()
       .onComplete({
-        case s: Success[List[ChampionshipType]] => {
+        case s: Success[List[ChampionshipType]] =>
           vChampionshipTypes.update(_ => s.value)
           vSelectedChampionshipType.update(_ => Some(s.value.head))
           seGetChampionships(s.value.head.code)
-        }
-        case f: Failure[List[ChampionshipType]] => {
+          unsetLoading()
+        case f: Failure[List[ChampionshipType]] =>
           println(s"failed fetching championship type: ${f.exception.getMessage}")
           vChampionshipTypes.update(_ => List.empty)
           vSelectedChampionshipType.update(_ => None)
-        }
+          unsetLoading()
       })(queue)
-    unsetLoading()
   end seGetChampionshipTypes
   
   def seGetChampionships(codChampionshipType: String): Unit =
@@ -120,7 +118,7 @@ package object model:
     ChampionshipService.getChampionships(Some(codChampionshipType))
       .unsafeToFuture()
       .onComplete({
-        case s: Success[List[Championship]] => {
+        case s: Success[List[Championship]] =>
           vChampionships.update(_ => s.value)
           vSelectedChampionship.update(_ => 
             val editionToUpdateWith =
@@ -136,17 +134,16 @@ package object model:
           // seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
           // seGetFinalStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
           seGetStandings(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-        }
-        case f: Failure[List[Championship]] => {
+          unsetLoading()
+        case f: Failure[List[Championship]] =>
           println(s"failed fetching championships: ${f.exception.getMessage}")
           vChampionships.update(_ => List.empty)
           vSelectedChampionship.update(_ => None)
           vMatches.update(_ => List.empty)
           vGroupStandings.update(_ => List.empty)
           vFinalStandings.update(_ => List.empty)
-        }
+          unsetLoading()
       })(queue)
-    unsetLoading()
   end seGetChampionships
   
   def seGetMatches(championshipId: Id): Unit =
@@ -164,13 +161,13 @@ package object model:
               else if (vActiveTab.now() == FINALS_TAB) FINALS_TAB
               else FINAL_STANDINGS_TAB
           )
-        case f: Failure[List[Match]] => {
+          unsetLoading()
+        case f: Failure[List[Match]] =>
           println(s"failed fetching matches: ${f.exception.getMessage}")
           vMatches.update(_ => List.empty)
           vActiveTab.update(_ => NO_ACTIVE_TAB)
-        }
+          unsetLoading()
       })(queue)
-    unsetLoading()
   end seGetMatches
 
   def seGetStandings(championshipId: Id): Unit =
@@ -182,13 +179,13 @@ package object model:
         case s: Success[List[Standing]] =>
           vGroupStandings.update(_ => s.value.filter(st => st.`type`.startsWith(GROUP)))
           vFinalStandings.update(_ => s.value.filter(st => !st.`type`.startsWith(GROUP)))
-        case f: Failure[List[Standing]] => {
+          unsetLoading()
+        case f: Failure[List[Standing]] =>
           println(s"failed fetching standings: ${f.exception.getMessage}")
           vGroupStandings.update(_ => List.empty)
           vFinalStandings.update(_ => List.empty)
-        }
+          unsetLoading()
       })(queue)
-    unsetLoading()
   end seGetStandings
 
   def seGetGroupStandings(championshipId: Id): Unit =
@@ -199,12 +196,12 @@ package object model:
       .onComplete({
         case s: Success[List[Standing]] =>
           vGroupStandings.update(_ => s.value)
-        case f: Failure[List[Standing]] => {
+          unsetLoading()
+        case f: Failure[List[Standing]] =>
           println(s"failed fetching group standings: ${f.exception.getMessage}")
           vGroupStandings.update(_ => List.empty)
-        }
+          unsetLoading()
       })(queue)
-    unsetLoading()
   end seGetGroupStandings
 
   def seGetFinalStandings(championshipId: Id): Unit =
@@ -215,12 +212,12 @@ package object model:
       .onComplete({
         case s: Success[List[Standing]] =>
           vFinalStandings.update(_ => s.value)
-        case f: Failure[List[Standing]] => {
+          unsetLoading()
+        case f: Failure[List[Standing]] =>
           println(s"failed fetching final standings: ${f.exception.getMessage}")
           vFinalStandings.update(_ => List.empty)
-        }
+          unsetLoading()
       })(queue)
-    unsetLoading()
   end seGetFinalStandings
 
   def seGetTeams(name: String = ""): Unit =
@@ -230,10 +227,13 @@ package object model:
       .getTeams(if (name.isBlank()) None else Some(name.trim()))
       .unsafeToFuture()
       .onComplete({
-        case s: Success[List[Team]] => vTeams.update(_ => s.value)
-        case f: Failure[List[Team]] => println(s"failed fetching team: ${f.exception.getMessage}")
+        case s: Success[List[Team]] =>
+          vTeams.update(_ => s.value)
+          unsetLoading()
+        case f: Failure[List[Team]] =>
+          println(s"failed fetching team: ${f.exception.getMessage}")
+          unsetLoading()
       })(queue)
-    unsetLoading()
   end seGetTeams
 
 end model
