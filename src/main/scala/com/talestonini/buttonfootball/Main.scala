@@ -252,13 +252,10 @@ def spinner(): Element =
   div(
     cls := "d-flex justify-content-center",
     child <-- vIsLoading.signal.map(isLoading =>
-      if (isLoading)
-        div(
-          cls := "spinner-border text-muted",
-          role := "status",
-          span(cls := "visually-hidden", "Carregando...")
-        )
-      else
-        div()
+      div(
+        cls := s"spinner-border text-muted ${if (isLoading) "visible" else "invisible"}",
+        role := "status",
+        span(cls := "visually-hidden", "Carregando...")
+      )
     )
   )
