@@ -29,12 +29,7 @@ def mainAppElement(): Element =
   div(
     cls := s"container shadow ${spacingStyle("p")} text-muted",
     Debug.internalStateView(),
-    div(
-      cls := "row",
-      h1(buildStyleAttr("font-weight: bold"), "Jogo de Botão").wrapInDiv(s"col-5"),
-      spinner().wrapInDiv("col-2 py-1"),
-      div(cls := "col-5")
-    ),
+    h1(buildStyleAttr("font-weight: bold"), "Jogo de Botão"),
     div(
       cls := s"row ${spacingStyle("pb")} ${spacingStyle("g")}",
       teamTypeRadios().wrapInDiv("col-auto"),
@@ -171,6 +166,7 @@ def tabs(): Element =
 def tabContent(tabName: String): Element =
   div(
     cls := "text-center",
+    spinner(),
     if (tabName.startsWith(GROUP))
       groupMatchesTabContent(tabName)
     else if (tabName == FINALS_TAB)
@@ -252,10 +248,13 @@ def spinner(): Element =
   div(
     cls := "d-flex justify-content-center",
     child <-- vIsLoading.signal.map(isLoading =>
-      div(
-        cls := s"spinner-border text-muted ${if (isLoading) "visible" else "invisible"}",
-        role := "status",
-        span(cls := "visually-hidden", "Carregando...")
-      )
+      if (isLoading)
+        div(
+          cls := s"spinner-border text-muted m-4",
+          role := "status",
+          span(cls := "visually-hidden", "Carregando...")
+        )
+      else
+        div()
     )
   )
