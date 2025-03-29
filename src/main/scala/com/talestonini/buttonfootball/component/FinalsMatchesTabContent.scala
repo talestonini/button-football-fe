@@ -68,10 +68,10 @@ object FinalsMatchesTabContent:
   private val minCol: Char = 'A'
   private val minRow: Int = 0
   private val lastColFn = (numQualif: Int) => (minCol.toInt + numLevelsFn(numQualif) * 2 - 1).toChar
-  val cols: Signal[NumericRange.Exclusive[Char]] = numQualif.map(nq => minCol until lastColFn(nq))
-  val rows: Signal[Range] = numQualif.map(nq => minRow until nq)
-  private val maxCol: Signal[Char] = cols.map(cs => if (!cs.isEmpty) cs.last else minCol)
-  private val maxRow: Signal[Int] = rows.map(rs => if (!rs.isEmpty) rs.last else minRow)
+  val sCols: Signal[NumericRange.Exclusive[Char]] = sNumQualif.map(nq => minCol until lastColFn(nq))
+  val sRows: Signal[Range] = sNumQualif.map(nq => minRow until nq)
+  private val sMaxCol: Signal[Char] = sCols.map(cs => if (!cs.isEmpty) cs.last else minCol)
+  private val sMaxRow: Signal[Int] = sRows.map(rs => if (!rs.isEmpty) rs.last else minRow)
 
   private val cellAddressFn = (col: Char, row: Int) => s"$col$row"
   case class Cell(col: Char, row: Int) {
@@ -107,12 +107,12 @@ object FinalsMatchesTabContent:
    * curves).  Plus, traversing a small tree many times is cheap.
    */
   private case class MatchCell(seed: Int, otherSeed: Int, cell: Cell, toCells: List[Cell], var `match`: Option[Match])
-  private val funnelingTree: Signal[Tree[MatchCell]] =
-    numQualif
-      .combineWith(cols)
-      .combineWith(rows)
-      .combineWith(qualifiedTeams)
-      .combineWith(finalsMatches).map { case (nq, cs, rs, qts, fms) =>
+  private val sFunnelingTree: Signal[Tree[MatchCell]] =
+    sNumQualif
+      .combineWith(sCols)
+      .combineWith(sRows)
+      .combineWith(sQualifiedTeams)
+      .combineWith(sFinalsMatches).map { case (nq, cs, rs, qts, fms) =>
         // build the tree
         val tree = if (nq == 0) Empty
         else {
@@ -187,8 +187,8 @@ object FinalsMatchesTabContent:
   // --- cell links ----------------------------------------------------------------------------------------------------
 
   private val cellLinkAddressFn = (fromCell: Cell, toCell: Cell) => s"${fromCell.address()}-${toCell.address()}"
-  private def cellLinks(): Signal[List[Element]] =
-    activeTab.signal.combineWith(funnelingTree).map { case (at, ft) => ft.map(n =>
+  private def sCellLinks(): Signal[List[Element]] =
+    vActiveTab.signal.combineWith(sFunnelingTree).map { case (at, ft) => ft.map(n =>
       def svgForCurve(fromCell: Cell, toCell: Cell): Element =
         import svg.*
         svg(
@@ -243,20 +243,20 @@ object FinalsMatchesTabContent:
 
     div(
       cls := "border d-flex justify-content-center",
-      child <-- numQualif.map(nq => if (nq <= 0) div() else div(
+      child <-- sNumQualif.map(nq => if (nq <= 0) div() else div(
         idAttr := coordsAnchorElemId,
         buildStyleAttr("overflow-x: auto", "position: relative"),
         table(
           cls := "table table-borderless mt-3",
           styleAttr := "width: 0%",
           tbody(
-            children <-- rows.combineWith(maxRow).map((rs, maxr) => rs.map(r =>
+            children <-- sRows.combineWith(sMaxRow).map((rs, maxr) => rs.map(r =>
               tr(
-                children <-- cols.combineWith(maxCol).map((cs, maxc) => cs.map(c =>
+                children <-- sCols.combineWith(sMaxCol).map((cs, maxc) => cs.map(c =>
                   td(
                     idAttr := cellAddressFn(c, r),
                     cls := "col text-center bg-light",
-                    child <-- funnelingTree.combineWith(finalsMatches).map((ft, fms) => {
+                    child <-- sFunnelingTree.combineWith(sFinalsMatches).map((ft, fms) => {
                       if (c == maxc && r == maxr) {
                         val tpp = thirdPlacePlayoff(ft, fms)
                         if (tpp.isEmpty) ""
@@ -274,7 +274,7 @@ object FinalsMatchesTabContent:
           )
         ),
         // SVG elements "host" Bézier curves that link cells, drawing the funneling of finals matches
-        children <-- cellLinks()
+        children <-- sCellLinks()
       ))
     )
   end apply

@@ -2,7 +2,7 @@ package com.talestonini.buttonfootball
 
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.modifiers.KeySetter.HtmlAttrSetter
-import com.talestonini.buttonfootball.model.teams
+import com.talestonini.buttonfootball.model.vTeams
 import org.scalajs.dom
 import org.scalajs.dom.DOMRect
 
@@ -81,7 +81,7 @@ package object util {
       s"/img/teams/150/${treat(logoImgFile)}.$EXTENSION"
 
     def forTeamName(teamName: String): Option[String] =
-      teams.now().find(t => t.name == teamName)
+      vTeams.now().find(t => t.name == teamName)
         .map(t => forTeamImgFile(t.logoImgFile))
 
     private def treat(name: String) = name.toLowerCase()

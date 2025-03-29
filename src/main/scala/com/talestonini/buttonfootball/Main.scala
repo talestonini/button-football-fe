@@ -38,7 +38,7 @@ def mainAppElement(): Element =
       championshipTypeSelect().wrapInDiv("col"),
     ),
     championshipEditionsRange().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
-    matchesTabs().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
+    tabs().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
     // input(
     //   typ := "text",
     //   value <-- teamName,
@@ -56,7 +56,7 @@ def teamTypeRadios(): Element =
     div(
       cls := "card-body",
       cardTitle("Tipo de Time"),
-      children <-- teamTypes.signal.map(tts => tts.map(tt =>
+      children <-- vTeamTypes.signal.map(tts => tts.map(tt =>
         div(
           cls := "form-check",
           label(
@@ -67,10 +67,10 @@ def teamTypeRadios(): Element =
               nameAttr := "teamType",
               value := tt.code,
               onChange.mapToValue --> { code =>
-                selectedTeamType.update(_ => teamTypes.now().find((tt) => tt.code == code))
+                vSelectedTeamType.update(_ => vTeamTypes.now().find((tt) => tt.code == code))
                 seGetChampionshipTypes(code)
               },
-              checked <-- selectedTeamType.signal.map(_.getOrElse(NO_TEAM_TYPE).code == tt.code)
+              checked <-- vSelectedTeamType.signal.map(_.getOrElse(NO_TEAM_TYPE).code == tt.code)
             ),
             tt.description
           )
@@ -87,14 +87,14 @@ def championshipTypeSelect(): Element =
       cardTitle("Campeonato"),
       select(
         cls := "form-select",
-        children <-- championshipTypes.signal.map(cts => cts.map(ct =>
+        children <-- vChampionshipTypes.signal.map(cts => cts.map(ct =>
           option(
             value := ct.code,
             ct.description
           )
         )),
         onChange.mapToValue --> { code =>
-          selectedChampionshipType.update(_ => championshipTypes.now().find((ct) => ct.code == code))
+          vSelectedChampionshipType.update(_ => vChampionshipTypes.now().find((ct) => ct.code == code))
           seGetChampionships(code)
         },
       )
@@ -115,46 +115,46 @@ def championshipEditionsRange(): Element =
             idAttr := "championshipEditionsRange",
             cls := "form-range",
             typ := "range",
-            minAttr <-- championships.signal.map(cs =>
+            minAttr <-- vChampionships.signal.map(cs =>
               (if (cs.nonEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION).toString
             ),
-            maxAttr <-- championships.signal.map(cs => 
+            maxAttr <-- vChampionships.signal.map(cs => 
               (if (cs.nonEmpty) cs.length else NO_CHAMPIONSHIP_EDITION).toString),
             onChange.mapToValue --> { edition =>
-              selectedChampionship.update(_ => championships.now().find((c) => c.numEdition == edition.toInt))
-              selectedEdition.update(_ => edition.toInt)
-              seGetMatches(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+              vSelectedChampionship.update(_ => vChampionships.now().find((c) => c.numEdition == edition.toInt))
+              vSelectedEdition.update(_ => edition.toInt)
+              seGetMatches(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
               // TODO: check whether using 2 APIs is a cleaner design - this is currently not working as the following
               //       quick succession of requests result in backend ConcurrentModificationException
               // seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
               // seGetFinalStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-              seGetStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+              seGetStandings(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
             },
-            value <-- selectedChampionship.signal.map(_.getOrElse(NO_CHAMPIONSHIP).numEdition.toString())
+            value <-- vSelectedChampionship.signal.map(_.getOrElse(NO_CHAMPIONSHIP).numEdition.toString())
           )
         ),
         div(
           cls := "col-auto",
           div(
-            child.text <-- selectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).numEdition)
+            child.text <-- vSelectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).numEdition)
           )
         )
       )
     )
   )
 
-def matchesTabs(): Element =
+def tabs(): Element =
   div(
     cls := "border rounded shadow",
     ul(
       cls := "nav nav-tabs",
-      children <-- tabs.map(ts => ts.map(t =>
+      children <-- sTabs.map(ts => ts.map(t =>
         li(
           cls := "nav-item",
           button(
             cls := "nav-link text-muted",
-            cls <-- activeTab.signal.map(at => if (t == at) "active" else ""),
-            onClick --> activeTab.update(ev => t),
+            cls <-- vActiveTab.signal.map(at => if (t == at) "active" else ""),
+            onClick --> vActiveTab.update(ev => t),
             b(t)
           )
         )
@@ -162,13 +162,14 @@ def matchesTabs(): Element =
     ),
     div(
       cls := "tab-content p-0",
-      child <-- activeTab.signal.map(matchesTabContent)
+      child <-- vActiveTab.signal.map(tabContent)
     )
   )
 
-def matchesTabContent(tabName: String): Element =
+def tabContent(tabName: String): Element =
   div(
     cls := "text-center",
+    // spinner(),
     if (tabName.startsWith(GROUP))
       groupMatchesTabContent(tabName)
     else if (tabName == FINALS_TAB)
@@ -187,18 +188,20 @@ def groupMatchesTabContent(tabName: String): Element =
       table(
         cls := "table align-middle mb-0",
         tbody(
-          children <-- groupsMatches.signal.map(gms => gms.filter(gm => gm.`type` == tabName).map(gm => MatchTableRow(gm)))
+          children <-- sGroupsMatches.signal.map(
+            gms => gms.filter(gm => gm.`type` == tabName).map(gm => MatchTableRow(gm))
+          )
         )
       ),
     ),
     div(
       cls := "container border border-top-0 bg-white p-3 text-end",
       buildStyleAttr("overflow-x: auto"),
-      child <-- groupStandings.signal.map(gss => {
-        val groupStandingsVar: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
+      child <-- vGroupStandings.signal.map(gss => {
+        val vGroupStandings: Var[List[Standing]] = Var(gss.filter(gs => gs.`type` == tabName))
         val ws = Window.size()
         val smallish = ws == Size.Small || ws == Size.Medium
-        Table[Standing](groupStandingsVar, List(
+        Table[Standing](vGroupStandings, List(
           Column(if (smallish) "" else "Intra-Grupo", 4),
           standingsTeamColumn(ws),
           Column(if (smallish) "P" else "Pontos", 7),
@@ -219,11 +222,11 @@ def finalStandingsTabContent(): Element =
   div(
     cls := "container border bg-white p-3 text-end",
     buildStyleAttr("overflow-x: auto"),
-    child <-- finalStandings.signal.map(fss => {
-      val finalStandingsVar: Var[List[Standing]] = Var(fss)
+    child <-- vFinalStandings.signal.map(fss => {
+      val vFinalStandings: Var[List[Standing]] = Var(fss)
       val ws = Window.size()
       val smallish = ws == Size.Small || ws == Size.Medium
-      Table[Standing](finalStandingsVar, List(
+      Table[Standing](vFinalStandings, List(
         Column(if (smallish) "" else "Final", 6),
         standingsTeamColumn(ws),
         Column("", 2, "text-start", !smallish),
@@ -243,3 +246,16 @@ private def standingsTeamColumn(windowSize: Size) =
   Column("", 2, "text-center", true, Some((teamName: String) =>
     LogoImage(Logo.forTeamName(teamName).getOrElse(""), XSMALL_TEAM_LOGO_PX_SIZE)
   ))
+
+def spinner(): Element =
+  div(
+    cls := "d-flex justify-content-center",
+    div(
+      cls := "spinner-border",
+      role := "status",
+      span(
+        cls := "visually-hidden",
+        "Carregando..."
+      )
+    )
+  )
