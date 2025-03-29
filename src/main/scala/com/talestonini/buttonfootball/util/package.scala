@@ -93,9 +93,17 @@ package object util {
       b(title)
     )
 
-  def scaleFont(): String =
+  def maybeScaleFontDown(): String =
     if (Window.size() == Window.Size.Small)
       "font-size: 0.6rem"
+    else
+      "font-size: 1rem"
+
+  def maybeScaleFontUp(): String =
+    if (Window.size() == Window.Size.Large)
+      "font-size: 2rem"
+    else if (Window.size() == Window.Size.Medium)
+      "font-size: 1.5rem"
     else
       "font-size: 1rem"
 

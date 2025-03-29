@@ -27,7 +27,7 @@ def ButtonFootballFrontEnd(): Unit =
 
 def mainAppElement(): Element =
   div(
-    cls := s"container shadow ${spacingStyle("p")}",
+    cls := s"container shadow ${spacingStyle("p")} text-muted",
     h1("Jogo de Botão").wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
     div(
       cls := s"row ${spacingStyle("pb")} ${spacingStyle("g")}",
@@ -157,7 +157,7 @@ def matchesTabs(): Element =
         li(
           cls := "nav-item",
           button(
-            cls := "nav-link",
+            cls := "nav-link text-muted",
             cls <-- activeTab.signal.map(at => if (t == at) "active" else ""),
             onClick --> activeTab.update(ev => t),
             b(t)

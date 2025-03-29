@@ -35,7 +35,7 @@ object Table:
 
     def tableHeader[M <: Model](models: Var[List[M]]): Element =
       th(
-        cls := align,
+        cls := s"$align text-muted",
         text <-- headerVar,
         onClick --> (ev => {
           val currSorting = sorting.signal.now()
