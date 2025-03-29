@@ -28,7 +28,10 @@ def ButtonFootballFrontEnd(): Unit =
 def mainAppElement(): Element =
   div(
     cls := s"container shadow ${spacingStyle("p")} text-muted",
-    h1("Jogo de Botão").wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
+    h1(
+      buildStyleAttr("font-weight: bold"),
+      "Jogo de Botão"
+    ).wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
     div(
       cls := s"row ${spacingStyle("pb")} ${spacingStyle("g")}",
       teamTypeRadios().wrapInDiv("col-auto"),
@@ -42,14 +45,6 @@ def mainAppElement(): Element =
     //   onInput.mapToValue --> teamName,
     //   onChange --> (ev => seGetTeams(teamName.now()))
     // ),
-    // TTTable.renderTable(teams, List(
-    //   TTHeader("Nome", 1),
-    //   TTHeader("Tipo", 2),
-    //   TTHeader("Nome Completo", 3),
-    //   TTHeader("Fundação", 4),
-    //   TTHeader("Cidade", 5),
-    //   TTHeader("País", 6)
-    // ))
     Debug.internalStateView()
   )
 
@@ -57,7 +52,7 @@ def mainAppElement(): Element =
 
 def teamTypeRadios(): Element =
   div(
-    cls := "card shadow",
+    cls := "card shadow h-100 w-100",
     div(
       cls := "card-body",
       cardTitle("Tipo de Time"),
