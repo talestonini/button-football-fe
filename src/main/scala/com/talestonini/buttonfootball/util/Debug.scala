@@ -47,7 +47,8 @@ object Debug:
             case(gss, fss) => s"Group Standings: ${gss.size}, Final Standings: ${fss.size}"
           }
         ),
-        div(child.text <-- vTeams.signal.map(ts => s"Teams count: ${ts.size}"))
+        div(child.text <-- vTeams.signal.map(ts => s"Teams count: ${ts.size}")),
+        div(child.text <-- vIsLoading.signal.map(isLoading => s"Loading: $isLoading"))
       )
 
   // --- assertions functions ------------------------------------------------------------------------------------------

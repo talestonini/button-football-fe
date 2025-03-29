@@ -68,9 +68,14 @@ package object model:
 
   val vTeams: Var[List[Team]] = Var(List.empty)
 
+  val vIsLoading: Var[Boolean] = Var(false)
+  def setLoading() = vIsLoading.update(_ => true)
+  def unsetLoading() = vIsLoading.update(_ => false)
+
   // --- side-effect functions -------------------------------------------------------------------------------------------
   
   def seGetTeamTypes(): Unit =
+    setLoading()
     println(s"fetching team types")
     TeamTypeService.getTeamTypes()
       .unsafeToFuture()
@@ -86,9 +91,11 @@ package object model:
           vSelectedTeamType.update(_ => None)
         }
       })(queue)
+    unsetLoading()
   end seGetTeamTypes
   
   def seGetChampionshipTypes(codTeamType: String): Unit =
+    setLoading()
     println(s"fetching championship types with team type code '$codTeamType'")
     ChampionshipTypeService.getChampionshipTypes(Some(codTeamType))
       .unsafeToFuture()
@@ -104,9 +111,11 @@ package object model:
           vSelectedChampionshipType.update(_ => None)
         }
       })(queue)
+    unsetLoading()
   end seGetChampionshipTypes
   
   def seGetChampionships(codChampionshipType: String): Unit =
+    setLoading()
     println(s"fetching championships with championship type code '$codChampionshipType'")
     ChampionshipService.getChampionships(Some(codChampionshipType))
       .unsafeToFuture()
@@ -137,9 +146,11 @@ package object model:
           vFinalStandings.update(_ => List.empty)
         }
       })(queue)
+    unsetLoading()
   end seGetChampionships
   
   def seGetMatches(championshipId: Id): Unit =
+    setLoading()
     println(s"fetching matches with championship id '$championshipId'")
     ChampionshipService.getMatches(championshipId)
       .unsafeToFuture()
@@ -159,9 +170,11 @@ package object model:
           vActiveTab.update(_ => NO_ACTIVE_TAB)
         }
       })(queue)
+    unsetLoading()
   end seGetMatches
 
   def seGetStandings(championshipId: Id): Unit =
+    setLoading()
     println(s"fetching standings with championship id '$championshipId'")
     ChampionshipService.getStandings(championshipId)
       .unsafeToFuture()
@@ -175,9 +188,11 @@ package object model:
           vFinalStandings.update(_ => List.empty)
         }
       })(queue)
+    unsetLoading()
   end seGetStandings
 
   def seGetGroupStandings(championshipId: Id): Unit =
+    setLoading()
     println(s"fetching group standings with championship id '$championshipId'")
     ChampionshipService.getGroupStandings(championshipId)
       .unsafeToFuture()
@@ -189,9 +204,11 @@ package object model:
           vGroupStandings.update(_ => List.empty)
         }
       })(queue)
+    unsetLoading()
   end seGetGroupStandings
 
   def seGetFinalStandings(championshipId: Id): Unit =
+    setLoading()
     println(s"fetching final standings with championship id '$championshipId'")
     ChampionshipService.getFinalStandings(championshipId)
       .unsafeToFuture()
@@ -203,9 +220,11 @@ package object model:
           vFinalStandings.update(_ => List.empty)
         }
       })(queue)
+    unsetLoading()
   end seGetFinalStandings
 
   def seGetTeams(name: String = ""): Unit =
+    setLoading()
     println(s"fetching team with name '$name'")
     TeamService
       .getTeams(if (name.isBlank()) None else Some(name.trim()))
@@ -214,6 +233,7 @@ package object model:
         case s: Success[List[Team]] => vTeams.update(_ => s.value)
         case f: Failure[List[Team]] => println(s"failed fetching team: ${f.exception.getMessage}")
       })(queue)
+    unsetLoading()
   end seGetTeams
 
 end model

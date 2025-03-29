@@ -28,10 +28,13 @@ def ButtonFootballFrontEnd(): Unit =
 def mainAppElement(): Element =
   div(
     cls := s"container shadow ${spacingStyle("p")} text-muted",
-    h1(
-      buildStyleAttr("font-weight: bold"),
-      "Jogo de Botão"
-    ).wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
+    Debug.internalStateView(),
+    div(
+      cls := "row",
+      h1(buildStyleAttr("font-weight: bold"), "Jogo de Botão").wrapInDiv(s"col-5"),
+      spinner().wrapInDiv("col-2 py-1"),
+      div(cls := "col-5")
+    ),
     div(
       cls := s"row ${spacingStyle("pb")} ${spacingStyle("g")}",
       teamTypeRadios().wrapInDiv("col-auto"),
@@ -45,7 +48,6 @@ def mainAppElement(): Element =
     //   onInput.mapToValue --> teamName,
     //   onChange --> (ev => seGetTeams(teamName.now()))
     // ),
-    Debug.internalStateView()
   )
 
 // --- rendering functions ---------------------------------------------------------------------------------------------
@@ -169,7 +171,6 @@ def tabs(): Element =
 def tabContent(tabName: String): Element =
   div(
     cls := "text-center",
-    // spinner(),
     if (tabName.startsWith(GROUP))
       groupMatchesTabContent(tabName)
     else if (tabName == FINALS_TAB)
@@ -250,12 +251,14 @@ private def standingsTeamColumn(windowSize: Size) =
 def spinner(): Element =
   div(
     cls := "d-flex justify-content-center",
-    div(
-      cls := "spinner-border",
-      role := "status",
-      span(
-        cls := "visually-hidden",
-        "Carregando..."
-      )
+    child <-- vIsLoading.signal.map(isLoading =>
+      if (isLoading)
+        div(
+          cls := "spinner-border text-muted",
+          role := "status",
+          span(cls := "visually-hidden", "Carregando...")
+        )
+      else
+        div()
     )
   )
