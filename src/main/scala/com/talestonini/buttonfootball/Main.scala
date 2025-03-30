@@ -159,22 +159,26 @@ def tabs(): Element =
     ),
     div(
       cls := "tab-content p-0",
-      child <-- vActiveTab.signal.map(tabContent)
+      child <-- vActiveTab.signal.combineWith(vIsLoading.signal)
+        .map((activeTab, isLoading) => tabContent(activeTab, isLoading))
     )
   )
 
-def tabContent(tabName: String): Element =
+def tabContent(tabName: String, isLoading: Boolean): Element =
   div(
     cls := "text-center",
     spinner(),
-    if (tabName.startsWith(GROUP))
-      groupMatchesTabContent(tabName)
-    else if (tabName == FINALS_TAB)
-      FinalsMatchesTabContent()
-    else if (tabName == FINAL_STANDINGS_TAB)
-      finalStandingsTabContent()
-    else
+    if (isLoading)
       div()
+    else 
+      if (tabName.startsWith(GROUP))
+        groupMatchesTabContent(tabName)
+      else if (tabName == FINALS_TAB)
+        FinalsMatchesTabContent()
+      else if (tabName == FINAL_STANDINGS_TAB)
+        finalStandingsTabContent()
+      else
+        div()
   )
 
 def groupMatchesTabContent(tabName: String): Element =
