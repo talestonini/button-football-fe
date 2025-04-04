@@ -82,18 +82,31 @@ def championshipTypeSelect(): Element =
     div(
       cls := "card-body",
       cardTitle("Campeonato"),
-      select(
-        cls := "form-select",
-        children <-- vChampionshipTypes.signal.map(cts => cts.map(ct =>
-          option(
-            value := ct.code,
-            ct.description
+      div(
+        cls := s"row ${spacingStyle("pb")} ${spacingStyle("g")}",
+        div(
+          cls := "col-auto",
+          child <-- vSelectedChampionshipType.signal.map({
+            case Some(ct) => LogoImage(forChampionshipTypeImgFile(ct.logoImgFile))
+            case None     => div()
+          })
+        ),
+        div(
+          cls := "col d-flex align-items-center",
+          select(
+            cls := "form-select",
+            children <-- vChampionshipTypes.signal.map(cts => cts.map(ct =>
+              option(
+                value := ct.code,
+                ct.description
+              )
+            )),
+            onChange.mapToValue --> { code =>
+              vSelectedChampionshipType.update(_ => vChampionshipTypes.now().find((ct) => ct.code == code))
+              seGetChampionships(code)
+            },
           )
-        )),
-        onChange.mapToValue --> { code =>
-          vSelectedChampionshipType.update(_ => vChampionshipTypes.now().find((ct) => ct.code == code))
-          seGetChampionships(code)
-        },
+        )
       )
     )
   )
@@ -245,7 +258,7 @@ def finalStandingsTabContent(): Element =
 
 private def standingsTeamColumn(windowSize: Size) =
   Column("", 2, "text-center", true, Some((teamName: String) =>
-    LogoImage(Logo.forTeamName(teamName).getOrElse(""), XSMALL_TEAM_LOGO_PX_SIZE)
+    LogoImage(Logo.forTeamName(teamName).getOrElse(""), Some(XSMALL_LOGO_PX_SIZE))
   ))
 
 def spinner(): Element =

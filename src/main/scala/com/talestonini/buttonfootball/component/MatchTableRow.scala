@@ -4,7 +4,6 @@ import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.Matches.Match
 import com.talestonini.buttonfootball.util.Logo.*
 import com.talestonini.buttonfootball.util.*
-import com.talestonini.buttonfootball.util.Window.Size
 
 object MatchTableRow:
 
@@ -13,12 +12,7 @@ object MatchTableRow:
       display(if (isFinalsStage && condition) "table-cell" else "none")
 
     def logo(logoImgFile: String): Element = {
-      val size = Window.size() match {
-        case Size.Small  => SMALL_TEAM_LOGO_PX_SIZE
-        case Size.Medium => MEDIUM_TEAM_LOGO_PX_SIZE
-        case Size.Large  => LARGE_TEAM_LOGO_PX_SIZE
-      }
-      td(cls := "col-1", LogoImage(forTeamImgFile(logoImgFile), size))
+      td(cls := "col-1", LogoImage(forTeamImgFile(logoImgFile)))
     }
 
     tr(

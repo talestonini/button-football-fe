@@ -65,14 +65,14 @@ package object util {
   end Elem
 
   object Logo:
-    private val EXTENSION        = "bmp"
-    val XSMALL_TEAM_LOGO_PX_SIZE = 30
-    val SMALL_TEAM_LOGO_PX_SIZE  = 40
-    val MEDIUM_TEAM_LOGO_PX_SIZE = 50
-    val LARGE_TEAM_LOGO_PX_SIZE  = 60
+    private val EXTENSION   = "bmp"
+    val XSMALL_LOGO_PX_SIZE = 30
+    val SMALL_LOGO_PX_SIZE  = 40
+    val MEDIUM_LOGO_PX_SIZE = 50
+    val LARGE_LOGO_PX_SIZE  = 60
 
-    def forChampionshipTypeImgFile(logoImgFile: String, isLarge: Boolean = false): String =
-      s"/img/championships/${if (isLarge) "125" else "45"}/${treat(logoImgFile)}.$EXTENSION"
+    def forChampionshipTypeImgFile(logoImgFile: String): String =
+      s"/img/championships/125/${treat(logoImgFile)}.$EXTENSION"
 
     def forTrophyImgFile(logoImgFile: String): String =
       s"/img/championships/trophies/125/${treat(logoImgFile)}.$EXTENSION"
