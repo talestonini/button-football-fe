@@ -32,10 +32,10 @@ def mainAppElement(): Element =
     h1(buildStyleAttr("font-weight: bold"), "Jogo de Botão"),
     div(
       cls := s"row ${spacingStyle("pb")} ${spacingStyle("g")}",
-      teamTypeRadios().wrapInDiv("col-auto"),
-      championshipTypeSelect().wrapInDiv("col"),
+      teamTypesCard().wrapInDiv("col-auto"),
+      championshipTypesCard().wrapInDiv("col"),
     ),
-    championshipEditionsRange().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
+    championshipEditionsCard().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
     tabs().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
     // input(
     //   typ := "text",
@@ -47,7 +47,7 @@ def mainAppElement(): Element =
 
 // --- rendering functions ---------------------------------------------------------------------------------------------
 
-def teamTypeRadios(): Element =
+def teamTypesCard(): Element =
   div(
     cls := "card shadow h-100 w-100",
     div(
@@ -76,7 +76,7 @@ def teamTypeRadios(): Element =
     )
   )
 
-def championshipTypeSelect(): Element =
+def championshipTypesCard(): Element =
   div(
     cls := "card shadow h-100 w-100",
     div(
@@ -111,47 +111,88 @@ def championshipTypeSelect(): Element =
     )
   )
 
-def championshipEditionsRange(): Element =
+def championshipEditionsCard(): Element =
+  def championshipEditionsRangeRow(): Element = 
+    div(
+      cls := "row",
+      div(
+        cls := "col",
+        input(
+          idAttr := "championshipEditionsRange",
+          cls := "form-range",
+          typ := "range",
+          minAttr <-- vChampionships.signal.map(cs =>
+            (if (cs.nonEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION).toString
+          ),
+          maxAttr <-- vChampionships.signal.map(cs => 
+            (if (cs.nonEmpty) cs.length else NO_CHAMPIONSHIP_EDITION).toString),
+          onChange.mapToValue --> { edition =>
+            vSelectedChampionship.update(_ => vChampionships.now().find((c) => c.numEdition == edition.toInt))
+            vSelectedEdition.update(_ => edition.toInt)
+            seGetMatches(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+            // TODO: check whether using 2 APIs is a cleaner design - this is currently not working as the following
+            //       quick succession of requests result in backend ConcurrentModificationException
+            // seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+            // seGetFinalStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+            seGetStandings(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+          },
+          value <-- vSelectedChampionship.signal.map(_.getOrElse(NO_CHAMPIONSHIP).numEdition.toString())
+        )
+      ),
+      div(
+        cls := "col-auto",
+        div(
+          child.text <-- vSelectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).numEdition)
+        )
+      )
+    )
+
+  def championshipCreationDateCol(): Element =
+    div(
+      cls := "col",
+      label(
+        cls := "form-label text-muted",
+        forId := "championshipDtCreation",
+        b("Criação")
+      ),
+      input(
+        idAttr := "championshipDtCreation",
+        cls := "form-control",
+        typ := "text",
+        value <-- vSelectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).dtCreation)
+      ),
+    )
+
+  def championshipStatusCol(): Element =
+    div(
+      cls := "col",
+      label(
+        cls := "form-label text-muted",
+        forId := "championshipdStatus",
+        b("Fase")
+      ),
+      input(
+        idAttr := "championshipStatus",
+        cls := "form-control",
+        typ := "text",
+        value <-- vSelectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).status)
+      ),
+    )
+
   div(
     cls := "card shadow",
     div(
       cls := "card-body",
       cardTitle("Edição"),
+      championshipEditionsRangeRow(),
       div(
-        cls := "row",
-        div(
-          cls := "col",
-          input(
-            idAttr := "championshipEditionsRange",
-            cls := "form-range",
-            typ := "range",
-            minAttr <-- vChampionships.signal.map(cs =>
-              (if (cs.nonEmpty) MIN_CHAMPIONSHIP_EDITION else NO_CHAMPIONSHIP_EDITION).toString
-            ),
-            maxAttr <-- vChampionships.signal.map(cs => 
-              (if (cs.nonEmpty) cs.length else NO_CHAMPIONSHIP_EDITION).toString),
-            onChange.mapToValue --> { edition =>
-              vSelectedChampionship.update(_ => vChampionships.now().find((c) => c.numEdition == edition.toInt))
-              vSelectedEdition.update(_ => edition.toInt)
-              seGetMatches(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-              // TODO: check whether using 2 APIs is a cleaner design - this is currently not working as the following
-              //       quick succession of requests result in backend ConcurrentModificationException
-              // seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-              // seGetFinalStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-              seGetStandings(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-            },
-            value <-- vSelectedChampionship.signal.map(_.getOrElse(NO_CHAMPIONSHIP).numEdition.toString())
-          )
-        ),
-        div(
-          cls := "col-auto",
-          div(
-            child.text <-- vSelectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).numEdition)
-          )
-        )
+        cls := s"row ${spacingStyle("py")} ${spacingStyle("g")}",
+        championshipCreationDateCol(),
+        championshipStatusCol()
       )
     )
   )
+end championshipEditionsCard
 
 def tabs(): Element =
   div(
