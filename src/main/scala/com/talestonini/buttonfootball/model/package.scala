@@ -159,11 +159,7 @@ package object model:
             else
               if (vActiveTab.now().startsWith(GROUP)) s"$GROUP A"
               else if (vActiveTab.now() == FINALS_TAB) FINALS_TAB
-              else vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).status match {
-                case "Primeira Fase" => s"$GROUP A"
-                case "Encerrado"     => FINAL_STANDINGS_TAB
-                case _               => FINALS_TAB
-              }
+              else FINAL_STANDINGS_TAB
           )
           unsetLoading()
         case f: Failure[List[Match]] =>
