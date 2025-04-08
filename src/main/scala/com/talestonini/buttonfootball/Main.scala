@@ -32,8 +32,11 @@ def mainAppElement(): Element =
     cls := s"container shadow ${spacingStyle("p")} text-muted",
     Debug.internalStateView(),
     h1(buildStyleAttr("font-weight: bold"), "Jogo de Botão"),
-    teamTypesCard().wrapInDiv(mainRowClasses),
-    championshipsCard().wrapInDiv(mainRowClasses),
+    div(
+      cls := s"accordion",
+      AccordionItem("collapseTeamTypes", "Tipo de Time", teamTypesContent()).wrapInDiv(mainRowClasses),
+      AccordionItem("collapseChampionships", "Campeonato", championshipsContent()).wrapInDiv(mainRowClasses)
+    ),
     tabs().wrapInDiv(mainRowClasses),
     // input(
     //   typ := "text",
@@ -45,35 +48,31 @@ def mainAppElement(): Element =
 
 // --- rendering functions ---------------------------------------------------------------------------------------------
 
-def teamTypesCard(): Element =
+def teamTypesContent(): Element =
   div(
-    cls := "card shadow h-100 w-100",
-    div(
-      cls := "card-body",
-      children <-- vTeamTypes.signal.map(tts => tts.map(tt =>
-        div(
-          cls := "form-check form-check-inline",
-          label(
-            cls := "form-check-label",
-            input(
-              cls := "form-check-input",
-              typ := "radio",
-              nameAttr := "teamType",
-              value := tt.code,
-              onChange.mapToValue --> { code =>
-                vSelectedTeamType.update(_ => vTeamTypes.now().find((tt) => tt.code == code))
-                seGetChampionshipTypes(code)
-              },
-              checked <-- vSelectedTeamType.signal.map(_.getOrElse(NO_TEAM_TYPE).code == tt.code)
-            ),
-            tt.description
-          )
+    children <-- vTeamTypes.signal.map(tts => tts.map(tt =>
+      div(
+        cls := "form-check form-check-inline",
+        label(
+          cls := "form-check-label",
+          input(
+            cls := "form-check-input",
+            typ := "radio",
+            nameAttr := "teamType",
+            value := tt.code,
+            onChange.mapToValue --> { code =>
+              vSelectedTeamType.update(_ => vTeamTypes.now().find((tt) => tt.code == code))
+              seGetChampionshipTypes(code)
+            },
+            checked <-- vSelectedTeamType.signal.map(_.getOrElse(NO_TEAM_TYPE).code == tt.code)
+          ),
+          tt.description
         )
-      ))
-    )
+      )
+    ))
   )
 
-def championshipsCard(): Element =
+def championshipsContent(): Element =
   def championshipTypesRow(): Element =
     div(
       cls := s"row ${spacingStyle("pb", Some(3))} ${spacingStyle("gx")}",
@@ -177,19 +176,15 @@ def championshipsCard(): Element =
     )
 
   div(
-    cls := "card shadow",
+    championshipTypesRow(),
+    championshipEditionsRangeRow(),
     div(
-      cls := "card-body",
-      championshipTypesRow(),
-      championshipEditionsRangeRow(),
-      div(
-        cls := s"row ${spacingStyle("pb")} ${spacingStyle("gx")}",
-        championshipCreationDateCol(),
-        championshipStatusCol()
-      )
+      cls := s"row ${spacingStyle("pb")} ${spacingStyle("gx")}",
+      championshipCreationDateCol(),
+      championshipStatusCol()
     )
   )
-end championshipsCard
+end championshipsContent
 
 def tabs(): Element =
   div(
