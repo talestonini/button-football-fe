@@ -25,18 +25,19 @@ def ButtonFootballFrontEnd(): Unit =
     mainAppElement()
   )
 
+private val mainRowClasses = s"row-12 ${spacingStyle("pb")}"
+
 def mainAppElement(): Element =
   div(
     cls := s"container shadow ${spacingStyle("p")} text-muted",
     Debug.internalStateView(),
     h1(buildStyleAttr("font-weight: bold"), "Jogo de Botão"),
     div(
-      cls := s"row ${spacingStyle("pb")} ${spacingStyle("g")}",
-      teamTypesCard().wrapInDiv("col-auto"),
-      championshipTypesCard().wrapInDiv("col"),
+      cls := s"accordion",
+      AccordionItem("collapseTeamTypes", "Tipo de Time", teamTypesContent()).wrapInDiv(mainRowClasses),
+      AccordionItem("collapseChampionships", "Campeonato", championshipsContent()).wrapInDiv(mainRowClasses)
     ),
-    championshipEditionsCard().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
-    tabs().wrapInDiv(s"row-12 ${spacingStyle("pb")}"),
+    tabs().wrapInDiv(mainRowClasses),
     // input(
     //   typ := "text",
     //   value <-- teamName,
@@ -47,74 +48,67 @@ def mainAppElement(): Element =
 
 // --- rendering functions ---------------------------------------------------------------------------------------------
 
-def teamTypesCard(): Element =
+def teamTypesContent(): Element =
   div(
-    cls := "card shadow h-100 w-100",
-    div(
-      cls := "card-body",
-      cardTitle("Tipo de Time"),
-      children <-- vTeamTypes.signal.map(tts => tts.map(tt =>
-        div(
-          cls := "form-check",
-          label(
-            cls := "form-check-label",
-            input(
-              cls := "form-check-input",
-              typ := "radio",
-              nameAttr := "teamType",
-              value := tt.code,
-              onChange.mapToValue --> { code =>
-                vSelectedTeamType.update(_ => vTeamTypes.now().find((tt) => tt.code == code))
-                seGetChampionshipTypes(code)
-              },
-              checked <-- vSelectedTeamType.signal.map(_.getOrElse(NO_TEAM_TYPE).code == tt.code)
-            ),
-            tt.description
-          )
-        )
-      ))
-    )
-  )
-
-def championshipTypesCard(): Element =
-  div(
-    cls := "card shadow h-100 w-100",
-    div(
-      cls := "card-body",
-      cardTitle("Campeonato"),
+    children <-- vTeamTypes.signal.map(tts => tts.map(tt =>
       div(
-        cls := s"row ${spacingStyle("pb")} ${spacingStyle("g")}",
-        div(
-          cls := "col-auto",
-          child <-- vSelectedChampionshipType.signal.map({
-            case Some(ct) => LogoImage(forChampionshipTypeImgFile(ct.logoImgFile))
-            case None     => div()
-          })
-        ),
-        div(
-          cls := "col d-flex align-items-center",
-          select(
-            cls := "form-select",
-            children <-- vChampionshipTypes.signal.map(cts => cts.map(ct =>
-              option(
-                value := ct.code,
-                ct.description
-              )
-            )),
+        cls := "form-check form-check-inline",
+        label(
+          cls := "form-check-label",
+          input(
+            cls := "form-check-input",
+            typ := "radio",
+            nameAttr := "teamType",
+            value := tt.code,
             onChange.mapToValue --> { code =>
-              vSelectedChampionshipType.update(_ => vChampionshipTypes.now().find((ct) => ct.code == code))
-              seGetChampionships(code)
+              vSelectedTeamType.update(_ => vTeamTypes.now().find((tt) => tt.code == code))
+              seGetChampionshipTypes(code)
             },
-          )
+            checked <-- vSelectedTeamType.signal.map(_.getOrElse(NO_TEAM_TYPE).code == tt.code)
+          ),
+          tt.description
         )
       )
-    )
+    ))
   )
 
-def championshipEditionsCard(): Element =
+def championshipsContent(): Element =
+  def championshipTypesRow(): Element =
+    div(
+      cls := s"row ${spacingStyle("pb", Some(3))} ${spacingStyle("gx")}",
+      div(
+        cls := "col d-flex align-items-center",
+        select(
+          cls := "form-select",
+          children <-- vChampionshipTypes.signal.map(cts => cts.map(ct =>
+            option(
+              value := ct.code,
+              ct.description
+            )
+          )),
+          onChange.mapToValue --> { code =>
+            vSelectedChampionshipType.update(_ => vChampionshipTypes.now().find((ct) => ct.code == code))
+            seGetChampionships(code)
+          },
+        )
+      ),
+      div(
+        cls := "col-auto",
+        child <-- vSelectedChampionshipType.signal.map({
+          case Some(ct) => LogoImage(forChampionshipTypeImgFile(ct.logoImgFile))
+          case None     => div()
+        })
+      )
+    )
+
   def championshipEditionsRangeRow(): Element = 
     div(
-      cls := "row",
+      cls := s"row ${spacingStyle("pb")}",
+      label(
+        cls := "form-label text-muted",
+        forId := "championshipEditionRange",
+        b("Edição")
+      ),
       div(
         cls := "col",
         input(
@@ -159,7 +153,8 @@ def championshipEditionsCard(): Element =
         idAttr := "championshipDtCreation",
         cls := "form-control",
         typ := "text",
-        value <-- vSelectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).dtCreation)
+        value <-- vSelectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).dtCreation),
+        readOnly := true
       ),
     )
 
@@ -175,24 +170,21 @@ def championshipEditionsCard(): Element =
         idAttr := "championshipStatus",
         cls := "form-control",
         typ := "text",
-        value <-- vSelectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).status)
+        value <-- vSelectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).status),
+        readOnly := true
       ),
     )
 
   div(
-    cls := "card shadow",
+    championshipTypesRow(),
+    championshipEditionsRangeRow(),
     div(
-      cls := "card-body",
-      cardTitle("Edição"),
-      championshipEditionsRangeRow(),
-      div(
-        cls := s"row ${spacingStyle("py")} ${spacingStyle("g")}",
-        championshipCreationDateCol(),
-        championshipStatusCol()
-      )
+      cls := s"row ${spacingStyle("pb")} ${spacingStyle("gx")}",
+      championshipCreationDateCol(),
+      championshipStatusCol()
     )
   )
-end championshipEditionsCard
+end championshipsContent
 
 def tabs(): Element =
   div(
