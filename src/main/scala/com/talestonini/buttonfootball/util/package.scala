@@ -107,8 +107,22 @@ package object util {
     else
       "font-size: 1rem"
 
-  def spacingStyle(spacingType: String): String =
-    s"$spacingType-lg-3 $spacingType-md-2 $spacingType-1"
+  def spacingStyle(spacingType: String, min: Option[Int] = None, max: Option[Int] = None): String =
+    val defaultLgSize = 3
+    val defaultMdSize = 2
+    val defaultSmSize = 1
+
+    def styleSize(default: Int) =
+      if (default < min.getOrElse(default)) min.getOrElse(default)
+      else if (default > max.getOrElse(default)) max.getOrElse(default)
+      else default
+
+    val lgSize = styleSize(defaultLgSize)
+    val mdSize = styleSize(defaultMdSize)
+    val smSize = styleSize(defaultSmSize )
+
+    s"$spacingType-lg-${lgSize} $spacingType-md-${mdSize} $spacingType-${smSize}"
+  end spacingStyle
 
   object Window:
     enum Size:
