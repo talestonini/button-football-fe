@@ -3,8 +3,10 @@ package com.talestonini.buttonfootball.component
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.datastructure.*
 import com.talestonini.buttonfootball.model.*
+import com.talestonini.buttonfootball.model.ChampionshipTypes.NO_CHAMPIONSHIP_TYPE
 import com.talestonini.buttonfootball.model.Matches.Match
 import com.talestonini.buttonfootball.util.*
+import com.talestonini.buttonfootball.util.Logo.LARGE_LOGO_PX_SIZE
 
 import java.lang.Math.{log, pow}
 import scala.collection.immutable.NumericRange
@@ -256,11 +258,19 @@ object FinalsMatchesTabContent:
                   td(
                     idAttr := cellAddressFn(c, r),
                     cls := "col text-center bg-light",
-                    child <-- sFunnelingTree.combineWith(sFinalsMatches).map((ft, fms) => {
+                    child <-- sFunnelingTree
+                                .combineWith(sFinalsMatches)
+                                .combineWith(vSelectedChampionshipType.signal)
+                                .map((ft, fms, ct) => {
                       if (c == maxc && r == maxr) {
                         val tpp = thirdPlacePlayoff(ft, fms)
                         if (tpp.isEmpty) ""
                         else finalsMatch(tpp.get)
+                      } else if (c == maxc && r == (maxr/2 - 1)) {
+                        LogoImage(
+                          Logo.forTrophyImgFile(ct.getOrElse(NO_CHAMPIONSHIP_TYPE).logoImgFile),
+                          Some(Logo.LARGE_LOGO_PX_SIZE)
+                        )
                       } else {
                         val mc = ft.findFirst(mc => mc.cell == Cell(c, r))
                         if (mc.isEmpty || mc.get.`match`.isEmpty) ""
