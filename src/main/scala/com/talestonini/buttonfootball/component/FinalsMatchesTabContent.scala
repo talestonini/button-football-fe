@@ -5,6 +5,7 @@ import com.talestonini.buttonfootball.datastructure.*
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Matches.Match
 import com.talestonini.buttonfootball.util.*
+import com.talestonini.util.*
 
 import java.lang.Math.{log, pow}
 import scala.collection.immutable.NumericRange

@@ -1,7 +1,7 @@
-package com.talestonini.buttonfootball.component
+package com.talestonini.component
 
 import com.raquo.laminar.api.L.{*, given}
-import com.talestonini.buttonfootball.util.buildStyleAttr
+import com.talestonini.util.buildStyleAttr
 
 object AccordionItem:
 

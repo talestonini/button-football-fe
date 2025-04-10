@@ -1,4 +1,4 @@
-package com.talestonini.buttonfootball.component
+package com.talestonini.component
 
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.Model

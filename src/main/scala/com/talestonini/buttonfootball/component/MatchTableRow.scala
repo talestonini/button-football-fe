@@ -1,9 +1,10 @@
 package com.talestonini.buttonfootball.component
 
 import com.raquo.laminar.api.L.{*, given}
-import com.talestonini.buttonfootball.model.Matches.Match
+import com.talestonini.buttonfootball.model.Matches.*
 import com.talestonini.buttonfootball.util.Logo.*
 import com.talestonini.buttonfootball.util.*
+import com.talestonini.util.*
 
 object MatchTableRow:
 
