@@ -11,7 +11,7 @@ object Standings:
   case class Standing(id: Id, championship: String, team: String, `type`: String, numIntraGrpPos: Option[Int],
                       numExtraGrpPos: Option[Int], numFinalPos: Option[Int], numPoints: Int, numMatches: Int,
                       numWins: Int, numDraws: Int, numLosses: Int, numGoalsScored: Int, numGoalsConceded: Int,
-                      numGoalDiff:Int) extends Model
+                      numGoalsDiff:Int) extends Model
 
   implicit val standingDecoder: EntityDecoder[IO, Standing] = jsonOf[IO, Standing]
   implicit val standingEncoder: EntityEncoder[IO, Standing] = jsonEncoderOf[IO, Standing]
