@@ -9,8 +9,8 @@ import com.talestonini.util.Window.Size
 object StandingsTeamColumn:
 
   def apply(windowSize: Size): Column =
-    Column("", 2, "text-center", true, Some((teamName: String) =>
-      LogoImage(Logo.forTeamName(teamName).getOrElse(""), Some(XSMALL_LOGO_PX_SIZE))
+    Column("", 4, "text-center", true, Some((teamLogoImgFile: String) =>
+      LogoImage(Logo.forTeamImgFile(teamLogoImgFile), Some(XSMALL_LOGO_PX_SIZE))
     ))
 
 end StandingsTeamColumn

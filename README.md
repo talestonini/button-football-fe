@@ -47,7 +47,6 @@ Have the JSON key file path of a Firebase service account pointed by an env var 
 
 ## TODOs/FIXMEs
 
-- In standings, the championship field is just the championship type, missing the edition.
 - Delete counter.js.
 - Logos for trophies.
 - App icon.

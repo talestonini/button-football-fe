@@ -32,17 +32,17 @@ object GroupMatchesTabContent:
           val ws = Window.size()
           val smallish = ws == Size.Small || ws == Size.Medium
           Table[Standing](vGroupStandings, List(
-            Column(if (smallish) "" else "Intra-Grupo", 4),
+            Column(if (smallish) "" else "Intra-Grupo", 6),
             StandingsTeamColumn(ws),
-            Column(if (smallish) "P" else "Pontos", 7),
-            Column(if (smallish) "J" else "Jogos", 8),
-            Column(if (smallish) "V" else "Vitórias", 9),
-            Column(if (smallish) "E" else "Empates", 10),
-            Column(if (smallish) "D" else "Derrotas", 11),
-            Column(if (smallish) "GM" else "Gols Marcados", 12),
-            Column(if (smallish) "GS" else "Gols Sofridos", 13),
-            Column(if (smallish) "S" else "Saldo de Gols", 14),
-            Column(if (smallish) "EG" else "Extra-Grupo", 5)
+            Column(if (smallish) "P" else "Pontos", 9),
+            Column(if (smallish) "J" else "Jogos", 10),
+            Column(if (smallish) "V" else "Vitórias", 11),
+            Column(if (smallish) "E" else "Empates", 12),
+            Column(if (smallish) "D" else "Derrotas", 13),
+            Column(if (smallish) "GM" else "Gols Marcados", 14),
+            Column(if (smallish) "GS" else "Gols Sofridos", 15),
+            Column(if (smallish) "S" else "Saldo de Gols", 16),
+            Column(if (smallish) "EG" else "Extra-Grupo", 7)
           ))
         })
       )
