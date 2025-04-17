@@ -14,21 +14,21 @@ object Matches:
                    numGoalsPntA: Option[Int], numGoalsPntB: Option[Int]) extends Model {
 
     def winner(): Option[String] =
-      if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt >
-          s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}$numGoalsTeamB".toInt)
+      if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}${numGoalsTeamA.getOrElse(0)}".toInt >
+          s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}${numGoalsTeamB.getOrElse(0)}".toInt)
         Some(teamA)
-      else if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt <
-               s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}$numGoalsTeamB".toInt)
+      else if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}${numGoalsTeamA.getOrElse(0)}".toInt <
+               s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}${numGoalsTeamB.getOrElse(0)}".toInt)
         Some(teamB)
       else
         None
 
     def looser(): Option[String] =
-      if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt <
-          s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}$numGoalsTeamB".toInt)
+      if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}${numGoalsTeamA.getOrElse(0)}".toInt <
+          s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}${numGoalsTeamB.getOrElse(0)}".toInt)
         Some(teamA)
-      else if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}$numGoalsTeamA".toInt >
-               s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}$numGoalsTeamB".toInt)
+      else if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}${numGoalsTeamA.getOrElse(0)}".toInt >
+               s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}${numGoalsTeamB.getOrElse(0)}".toInt)
         Some(teamB)
       else
         None
