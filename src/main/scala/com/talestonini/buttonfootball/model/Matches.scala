@@ -23,7 +23,7 @@ object Matches:
       else
         None
 
-    def looser(): Option[String] =
+    def loser(): Option[String] =
       if (s"${numGoalsPntA.getOrElse(0)}${numGoalsExtraA.getOrElse(0)}${numGoalsTeamA.getOrElse(0)}".toInt <
           s"${numGoalsPntB.getOrElse(0)}${numGoalsExtraB.getOrElse(0)}${numGoalsTeamB.getOrElse(0)}".toInt)
         Some(teamA)

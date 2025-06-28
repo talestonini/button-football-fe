@@ -61,7 +61,7 @@ package object model:
   val vFinalStandings: Var[List[Standing]] = Var(List.empty)
   
   case class Qualified(pos: Int, team: String)
-  val sQualifiedTeams: Signal[List[Qualified]] = vGroupStandings.signal.combineWith(sNumQualif).map { 
+  val sQualifiedTeams: Signal[List[Qualified]] = vGroupStandings.signal.combineWith(sNumQualif).map {
     case (gss, nq) => gss.filter(gs => gs.numExtraGrpPos.isDefined && gs.numExtraGrpPos.get <= nq)
       .map(gs => Qualified(gs.numExtraGrpPos.get, gs.team))
   }
@@ -72,7 +72,7 @@ package object model:
   def setLoading() = vIsLoading.update(_ => true)
   def unsetLoading() = vIsLoading.update(_ => false)
 
-  // --- side-effect functions -------------------------------------------------------------------------------------------
+  // --- side-effect functions -----------------------------------------------------------------------------------------
   
   def seGetTeamTypes(): Unit =
     setLoading()

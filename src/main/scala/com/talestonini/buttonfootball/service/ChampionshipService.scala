@@ -20,7 +20,7 @@ object ChampionshipService extends CommonService:
     else
       Right(numTeams % NUM_TEAMS_PER_GROUP == 0)
 
-  def numGroups(numTeams: Int): Either[Exception, Int] =
+  def calcNumGroups(numTeams: Int): Either[Exception, Int] =
     isValidNumberOfTeamsInChampionship(numTeams) match {
       case Left(e) => Left(InvalidNumberOfTeams(numTeams))
       case Right(isValid) => Right(numTeams/NUM_TEAMS_PER_GROUP)
@@ -48,7 +48,7 @@ object ChampionshipService extends CommonService:
       if ((half - lowerPower) < (higherPower - half)) lowerPower else higherPower
     }
 
-    numGroups(numTeams) match {
+    calcNumGroups(numTeams) match {
       case Left(e) => Left(e)
       case Right(ng) => Right(closestPowerOfTwoToHalfOf(numTeams))
     }

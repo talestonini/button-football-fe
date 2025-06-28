@@ -148,7 +148,7 @@ object FinalsMatchesTabContent:
         }
 
         // traverse the tree to set all remaining matches (needs to be done after building the tree as opposed to on the
-        // same passage, because we only know about each match by navigating from the leaves)
+        // same passage, because we only know about each match winner and loser by navigating from the leaves)
         def setTreeRootFinalMatch(tree: Tree[MatchCell]): Unit = tree match {
           case Node(value, left, right) => 
             if (value.`match`.isEmpty) {
@@ -171,9 +171,9 @@ object FinalsMatchesTabContent:
       case Node(value, left, right) => 
         if (value.`match`.isEmpty) None
         else {
-          val leftLooser  = getFromSubtreeRootMatch(left, m => m.looser()).getOrElse("")
-          val rightLooser = getFromSubtreeRootMatch(right, m => m.looser()).getOrElse("")
-          finalsMatches.find(m => m.teamA == leftLooser && m.teamB == rightLooser)
+          val leftLoser  = getFromSubtreeRootMatch(left, m => m.loser()).getOrElse("")
+          val rightLoser = getFromSubtreeRootMatch(right, m => m.loser()).getOrElse("")
+          finalsMatches.find(m => m.teamA == leftLoser && m.teamB == rightLoser)
         }
     }
 

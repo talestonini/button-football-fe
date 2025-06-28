@@ -2,7 +2,7 @@ package com.talestonini.buttonfootball
 
 package object datastructure {
   
-  trait Tree[+A] {
+  sealed trait Tree[+A] {
     def map[B](f: A => B): Tree[B] = this match {
       case Empty => Empty
       case Node(value, left, right) => Node(f(value), left.map(f), right.map(f))
