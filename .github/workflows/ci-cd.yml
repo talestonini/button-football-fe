@@ -27,6 +27,22 @@ jobs:
       run: |
         curl -fL https://github.com/coursier/coursier/releases/latest/download/cs-x86_64-pc-linux.gz | gzip -d > cs && chmod +x cs && ./cs install sbt
         echo "$PATH:/home/runner/.local/share/coursier/bin" >> $GITHUB_PATH
+        sudo apt-get update
+        sudo apt-get install libwoff1\
+          libvpx9\
+          libevent-2.1-7t64\
+          libopus0\
+          libgstreamer-plugins-base1.0-0\
+          libgstreamer-gl1.0-0\
+          libgstreamer-plugins-bad1.0-0\
+          libflite1\
+          libavif16\
+          libharfbuzz-icu0\
+          libsecret-1-0\
+          libhyphen0\
+          libmanette-0.2-0\
+          libgles2\
+          gstreamer1.0-libav
 
     - name: Create project config files
       env:
@@ -65,6 +81,22 @@ jobs:
       run: |
         curl -fL https://github.com/coursier/coursier/releases/latest/download/cs-x86_64-pc-linux.gz | gzip -d > cs && chmod +x cs && ./cs install sbt
         echo "$PATH:/home/runner/.local/share/coursier/bin" >> $GITHUB_PATH
+        sudo apt-get update
+        sudo apt-get install libwoff1\
+          libvpx9\
+          libevent-2.1-7t64\
+          libopus0\
+          libgstreamer-plugins-base1.0-0\
+          libgstreamer-gl1.0-0\
+          libgstreamer-plugins-bad1.0-0\
+          libflite1\
+          libavif16\
+          libharfbuzz-icu0\
+          libsecret-1-0\
+          libhyphen0\
+          libmanette-0.2-0\
+          libgles2\
+          gstreamer1.0-libav
 
     - name: Create project secret files
       env:
