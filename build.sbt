@@ -8,6 +8,7 @@ val http4sVer = "0.23.29"
 lazy val buttonFootballFrontEnd = project.in(file("."))
   .enablePlugins(ScalaJSPlugin) // Enable the Scala.js plugin in this project
   .enablePlugins(ScalablyTypedConverterExternalNpmPlugin)
+  .enablePlugins(BuildInfoPlugin)
   .settings(
     scalaVersion := scalaVer,
 
@@ -48,6 +49,10 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
 
     // Tell ScalablyTyped that we manage `npm install` ourselves
     externalNpm := baseDirectory.value,
+
+    // BuilfInfoPlugin
+    buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoPackage := "com.talestonini",
   )
 
 // ---------------------------------------------------------------------------------------------------------------------
