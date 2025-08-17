@@ -34,7 +34,7 @@ def mainAppElement(): Element =
     ),
     Tabs().wrapInDiv(mainRowClasses),
     div(
-      className := "footer w3-container w3-padding-8 w3-center w3-hide-small",
+      cls := "text-center",
       Footer()
     ),
     // input(
