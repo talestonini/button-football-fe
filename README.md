@@ -2,6 +2,7 @@
 This is the front-end to the Button Football app.
 
 ## Pre-requisites
+
 - Java 21
 - SBT
 

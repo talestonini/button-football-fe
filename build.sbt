@@ -1,14 +1,16 @@
 import sbt.internal.util.ManagedLogger
 import org.scalajs.linker.interface.ModuleSplitStyle
 
-val scalaVer  = "3.5.2" // update prep_public.sh to match this version
-val circeVer  = "0.14.10"
-val http4sVer = "0.23.29"
+val scalaVer  = "3.7.2" // update prep_public.sh to match this version
+val circeVer  = "0.14.14"
+val http4sVer = "0.23.30"
 
 lazy val buttonFootballFrontEnd = project.in(file("."))
   .enablePlugins(ScalaJSPlugin) // Enable the Scala.js plugin in this project
   .enablePlugins(ScalablyTypedConverterExternalNpmPlugin)
+  .enablePlugins(BuildInfoPlugin)
   .settings(
+    version := "0.1.0",
     scalaVersion := scalaVer,
 
     // Tell Scala.js that this is an application with a main method
@@ -31,9 +33,9 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
      * It provides static types for the browser DOM APIs.
      */
     libraryDependencies ++= Seq(
-      "org.scala-js"  %%% "scalajs-dom" % "2.8.0",
-      "com.raquo"     %%% "laminar"     % "17.1.0",
-      "org.scalameta" %%% "munit"       % "1.0.3" % Test,
+      "org.scala-js"  %%% "scalajs-dom" % "2.8.1",
+      "com.raquo"     %%% "laminar"     % "17.2.1",
+      "org.scalameta" %%% "munit"       % "1.1.1" % Test,
 
       // Http4s (backend and database stuff)
       "io.circe"   %%% "circe-core"      % circeVer,
@@ -42,12 +44,16 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
       "org.http4s" %%% "http4s-circe"    % http4sVer,
       "org.http4s" %%% "http4s-client"   % http4sVer,
       "org.http4s" %%% "http4s-dsl"      % http4sVer,
-      "org.http4s" %%% "http4s-dom"      % "0.2.11", // this is maintained by Arman Bilge
+      "org.http4s" %%% "http4s-dom"      % "0.2.12", // this is maintained by Arman Bilge
       "io.monix"   %%% "monix-execution" % "3.4.1",
     ),
 
     // Tell ScalablyTyped that we manage `npm install` ourselves
     externalNpm := baseDirectory.value,
+
+    // BuilfInfoPlugin
+    buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoPackage := "com.talestonini",
   )
 
 // ---------------------------------------------------------------------------------------------------------------------

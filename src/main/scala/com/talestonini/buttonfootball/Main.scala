@@ -4,7 +4,7 @@ import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.component.*
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.util.*
-import com.talestonini.component.AccordionItem
+import com.talestonini.component.{AccordionItem, Footer}
 import com.talestonini.util.*
 
 @main
@@ -33,6 +33,10 @@ def mainAppElement(): Element =
       AccordionItem("collapseChampionships", "Campeonato", ChampionshipsContent()).wrapInDiv(mainRowClasses)
     ),
     Tabs().wrapInDiv(mainRowClasses),
+    div(
+      cls := "text-center",
+      Footer()
+    ),
     // input(
     //   typ := "text",
     //   value <-- teamName,
