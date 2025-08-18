@@ -13,6 +13,10 @@ jobs:
   scala-steward:
     runs-on: ubuntu-latest
     steps:
+      - name: Install npm dependencies so that it brings TypeScript for Scala Steward
+        run: |
+          npm install
+
       - name: Run Scala Steward
         uses: scala-steward-org/scala-steward-action@v2
         with:

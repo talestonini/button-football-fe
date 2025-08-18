@@ -90,7 +90,7 @@ package object model:
           vTeamTypes.update(_ => List.empty)
           vSelectedTeamType.update(_ => None)
           unsetLoading()
-      })(queue)
+      })(using queue)
   end seGetTeamTypes
   
   def seGetChampionshipTypes(codTeamType: String): Unit =
@@ -109,7 +109,7 @@ package object model:
           vChampionshipTypes.update(_ => List.empty)
           vSelectedChampionshipType.update(_ => None)
           unsetLoading()
-      })(queue)
+      })(using queue)
   end seGetChampionshipTypes
   
   def seGetChampionships(codChampionshipType: String): Unit =
@@ -143,7 +143,7 @@ package object model:
           vGroupStandings.update(_ => List.empty)
           vFinalStandings.update(_ => List.empty)
           unsetLoading()
-      })(queue)
+      })(using queue)
   end seGetChampionships
   
   def seGetMatches(championshipId: Id): Unit =
@@ -167,7 +167,7 @@ package object model:
           vMatches.update(_ => List.empty)
           vActiveTab.update(_ => NO_ACTIVE_TAB)
           unsetLoading()
-      })(queue)
+      })(using queue)
   end seGetMatches
 
   def seGetStandings(championshipId: Id): Unit =
@@ -185,7 +185,7 @@ package object model:
           vGroupStandings.update(_ => List.empty)
           vFinalStandings.update(_ => List.empty)
           unsetLoading()
-      })(queue)
+      })(using queue)
   end seGetStandings
 
   def seGetGroupStandings(championshipId: Id): Unit =
@@ -201,7 +201,7 @@ package object model:
           println(s"failed fetching group standings: ${f.exception.getMessage}")
           vGroupStandings.update(_ => List.empty)
           unsetLoading()
-      })(queue)
+      })(using queue)
   end seGetGroupStandings
 
   def seGetFinalStandings(championshipId: Id): Unit =
@@ -217,7 +217,7 @@ package object model:
           println(s"failed fetching final standings: ${f.exception.getMessage}")
           vFinalStandings.update(_ => List.empty)
           unsetLoading()
-      })(queue)
+      })(using queue)
   end seGetFinalStandings
 
   def seGetTeams(name: String = ""): Unit =
@@ -233,7 +233,7 @@ package object model:
         case f: Failure[List[Team]] =>
           println(s"failed fetching team: ${f.exception.getMessage}")
           unsetLoading()
-      })(queue)
+      })(using queue)
   end seGetTeams
 
 end model
