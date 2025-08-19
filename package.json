@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@scala-js/vite-plugin-scalajs": "^1.0.0",
+    "@scala-js/vite-plugin-scalajs": "^1.1.0",
     "@types/chart.js": "^2.9.29",
     "sass": "^1.82.0",
     "typescript": "^4.9.5",
