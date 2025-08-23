@@ -4,10 +4,10 @@ echo ">>> Step 1: Instal all npm dependencies"
 npm install
 
 echo ">>> Step 2: Clean the repo"
-sbt clean
+sbt -J-Xmx3G clean
 
 echo ">>> Step 3: Perform full JS link (compile and build Scala.js code)"
-sbt fullLinkJS
+sbt -J-Xmx3G fullLinkJS
 
 echo ">>> Step 4: Prepare public assets directory for hosting in Firebase"
 ./prep_public.sh public
