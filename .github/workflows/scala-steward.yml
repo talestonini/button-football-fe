@@ -25,4 +25,4 @@ jobs:
         uses: scala-steward-org/scala-steward-action@v2.76.0
         with:
           branches: scala-steward
-          cache-ttl: 0  # disables caching to ensure fresh dependencies
+          cache-ttl: '0s'  # disables caching to ensure fresh dependencies
