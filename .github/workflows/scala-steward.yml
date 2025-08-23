@@ -13,16 +13,7 @@ jobs:
   scala-steward:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-      
-      - name: Install dependencies
-        run: |
-          npm install
-          npm ci
-
       - name: Run Scala Steward
-        uses: scala-steward-org/scala-steward-action@v2.76.0
+        uses: scala-steward-org/scala-steward-action@v2
         with:
-          branches: scala-steward
-          cache-ttl: '0s'  # disables caching to ensure fresh dependencies
+          branches: main
