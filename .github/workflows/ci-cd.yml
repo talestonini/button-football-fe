@@ -55,7 +55,7 @@ jobs:
     - name: Run tests (depends on typescript for scalablytyped, hence npm install)
       run: |
         npm install
-        sbt test
+        sbt -J-Xmx3G test
 
     # This step uploads information to the GitHub dependency graph, unblocking Dependabot alerts for the repository.
     - name: Upload dependency graph
