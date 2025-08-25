@@ -1,6 +1,5 @@
 import sbt.internal.util.ManagedLogger
 import org.scalajs.linker.interface.ModuleSplitStyle
-import scala.sys.process.Process
 
 val scalaVer  = "3.7.2" // update prep_public.sh to match this version
 val circeVer  = "0.14.14"
@@ -56,21 +55,6 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
     buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := "com.talestonini",
   )
-
-lazy val npmInstallTask = taskKey[Unit]("Runs npm install")
-
-npmInstallTask := {
-  val logger = streams.value.log
-  val baseDir = baseDirectory.value
-  val exitCode = Process("npm install", baseDir).! // Runs npm install in the project's base directory
-  if (exitCode != 0) {
-    sys.error(s"npm install failed with exit code $exitCode")
-  } else {
-    logger.info("npm install completed successfully")
-  }
-}
-
-Compile / compile := (Compile / compile).dependsOn(npmInstallTask).value
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Config
