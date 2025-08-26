@@ -8,7 +8,7 @@ import org.scalajs.dom
 package object util {
   
   object Logo:
-    private val EXTENSION   = "bmp"
+    private val EXTENSION = "bmp"
 
     def forChampionshipTypeImgFile(logoImgFile: String): String =
       s"/img/championships/125/${treat(logoImgFile)}.$EXTENSION"
