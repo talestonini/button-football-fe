@@ -1,10 +1,10 @@
 package com.talestonini.component
 
 import com.raquo.laminar.api.L.{*, given}
-import com.talestonini.buttonfootball.model.Model
-import scala.math.Ordering
 import com.raquo.laminar.nodes.ReactiveHtmlElement
+import com.talestonini.buttonfootball.model.Model
 import org.scalajs.dom.HTMLTableCellElement
+import scala.math.Ordering
 
 object Table:
 

@@ -2,10 +2,11 @@ package com.talestonini.component
 
 import com.raquo.laminar.api.features.unitArrows
 import com.raquo.laminar.api.L.{*, given}
+import com.talestonini.buttonfootball.service.Lang
 
-object Languages {
+object Languages:
 
-  def apply(): Element =
+  def apply(vLang: Var[Lang], ptBrLang: Lang, enLang: Lang): Element =
     div(
       cls := "bnt-group",
       role := "group",
@@ -14,7 +15,11 @@ object Languages {
         cls := "btn-check",
         nameAttr := "btnLang",
         idAttr := "btnPtBr",
-        checked := true
+        checked := true,
+        onChange.mapToChecked --> (selected => {
+          val currLang = vLang.now()
+          vLang.update(_ => if (selected) ptBrLang else currLang)
+        }),
       ),
       label(
         cls := "btn btn-outline-primary",
@@ -26,7 +31,11 @@ object Languages {
         cls := "btn-check",
         nameAttr := "btnLang",
         idAttr := "btnEn",
-        checked := false
+        checked := false,
+        onChange.mapToChecked --> (selected => {
+          val currLang = vLang.now()
+          vLang.update(_ => if (selected) enLang else currLang)
+        }),
       ),
       label(
         cls := "btn btn-outline-primary",
@@ -35,4 +44,4 @@ object Languages {
       )
     )
 
-}
+end Languages

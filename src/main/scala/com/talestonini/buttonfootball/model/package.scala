@@ -72,6 +72,8 @@ package object model:
   def setLoading() = vIsLoading.update(_ => true)
   def unsetLoading() = vIsLoading.update(_ => false)
 
+  val vLang: Var[Lang] = Var(PT_BR)
+
   // --- side-effect functions -----------------------------------------------------------------------------------------
   
   def seGetTeamTypes(): Unit =

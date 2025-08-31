@@ -2,10 +2,11 @@ package com.talestonini.component
 
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.util.buildStyleAttr
+import com.talestonini.buttonfootball.service.{I18n, Token}
 
 object AccordionItem:
 
-  def apply(id: String, header: String, content: Element): Element =
+  def apply(id: String, header: Token, content: Element): Element =
     div(
       cls := "accordion-item shadow",
       h2(
@@ -18,7 +19,7 @@ object AccordionItem:
           dataAttr("bs-target") := s"#$id",
           b(
             cls := "text-muted",
-            header
+            text <-- I18n(header)
           )
         )
       ),
