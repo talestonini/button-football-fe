@@ -19,7 +19,7 @@ object ChampionshipsContent:
           children <-- vChampionshipTypes.signal.map(cts => cts.map(ct =>
             option(
               value := ct.code,
-              ct.description
+              text <-- I18n(ct.description, ChampionshipTypeTranslationMap)
             )
           )),
           onChange.mapToValue --> { code =>

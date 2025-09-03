@@ -20,6 +20,38 @@ case object ChampionshipStageToken extends Token("Fase", "Stage")
 case object ChampionshipEditionToken extends Token("Edição", "Edition")
 case object TeamTypeToken extends Token("Tipo de Time", "Team Type")
 
+val TeamTypeTranslationMap: Map[Lang, Map[String, String]] = Map(
+  PT_BR -> Map.empty,
+  EN -> Map(
+    "Clube" -> "Club",
+    "Seleção" -> "National Team",
+  )
+)
+
+val ChampionshipTypeTranslationMap: Map[Lang, Map[String, String]] = Map(
+  PT_BR -> Map.empty,
+  EN -> Map(
+    "Campeonato Brasileiro" -> "Campeonato Brasileiro",
+    "Copa Libertadores da América" -> "Libertadores",
+    "Liga dos Campeões da Europa" -> "Champions League",
+    "Mundial de Clubes" -> "Club World Cup",
+    "Copa do Mundo" -> "World Cup",
+    "Eurocopa" -> "European Football Championship",
+  )
+)
+
+val ChampionshipStatusTranslationMap: Map[Lang, Map[String, String]] = Map(
+  PT_BR -> Map.empty,
+  EN -> Map(
+    "Primeira Fase" -> "Groups",
+    "Oitavas de Final" -> "Round of Sixteen",
+    "Quartas de Final" -> "Quarter-finals",
+    "Semifinais" -> "Semi-finals",
+    "Finais" -> "Finals",
+    "Encerrado" -> "Finished",
+  )
+)
+
 val TeamTranslationMap: Map[Lang, Map[String, String]] = Map(
   PT_BR -> Map.empty,
   EN -> Map(
@@ -60,10 +92,7 @@ object I18n {
   def apply(token: Token): Signal[String] =
     vLang.signal.map(lang => token.in(lang))
 
-  def apply(text: String, translationMap: Option[Map[Lang, Map[String, String]]] = None): Signal[String] =
-    vLang.signal.map(lang =>
-      if (translationMap.isEmpty) text
-      else translationMap.get.get(lang).get.getOrElse(text, text)
-    )
+  def apply(text: String, translationMap: Map[Lang, Map[String, String]]): Signal[String] =
+    vLang.signal.map(lang => translationMap.get(lang).get.getOrElse(text, text))
 
 }

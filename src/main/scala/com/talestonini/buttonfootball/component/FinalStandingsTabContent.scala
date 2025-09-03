@@ -3,12 +3,11 @@ package com.talestonini.buttonfootball.component
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Standings.*
+import com.talestonini.buttonfootball.service.*
 import com.talestonini.component.Table
 import com.talestonini.component.Table.*
 import com.talestonini.util.*
 import com.talestonini.util.Window.Size
-import com.talestonini.buttonfootball.service.I18n
-import com.talestonini.buttonfootball.service.TeamTranslationMap
 
 object FinalStandingsTabContent:
 
@@ -24,7 +23,7 @@ object FinalStandingsTabContent:
           Column(if (smallish) "" else "Final", 8),
           StandingsTeamColumn(ws),
           Column("", 3, "text-start", !smallish,
-            Some((teamName: String) => span(text <-- I18n(teamName, Some(TeamTranslationMap))))
+            Some((teamName: String) => span(text <-- I18n(teamName, TeamTranslationMap)))
           ),
           Column(if (smallish) "P" else "Pontos", 9),
           Column(if (smallish) "J" else "Jogos", 10),
