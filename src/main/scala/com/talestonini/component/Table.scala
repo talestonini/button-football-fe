@@ -61,7 +61,7 @@ object Table:
         td(
           cls := h.align,
           m.productElement(h.modelFieldPos) match {
-            case Some(optionalVal) => valOrApplyElemFnToVal(optionalVal.toString)
+            case Some(optionalVal) => valOrApplyElemFnToVal(optionalVal.toString())
             case None              => ""
             case anythingElse: Any => valOrApplyElemFnToVal(anythingElse.toString())
           }

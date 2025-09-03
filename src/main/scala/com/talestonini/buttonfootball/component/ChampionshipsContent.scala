@@ -5,6 +5,7 @@ import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.util.*
 import com.talestonini.buttonfootball.util.Logo.*
+import com.talestonini.buttonfootball.service.*
 
 object ChampionshipsContent:
 
@@ -42,7 +43,7 @@ object ChampionshipsContent:
       label(
         cls := "form-label text-muted",
         forId := "championshipEditionRange",
-        b("Edição")
+        b(text <-- I18n(ChampionshipEditionToken))
       ),
       div(
         cls := "col",
@@ -82,7 +83,7 @@ object ChampionshipsContent:
       label(
         cls := "form-label text-muted",
         forId := "championshipDtCreation",
-        b("Criação")
+        b(text <-- I18n(ChampionshipCreationToken))
       ),
       input(
         idAttr := "championshipDtCreation",
@@ -99,7 +100,7 @@ object ChampionshipsContent:
       label(
         cls := "form-label text-muted",
         forId := "championshipdStatus",
-        b("Fase")
+        b(text <-- I18n(ChampionshipStageToken))
       ),
       input(
         idAttr := "championshipStatus",

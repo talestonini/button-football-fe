@@ -7,6 +7,8 @@ import com.talestonini.component.Table
 import com.talestonini.component.Table.*
 import com.talestonini.util.*
 import com.talestonini.util.Window.Size
+import com.talestonini.buttonfootball.service.I18n
+import com.talestonini.buttonfootball.service.TeamTranslationMap
 
 object FinalStandingsTabContent:
 
@@ -21,7 +23,9 @@ object FinalStandingsTabContent:
         Table[Standing](vFinalStandings, List(
           Column(if (smallish) "" else "Final", 8),
           StandingsTeamColumn(ws),
-          Column("", 3, "text-start", !smallish),
+          Column("", 3, "text-start", !smallish,
+            Some((teamName: String) => span(text <-- I18n(teamName, Some(TeamTranslationMap))))
+          ),
           Column(if (smallish) "P" else "Pontos", 9),
           Column(if (smallish) "J" else "Jogos", 10),
           Column(if (smallish) "V" else "Vitórias", 11),
