@@ -1,5 +1,6 @@
 package com.talestonini.buttonfootball.component
 
+import com.raquo.airstream.flatten.FlattenStrategy.allowFlatMap
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
@@ -106,7 +107,12 @@ object ChampionshipsContent:
         idAttr := "championshipStatus",
         cls := "form-control",
         typ := "text",
-        value <-- vSelectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).status),
+        value <-- {
+          for {
+            c <- vSelectedChampionship.signal
+            text <- I18n(c.getOrElse(NO_CHAMPIONSHIP).status, ChampionshipStatusTranslationMap).signal
+          } yield text.toString()
+        },
         readOnly := true
       ),
     )
