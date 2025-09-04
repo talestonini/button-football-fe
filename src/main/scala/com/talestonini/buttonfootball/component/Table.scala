@@ -37,7 +37,7 @@ object Table:
       val sortingVar: Var[String] = Var("")
       th(
         cls := s"$align text-muted",
-        text <-- I18n(headerToken),
+        text <-- I18n(headerToken).combineWith(sortingVar.signal).map((t, s) => t + s),
         onClick --> (ev => {
           val currSorting = sorting.signal.now()
           if (currSorting == NoSorting || currSorting == Desc)
