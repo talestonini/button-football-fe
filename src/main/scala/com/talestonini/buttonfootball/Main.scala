@@ -5,7 +5,7 @@ import com.talestonini.buttonfootball.component.*
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.service.*
 import com.talestonini.buttonfootball.util.*
-import com.talestonini.component.{AccordionItem, Footer, Languages}
+import com.talestonini.buttonfootball.component.{AccordionItem, Footer, Languages}
 import com.talestonini.util.*
 
 @main

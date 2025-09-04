@@ -1,10 +1,12 @@
-package com.talestonini.component
+package com.talestonini.buttonfootball.component
 
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.nodes.ReactiveHtmlElement
 import com.talestonini.buttonfootball.model.Model
+import com.talestonini.buttonfootball.service.Token
 import org.scalajs.dom.HTMLTableCellElement
 import scala.math.Ordering
+import com.talestonini.buttonfootball.service.I18n
 
 object Table:
 
@@ -13,10 +15,8 @@ object Table:
   case object Asc extends Sorting
   case object Desc extends Sorting
 
-  case class Column(header: String, modelFieldPos: Int, align: String = "text-end", isRender: Boolean = true,
+  case class Column(headerToken: Token, modelFieldPos: Int, align: String = "text-end", isRender: Boolean = true,
                     elem: Option[String => Element] = None, sorting: Var[Sorting] = Var(NoSorting)):
-
-    private val headerVar: Var[String] = Var(header)
 
     implicit val anyOrdering: Ordering[Any] = new Ordering[Any]:
       val stringOrdering: Ordering[String] = Ordering.String
@@ -33,22 +33,24 @@ object Table:
       }
     end anyOrdering
 
-    def tableHeader[M <: Model](models: Var[List[M]]): Element =
+    def tableHeader[M <: Model](models: Var[List[M]]): Element = {
+      val sortingVar: Var[String] = Var("")
       th(
         cls := s"$align text-muted",
-        text <-- headerVar,
+        text <-- I18n(headerToken),
         onClick --> (ev => {
           val currSorting = sorting.signal.now()
           if (currSorting == NoSorting || currSorting == Desc)
-            headerVar.update(_ => s"$header ↑")
+            sortingVar.update(_ => s" ↑")
             models.update(_ => models.now().sortBy(_.productElement(modelFieldPos)))
             sorting.update(_ => Asc)
           else
-            headerVar.update(_ => s"$header ↓")
+            sortingVar.update(_ => s" ↓")
             models.update(_ => models.now().sortBy(_.productElement(modelFieldPos)).reverse)
             sorting.update(_ => Desc)
         })
       )
+    }
 
   end Column
 
@@ -72,7 +74,7 @@ object Table:
       cls := "table align-middle",
       thead(
         cls := "thead-light",
-        tr(headers.filter(h => h.isRender).map(h => Column(h.header, h.modelFieldPos).tableHeader(models)))
+        tr(headers.filter(h => h.isRender).map(h => Column(h.headerToken, h.modelFieldPos).tableHeader(models)))
       ),
       tbody(
         children <-- models.signal.map(ms => ms.map(m => tableRow(m)))

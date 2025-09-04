@@ -1,4 +1,4 @@
-package com.talestonini.component
+package com.talestonini.buttonfootball.component
 
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.util.buildStyleAttr
