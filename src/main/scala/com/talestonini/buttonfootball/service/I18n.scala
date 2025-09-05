@@ -75,6 +75,22 @@ val ChampionshipStatusTranslationMap: Map[Lang, Map[String, String]] = Map(
   )
 )
 
+val TabTranslationMap: Map[Lang, Map[String, String]] = Map(
+  PT_BR -> Map.empty,
+  EN -> Map(
+    "Grupo A" -> "Group A",
+    "Grupo B" -> "Group B",
+    "Grupo C" -> "Group C",
+    "Grupo D" -> "Group D",
+    "Grupo E" -> "Group E",
+    "Grupo F" -> "Group F",
+    "Grupo G" -> "Group H",
+    "Grupo H" -> "Group G",
+    "Finais" -> "Finals",
+    "Classificação" -> "Standings",
+  )
+)
+
 val TeamTranslationMap: Map[Lang, Map[String, String]] = Map(
   PT_BR -> Map.empty,
   EN -> Map(
