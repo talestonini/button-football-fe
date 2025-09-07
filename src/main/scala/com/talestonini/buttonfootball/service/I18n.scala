@@ -47,7 +47,7 @@ val TeamTypeTranslationMap: Map[Lang, Map[String, String]] = Map(
   PT_BR -> Map.empty,
   EN -> Map(
     "Clube" -> "Club",
-    "Seleção" -> "National Team",
+    "Seleção" -> "National",
   )
 )
 
