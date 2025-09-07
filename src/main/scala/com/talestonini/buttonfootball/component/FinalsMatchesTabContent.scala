@@ -4,6 +4,7 @@ import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.datastructure.*
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Matches.Match
+import com.talestonini.buttonfootball.service.MatchTypeTranslationMap
 import com.talestonini.buttonfootball.util.*
 import com.talestonini.util.*
 
@@ -234,7 +235,7 @@ object FinalsMatchesTabContent:
         cls := "card",
         div(
           cls := "card-body p-2",
-          cardTitle(m.`type`, "mb-0"),
+          cardTitle(m.`type`, "mb-0", Some(MatchTypeTranslationMap)),
           table(
             cls := "table mb-0 table-borderless align-middle",
             tbody(MatchTableRow(m, isFinalsStage = true))

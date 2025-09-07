@@ -91,6 +91,28 @@ val TabTranslationMap: Map[Lang, Map[String, String]] = Map(
   )
 )
 
+val MatchTypeTranslationMap: Map[Lang, Map[String, String]] = Map(
+  PT_BR -> Map.empty,
+  EN -> Map(
+    "Oitava de Final 1" -> "Round of Sixteen 1",
+    "Oitava de Final 2" -> "Round of Sixteen 2",
+    "Oitava de Final 3" -> "Round of Sixteen 3",
+    "Oitava de Final 4" -> "Round of Sixteen 4",
+    "Oitava de Final 5" -> "Round of Sixteen 5",
+    "Oitava de Final 6" -> "Round of Sixteen 6",
+    "Oitava de Final 7" -> "Round of Sixteen 7",
+    "Oitava de Final 8" -> "Round of Sixteen 8",
+    "Quarta de Final A" -> "Quarter-final A",
+    "Quarta de Final B" -> "Quarter-final B",
+    "Quarta de Final C" -> "Quarter-final C",
+    "Quarta de Final D" -> "Quarter-final D",
+    "Semifinal AD" -> "Semi-final AD",
+    "Semifinal BC" -> "Semi-final BC",
+    "Decisão do 3º Lugar" -> "Third-place Playoff",
+    "Final" -> "Grand-final",
+  )
+)
+
 val TeamTranslationMap: Map[Lang, Map[String, String]] = Map(
   PT_BR -> Map.empty,
   EN -> Map(

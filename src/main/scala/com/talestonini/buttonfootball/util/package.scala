@@ -2,6 +2,7 @@ package com.talestonini.buttonfootball
 
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.vTeams
+import com.talestonini.buttonfootball.service.*
 import com.talestonini.util.*
 import org.scalajs.dom
 
@@ -26,10 +27,14 @@ package object util {
     private def treat(name: String) = name.toLowerCase()
   end Logo
 
-  def cardTitle(title: String, marginBottom: String = "mb-2"): Element =
+  def cardTitle(
+    title: String,
+    marginBottom: String = "mb-2",
+    translationMap: Option[Map[Lang, Map[String, String]]]
+  ): Element =
     h6(
       cls := s"card-subtitle ${marginBottom} text-muted",
-      b(title)
+      b(if (translationMap.isDefined) text <-- I18n(title, translationMap.get) else title)
     )
 
   def maybeScaleFontDown(): String =
