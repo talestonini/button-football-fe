@@ -4,9 +4,9 @@ import com.raquo.airstream.flatten.FlattenStrategy.allowFlatMap
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
+import com.talestonini.buttonfootball.service.*
 import com.talestonini.buttonfootball.util.*
 import com.talestonini.buttonfootball.util.Logo.*
-import com.talestonini.buttonfootball.service.*
 
 object ChampionshipsContent:
 

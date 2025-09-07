@@ -3,10 +3,9 @@ package com.talestonini.buttonfootball.component
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.nodes.ReactiveHtmlElement
 import com.talestonini.buttonfootball.model.Model
-import com.talestonini.buttonfootball.service.Token
+import com.talestonini.buttonfootball.service.*
 import org.scalajs.dom.HTMLTableCellElement
 import scala.math.Ordering
-import com.talestonini.buttonfootball.service.I18n
 
 object Table:
 
