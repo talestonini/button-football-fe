@@ -3,6 +3,7 @@ package com.talestonini.buttonfootball.component
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
+import com.talestonini.buttonfootball.service.*
 
 object TeamTypesContent:
 
@@ -24,7 +25,7 @@ object TeamTypesContent:
               },
               checked <-- vSelectedTeamType.signal.map(_.getOrElse(NO_TEAM_TYPE).code == tt.code)
             ),
-            tt.description
+            text <-- I18n(tt.description, TeamTypeTranslationMap)
           )
         )
       ))

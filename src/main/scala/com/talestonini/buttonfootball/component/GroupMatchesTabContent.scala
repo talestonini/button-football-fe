@@ -1,10 +1,11 @@
 package com.talestonini.buttonfootball.component
 
 import com.raquo.laminar.api.L.{*, given}
+import com.talestonini.buttonfootball.component.Table
+import com.talestonini.buttonfootball.component.Table.*
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Standings.*
-import com.talestonini.component.Table
-import com.talestonini.component.Table.*
+import com.talestonini.buttonfootball.service.*
 import com.talestonini.util.*
 import com.talestonini.util.Window.Size
 
@@ -32,17 +33,17 @@ object GroupMatchesTabContent:
           val ws = Window.size()
           val smallish = ws == Size.Small || ws == Size.Medium
           Table[Standing](vGroupStandings, List(
-            Column(if (smallish) "" else "Intra-Grupo", 6),
+            Column(if (smallish) StandingsIntraGroupShortToken else StandingsIntraGroupToken, 6),
             StandingsTeamColumn(ws),
-            Column(if (smallish) "P" else "Pontos", 9),
-            Column(if (smallish) "J" else "Jogos", 10),
-            Column(if (smallish) "V" else "Vitórias", 11),
-            Column(if (smallish) "E" else "Empates", 12),
-            Column(if (smallish) "D" else "Derrotas", 13),
-            Column(if (smallish) "GM" else "Gols Marcados", 14),
-            Column(if (smallish) "GS" else "Gols Sofridos", 15),
-            Column(if (smallish) "S" else "Saldo de Gols", 16),
-            Column(if (smallish) "EG" else "Extra-Grupo", 7)
+            Column(if (smallish) StandingsPointsShortToken else StandingsPointsToken, 9),
+            Column(if (smallish) StandingsMatchesShortToken else StandingsMatchesToken, 10),
+            Column(if (smallish) StandingsWinsShortToken else StandingsWinsToken, 11),
+            Column(if (smallish) StandingsDrawsShortToken else StandingsDrawsToken, 12),
+            Column(if (smallish) StandingsLossesShortToken else StandingsLossesToken, 13),
+            Column(if (smallish) StandingsGoalsScoredShortToken else StandingsGoalsScoredToken, 14),
+            Column(if (smallish) StandingsGoalsConcededShortToken else StandingsGoalsConcededToken, 15),
+            Column(if (smallish) StandingsGoalsDiffShortToken else StandingsGoalsDiffToken, 16),
+            Column(if (smallish) StandingsExtraGroupShortToken else StandingsExtraGroupToken, 7)
           ))
         })
       )

@@ -2,6 +2,7 @@ package com.talestonini.buttonfootball.component
 
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.Matches.*
+import com.talestonini.buttonfootball.service.*
 import com.talestonini.buttonfootball.util.Logo.*
 import com.talestonini.buttonfootball.util.*
 import com.talestonini.util.*
@@ -17,7 +18,10 @@ object MatchTableRow:
     }
 
     tr(
-      if (isFinalsStage) "" else td(cls := "col-3 text-end", buildStyleAttr(maybeScaleFontDown()), m.teamA),
+      if (isFinalsStage)
+        ""
+      else
+        td(cls := "col-3 text-end", buildStyleAttr(maybeScaleFontDown()), text <-- I18n(m.teamA, TeamTranslationMap)),
       logo(m.teamALogoImgFile),
       td(
         cls := "col-1", buildStyleAttr(maybeScaleFontUp(), "font-weight: bold"),
@@ -48,7 +52,10 @@ object MatchTableRow:
         )
       ),
       logo(m.teamBLogoImgFile),
-      if (isFinalsStage) "" else td(cls := "col-3 text-start", buildStyleAttr(maybeScaleFontDown()), m.teamB)
+      if (isFinalsStage)
+        ""
+      else
+        td(cls := "col-3 text-start", buildStyleAttr(maybeScaleFontDown()), text <-- I18n(m.teamB, TeamTranslationMap))
     )
   end apply 
 

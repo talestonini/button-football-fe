@@ -1,8 +1,10 @@
 package com.talestonini.buttonfootball.component
 
+import com.raquo.airstream.flatten.FlattenStrategy.allowFlatMap
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Championships.*
+import com.talestonini.buttonfootball.service.*
 import com.talestonini.buttonfootball.util.*
 import com.talestonini.buttonfootball.util.Logo.*
 
@@ -18,7 +20,7 @@ object ChampionshipsContent:
           children <-- vChampionshipTypes.signal.map(cts => cts.map(ct =>
             option(
               value := ct.code,
-              ct.description
+              text <-- I18n(ct.description, ChampionshipTypeTranslationMap)
             )
           )),
           onChange.mapToValue --> { code =>
@@ -42,7 +44,7 @@ object ChampionshipsContent:
       label(
         cls := "form-label text-muted",
         forId := "championshipEditionRange",
-        b("Edição")
+        b(text <-- I18n(ChampionshipEditionToken))
       ),
       div(
         cls := "col",
@@ -82,7 +84,7 @@ object ChampionshipsContent:
       label(
         cls := "form-label text-muted",
         forId := "championshipDtCreation",
-        b("Criação")
+        b(text <-- I18n(ChampionshipCreationToken))
       ),
       input(
         idAttr := "championshipDtCreation",
@@ -99,13 +101,18 @@ object ChampionshipsContent:
       label(
         cls := "form-label text-muted",
         forId := "championshipdStatus",
-        b("Fase")
+        b(text <-- I18n(ChampionshipStageToken))
       ),
       input(
         idAttr := "championshipStatus",
         cls := "form-control",
         typ := "text",
-        value <-- vSelectedChampionship.signal.map(c => c.getOrElse(NO_CHAMPIONSHIP).status),
+        value <-- {
+          for {
+            c <- vSelectedChampionship.signal
+            text <- I18n(c.getOrElse(NO_CHAMPIONSHIP).status, ChampionshipStatusTranslationMap).signal
+          } yield text.toString()
+        },
         readOnly := true
       ),
     )

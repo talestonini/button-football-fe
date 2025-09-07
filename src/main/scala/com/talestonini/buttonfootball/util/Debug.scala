@@ -48,7 +48,8 @@ object Debug:
           }
         ),
         div(child.text <-- vTeams.signal.map(ts => s"Teams count: ${ts.size}")),
-        div(child.text <-- vIsLoading.signal.map(isLoading => s"Loading: $isLoading"))
+        div(child.text <-- vIsLoading.signal.map(isLoading => s"Loading: $isLoading")),
+        div(child.text <-- vLang.signal.map(lang => s"$lang"))
       )
 
   // --- assertions functions ------------------------------------------------------------------------------------------

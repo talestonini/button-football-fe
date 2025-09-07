@@ -3,6 +3,7 @@ package com.talestonini.buttonfootball.component
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.api.features.unitArrows
 import com.talestonini.buttonfootball.model.*
+import com.talestonini.buttonfootball.service.*
 
 object Tabs:
 
@@ -32,10 +33,10 @@ object Tabs:
           li(
             cls := "nav-item",
             button(
-              cls := "nav-link text-muted",
+              cls := "nav-link text-muted fw-bold",
               cls <-- vActiveTab.signal.map(at => if (t == at) "active" else ""),
               onClick --> vActiveTab.update(ev => t),
-              b(t)
+              text <-- I18n(t, TabTranslationMap)
             )
           )
         )),
