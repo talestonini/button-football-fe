@@ -13,16 +13,20 @@ object MatchTableRow:
     def displayInFinals(condition: Boolean) =
       display(if (isFinalsStage && condition) "table-cell" else "none")
 
-    def logo(logoImgFile: String): Element = {
-      td(cls := "col-1", LogoImage(forTeamImgFile(logoImgFile)))
-    }
+    def logo(logoImgFile: String, teamName: String): Element =
+      td(
+        cls := "col-1",
+        LogoImage(forTeamImgFile(logoImgFile)),
+        dataAttr("bs-toggle") := "tooltip",
+        title <-- I18n(teamName, TeamTranslationMap)
+      )
 
     tr(
       if (isFinalsStage)
         ""
       else
         td(cls := "col-3 text-end", buildStyleAttr(maybeScaleFontDown()), text <-- I18n(m.teamA, TeamTranslationMap)),
-      logo(m.teamALogoImgFile),
+      logo(m.teamALogoImgFile, m.teamA),
       td(
         cls := "col-1", buildStyleAttr(maybeScaleFontUp(), "font-weight: bold"),
         table(
@@ -51,7 +55,7 @@ object MatchTableRow:
           ))
         )
       ),
-      logo(m.teamBLogoImgFile),
+      logo(m.teamBLogoImgFile, m.teamB),
       if (isFinalsStage)
         ""
       else
