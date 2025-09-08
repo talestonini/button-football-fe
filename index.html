@@ -14,6 +14,13 @@
     <meta http-equiv="Expires" content="0">
   </head>
   <body>
+    <script type="text/javascript">
+      function initTooltips() {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+          new bootstrap.Tooltip(el);
+        });
+      }
+    </script>
     <div id="app" class="bg-light"></div>
     <script type="module" src="/src/main.js"></script>
   </body>

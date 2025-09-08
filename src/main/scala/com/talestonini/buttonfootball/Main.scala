@@ -12,6 +12,7 @@ import com.talestonini.util.*
 def ButtonFootballFrontEnd(): Unit =
   seGetTeams()
   seGetTeamTypes()
+  Tooltip.initTooltips()
   renderOnDomContentLoaded(
     Elem.byId("app"),
     // div(
