@@ -28,8 +28,9 @@ object RankingTabContent:
           Column(if (smallish) RankingChampionshipsShortToken else RankingChampionshipsToken, 18),
           Column(if (smallish) RankingParticipationsShortToken else RankingParticipationsToken, 7),
           Column(if (smallish) RankingAveragePositionShortToken else RankingAveragePositionToken, 6),
-          Column(if (smallish) RankingBestPositionShortToken else RankingBestPositionToken, 4),
-          Column(if (smallish) RankingWorstPositionShortToken else RankingWorstPositionToken, 5),
+          // Decided not to have these fields in the table:
+          // Column(if (smallish) RankingBestPositionShortToken else RankingBestPositionToken, 4),
+          // Column(if (smallish) RankingWorstPositionShortToken else RankingWorstPositionToken, 5),
           Column(if (smallish) StandingsPointsShortToken else StandingsPointsToken, 10),
           Column(if (smallish) StandingsMatchesShortToken else StandingsMatchesToken, 11),
           Column(if (smallish) StandingsWinsShortToken else StandingsWinsToken, 12),

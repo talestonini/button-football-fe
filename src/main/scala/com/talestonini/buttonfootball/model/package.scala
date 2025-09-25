@@ -106,8 +106,9 @@ package object model:
       .onComplete({
         case s: Success[List[ChampionshipType]] =>
           vChampionshipTypes.update(_ => s.value)
-          vSelectedChampionshipType.update(_ => Some(s.value.head))
-          seGetChampionships(s.value.head.code)
+          val championshipTypeToSelect = s.value.head
+          vSelectedChampionshipType.update(_ => Some(championshipTypeToSelect))
+          seGetChampionships(championshipTypeToSelect.code)
           unsetLoading()
         case f: Failure[List[ChampionshipType]] =>
           println(s"failed fetching championship type: ${f.exception.getMessage}")
@@ -133,12 +134,15 @@ package object model:
                 else vSelectedEdition.now()
             vChampionships.now().find(_.numEdition == editionToUpdateWith)
           )
-          seGetMatches(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+          val selectedChampionship = vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP)
+          seGetMatches(selectedChampionship.id)
           // TODO: check whether using 2 APIs is a cleaner design - this is currently not working as the following
           //       quick succession of requests result in backend ConcurrentModificationException
           // seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
           // seGetFinalStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-          seGetStandings(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+          seGetStandings(selectedChampionship.id)
+          seGetRankings(vSelectedChampionshipType.now().getOrElse(NO_CHAMPIONSHIP_TYPE).id,
+            selectedChampionship.numEdition)
           unsetLoading()
         case f: Failure[List[Championship]] =>
           println(s"failed fetching championships: ${f.exception.getMessage}")

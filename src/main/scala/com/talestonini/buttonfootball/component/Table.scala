@@ -5,6 +5,7 @@ import com.raquo.laminar.nodes.ReactiveHtmlElement
 import com.talestonini.buttonfootball.model.Model
 import com.talestonini.buttonfootball.service.*
 import org.scalajs.dom.HTMLTableCellElement
+import scala.math.BigDecimal.RoundingMode
 import scala.math.Ordering
 
 object Table:
@@ -56,15 +57,21 @@ object Table:
   def apply[M <: Model](models: Var[List[M]], headers: List[Column]): Element =
     def tableRow(m: M): Element =
       tr(headers.filter(h => h.isRender).map(h => {
-        def valOrApplyElemFnToVal(value: String): Modifier[ReactiveHtmlElement[HTMLTableCellElement]] =
-          if (h.elem.isEmpty) value else h.elem.get(value)
+        def valOrApplyElemFnToVal(value: Any): Modifier[ReactiveHtmlElement[HTMLTableCellElement]] = {
+          val strVal = value match {
+            case i: Int => value.toString()
+            case d: Double => BigDecimal(d).setScale(2, RoundingMode.HALF_UP).toString()
+            case _ => value.toString()
+          }
+          if (h.elem.isEmpty) strVal else h.elem.get(strVal)
+        }
 
         td(
           cls := h.align,
           m.productElement(h.modelFieldPos) match {
-            case Some(optionalVal) => valOrApplyElemFnToVal(optionalVal.toString())
+            case Some(optionalVal) => valOrApplyElemFnToVal(optionalVal)
             case None              => ""
-            case anythingElse: Any => valOrApplyElemFnToVal(anythingElse.toString())
+            case anythingElse: Any => valOrApplyElemFnToVal(anythingElse)
           }
         )
       }))
