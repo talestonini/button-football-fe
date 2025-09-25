@@ -9,7 +9,7 @@ import org.http4s.circe.CirceEntityCodec._
 object Rankings:
 
   case class Ranking(id: Id, championshipType: String, team: String, teamLogoImgFile: String, numBestPos: Int,
-                     numWorstPos: Int, numAvgPos: Int, numParticipations: Int, numRankingPoints: Int,
+                     numWorstPos: Int, numAvgPos: Double, numParticipations: Int, numRankingPoints: Int,
                      numRankingPos: Int, numPoints: Int, numMatches: Int, numWins: Int, numDraws: Int, numLosses: Int,
                      numGoalsScored: Int, numGoalsConceded: Int, numGoalsDiff: Int, numChampionships: Int,
                      numUpToEdition: Int) extends Model

@@ -47,6 +47,11 @@ object Debug:
             case(gss, fss) => s"Group Standings: ${gss.size}, Final Standings: ${fss.size}"
           }
         ),
+        div(
+          child.text <-- vRankings.signal.map {
+            case(rs) => s"Rankings: ${rs.size}"
+          }
+        ),
         div(child.text <-- vTeams.signal.map(ts => s"Teams count: ${ts.size}")),
         div(child.text <-- vIsLoading.signal.map(isLoading => s"Loading: $isLoading")),
         div(child.text <-- vLang.signal.map(lang => s"$lang"))

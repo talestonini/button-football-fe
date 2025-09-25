@@ -236,6 +236,7 @@ package object model:
           vRankings.update(_ => s.value)
           unsetLoading()
         case f: Failure[List[Ranking]] =>
+          println(s"failed fetching rankings: ${f.exception.getMessage}")
           vRankings.update(_ => List.empty)
           unsetLoading()
       })(using queue)

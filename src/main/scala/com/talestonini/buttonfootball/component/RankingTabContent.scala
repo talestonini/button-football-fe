@@ -10,8 +10,7 @@ import com.talestonini.util.Window.Size
 
 object RankingTabContent:
 
-  def apply(): Element = {
-    println("here")
+  def apply(): Element =
     div(
       cls := "container border bg-white p-3 text-end",
       buildStyleAttr("overflow-x: auto"),
@@ -42,6 +41,5 @@ object RankingTabContent:
         ))
       })
     )
-  }
 
 end RankingTabContent
