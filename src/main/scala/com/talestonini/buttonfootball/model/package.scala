@@ -61,7 +61,7 @@ package object model:
   val sNumQualif: Signal[Int] = sNumTeams.map(nt => calcNumQualif(nt).getOrElse(0))
   val vGroupStandings: Var[List[Standing]] = Var(List.empty)
   val vFinalStandings: Var[List[Standing]] = Var(List.empty)
-  val vRanking: Var[List[Ranking]] = Var(List.empty)
+  val vRankings: Var[List[Ranking]] = Var(List.empty)
   
   case class Qualified(pos: Int, team: String)
   val sQualifiedTeams: Signal[List[Qualified]] = vGroupStandings.signal.combineWith(sNumQualif).map {
@@ -225,6 +225,21 @@ package object model:
           unsetLoading()
       })(using queue)
   end seGetFinalStandings
+
+  def seGetRankings(championshipTypeId: Id, numUpToEdition: Int): Unit =
+    setLoading()
+    println(s"fetching rankings with championship type id '$championshipTypeId' up to edition '$numUpToEdition'")
+    ChampionshipTypeService.getRankings(championshipTypeId, numUpToEdition)
+      .unsafeToFuture()
+      .onComplete({
+        case s: Success[List[Ranking]] =>
+          vRankings.update(_ => s.value)
+          unsetLoading()
+        case f: Failure[List[Ranking]] =>
+          vRankings.update(_ => List.empty)
+          unsetLoading()
+      })(using queue)
+  end seGetRankings
 
   def seGetTeams(name: String = ""): Unit =
     setLoading()

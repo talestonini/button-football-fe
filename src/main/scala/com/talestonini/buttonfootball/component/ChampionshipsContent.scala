@@ -7,6 +7,7 @@ import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.service.*
 import com.talestonini.buttonfootball.util.*
 import com.talestonini.buttonfootball.util.Logo.*
+import com.talestonini.buttonfootball.model.ChampionshipTypes.NO_CHAMPIONSHIP_TYPE
 
 object ChampionshipsContent:
 
@@ -26,6 +27,7 @@ object ChampionshipsContent:
           onChange.mapToValue --> { code =>
             vSelectedChampionshipType.update(_ => vChampionshipTypes.now().find((ct) => ct.code == code))
             seGetChampionships(code)
+            seGetRankings(vSelectedChampionshipType.now().getOrElse(NO_CHAMPIONSHIP_TYPE).id, vSelectedEdition.now())
           },
         )
       ),
@@ -66,6 +68,7 @@ object ChampionshipsContent:
             // seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
             // seGetFinalStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
             seGetStandings(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+            seGetRankings(vSelectedChampionshipType.now().getOrElse(NO_CHAMPIONSHIP_TYPE).id, vSelectedEdition.now())
           },
           value <-- vSelectedChampionship.signal.map(_.getOrElse(NO_CHAMPIONSHIP).numEdition.toString())
         )

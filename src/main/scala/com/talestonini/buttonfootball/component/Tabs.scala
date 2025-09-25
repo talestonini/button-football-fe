@@ -20,6 +20,8 @@ object Tabs:
           FinalsMatchesTabContent()
         else if (tabName == FINAL_STANDINGS_TAB)
           FinalStandingsTabContent()
+        else if (tabName == RANKING_TAB)
+          RankingTabContent()
         else
           div()
     )

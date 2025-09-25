@@ -8,10 +8,11 @@ import org.http4s.circe.CirceEntityCodec._
 
 object Rankings:
 
-  case class Ranking(id: Id, championshipType: String, team: String, numBestPos: Int, numWorstPos: Int, numAvgPos: Int,
-                     numParticipations: Int, numRankingPoints: Int, numRankingPos: Int, numPoints: Int,
-                     numMatches: Int, numWins: Int, numDraws: Int, numLosses: Int, numGoalsScored: Int,
-                     numGoalsConceded: Int, numGoalsDiff: Int, numChampionships: Int, numUpToEdition: Int)
+  case class Ranking(id: Id, championshipType: String, team: String, teamLogoImgFile: String, numBestPos: Int,
+                     numWorstPos: Int, numAvgPos: Int, numParticipations: Int, numRankingPoints: Int,
+                     numRankingPos: Int, numPoints: Int, numMatches: Int, numWins: Int, numDraws: Int, numLosses: Int,
+                     numGoalsScored: Int, numGoalsConceded: Int, numGoalsDiff: Int, numChampionships: Int,
+                     numUpToEdition: Int) extends Model
 
   implicit val rankingDecoder: EntityDecoder[IO, Ranking] = jsonOf[IO, Ranking]
   implicit val rankingEncoder: EntityEncoder[IO, Ranking] = jsonEncoderOf[IO, Ranking]
