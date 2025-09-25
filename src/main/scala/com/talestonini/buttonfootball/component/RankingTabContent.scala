@@ -12,6 +12,7 @@ object RankingTabContent:
 
   def apply(): Element =
     div(
+      div(cls := "text-start", text <-- I18n(RankingNoteToken)),
       cls := "container border bg-white p-3 text-end",
       buildStyleAttr("overflow-x: auto"),
       child <-- vRankings.signal.map(rs => {

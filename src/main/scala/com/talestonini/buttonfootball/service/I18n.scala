@@ -19,20 +19,22 @@ case object ChampionshipCreationToken extends Token("Criação", "Creation")
 case object ChampionshipStageToken extends Token("Fase", "Stage")
 case object ChampionshipEditionToken extends Token("Edição", "Edition")
 case object EmptyToken extends Token("", "")
-case object RankingPositionToken extends Token("Posição", "Position")
-case object RankingPositionShortToken extends Token("", "")
-case object RankingBestPositionShortToken extends Token("Me", "Be")
-case object RankingBestPositionToken extends Token("Melhor", "Best")
-case object RankingWorstPositionShortToken extends Token("Pi", "Wo")
-case object RankingWorstPositionToken extends Token("Pior", "Worst")
 case object RankingAveragePositionShortToken extends Token("CFMéd", "AvgFS")
 case object RankingAveragePositionToken extends Token("Classificação Final Média", "Average Final Standing")
+case object RankingBestPositionShortToken extends Token("Me", "Be")
+case object RankingBestPositionToken extends Token("Melhor", "Best")
+case object RankingChampionshipsShortToken extends Token("T", "T")
+case object RankingChampionshipsToken extends Token("Títulos", "Titles")
+case object RankingNoteToken extends Token("* Até a edição do campeonato selecionada. Veja a tabela de pontuação.",
+  "* Up to the selected championship edition. See the scoring table.")
 case object RankingParticipationsShortToken extends Token("Pt", "Pt")
 case object RankingParticipationsToken extends Token("Participações", "Participations")
 case object RankingPointsShortToken extends Token("PR", "RPts")
 case object RankingPointsToken extends Token("Pontos de Ranking", "Ranking Points")
-case object RankingChampionshipsShortToken extends Token("T", "T")
-case object RankingChampionshipsToken extends Token("Títulos", "Titles")
+case object RankingPositionToken extends Token("Posição", "Position")
+case object RankingPositionShortToken extends Token("", "")
+case object RankingWorstPositionShortToken extends Token("Pi", "Wo")
+case object RankingWorstPositionToken extends Token("Pior", "Worst")
 case object StandingsDrawsToken extends Token("Empates", "Draws")
 case object StandingsDrawsShortToken extends Token("E", "D")
 case object StandingsExtraGroupToken extends Token("Extra-Grupo", "Extra-Group")
@@ -102,6 +104,7 @@ val TabTranslationMap: Map[Lang, Map[String, String]] = Map(
     "Grupo H" -> "Group G",
     "Finais" -> "Finals",
     "Classificação" -> "Standings",
+    "Ranking" -> "Ranking"
   )
 )
 
