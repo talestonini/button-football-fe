@@ -34,7 +34,7 @@ object GroupMatchesTabContent:
           val smallish = ws == Size.Small || ws == Size.Medium
           Table[Standing](vGroupStandings, List(
             Column(if (smallish) StandingsIntraGroupShortToken else StandingsIntraGroupToken, 6),
-            StandingsTeamColumn(ws),
+            TeamColumn(4),
             Column(if (smallish) StandingsPointsShortToken else StandingsPointsToken, 9),
             Column(if (smallish) StandingsMatchesShortToken else StandingsMatchesToken, 10),
             Column(if (smallish) StandingsWinsShortToken else StandingsWinsToken, 11),

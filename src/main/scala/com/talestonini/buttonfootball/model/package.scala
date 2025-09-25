@@ -5,6 +5,7 @@ import com.raquo.airstream.state.Var
 import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import com.talestonini.buttonfootball.model.Matches.*
+import com.talestonini.buttonfootball.model.Rankings.*
 import com.talestonini.buttonfootball.model.Standings.*
 import com.talestonini.buttonfootball.model.Teams.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
@@ -30,8 +31,9 @@ package object model:
   val GROUP               = "Grupo"
   val FINALS_TAB          = "Finais"
   val FINAL_STANDINGS_TAB = "Classificação"
+  val RANKING_TAB         = "Ranking"
   val FIRST_TAB           = s"$GROUP A"
-  val LAST_TAB            = FINAL_STANDINGS_TAB
+  val LAST_TAB            = RANKING_TAB
   val NO_ACTIVE_TAB       = "(no active tab)"
 
   // --- state ---------------------------------------------------------------------------------------------------------
@@ -54,11 +56,12 @@ package object model:
   val sGroups: Signal[List[String]] = sGroupsMatches.map(gms => gms.map(_.`type`).distinct)
   val sNumTeams: Signal[Int] = sGroups.signal.map(gm => gm.length * NUM_TEAMS_PER_GROUP)
   val sNumFinalsMatches: Signal[Int] = sFinalsMatches.map(fms => fms.length)
-  val sTabs: Signal[List[String]] = sGroups.signal.map(gs => gs :+ FINALS_TAB :+ FINAL_STANDINGS_TAB)
+  val sTabs: Signal[List[String]] = sGroups.signal.map(gs => gs :+ FINALS_TAB :+ FINAL_STANDINGS_TAB :+ RANKING_TAB)
   val vActiveTab: Var[String] = Var(NO_ACTIVE_TAB)
   val sNumQualif: Signal[Int] = sNumTeams.map(nt => calcNumQualif(nt).getOrElse(0))
   val vGroupStandings: Var[List[Standing]] = Var(List.empty)
   val vFinalStandings: Var[List[Standing]] = Var(List.empty)
+  val vRankings: Var[List[Ranking]] = Var(List.empty)
   
   case class Qualified(pos: Int, team: String)
   val sQualifiedTeams: Signal[List[Qualified]] = vGroupStandings.signal.combineWith(sNumQualif).map {
@@ -103,8 +106,9 @@ package object model:
       .onComplete({
         case s: Success[List[ChampionshipType]] =>
           vChampionshipTypes.update(_ => s.value)
-          vSelectedChampionshipType.update(_ => Some(s.value.head))
-          seGetChampionships(s.value.head.code)
+          val championshipTypeToSelect = s.value.head
+          vSelectedChampionshipType.update(_ => Some(championshipTypeToSelect))
+          seGetChampionships(championshipTypeToSelect.code)
           unsetLoading()
         case f: Failure[List[ChampionshipType]] =>
           println(s"failed fetching championship type: ${f.exception.getMessage}")
@@ -130,12 +134,15 @@ package object model:
                 else vSelectedEdition.now()
             vChampionships.now().find(_.numEdition == editionToUpdateWith)
           )
-          seGetMatches(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+          val selectedChampionship = vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP)
+          seGetMatches(selectedChampionship.id)
           // TODO: check whether using 2 APIs is a cleaner design - this is currently not working as the following
           //       quick succession of requests result in backend ConcurrentModificationException
           // seGetGroupStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
           // seGetFinalStandings(selectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
-          seGetStandings(vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).id)
+          seGetStandings(selectedChampionship.id)
+          seGetRankings(vSelectedChampionshipType.now().getOrElse(NO_CHAMPIONSHIP_TYPE).id,
+            selectedChampionship.numEdition)
           unsetLoading()
         case f: Failure[List[Championship]] =>
           println(s"failed fetching championships: ${f.exception.getMessage}")
@@ -161,6 +168,7 @@ package object model:
             else
               if (vActiveTab.now().startsWith(GROUP)) s"$GROUP A"
               else if (vActiveTab.now() == FINALS_TAB) FINALS_TAB
+              else if (vActiveTab.now() == RANKING_TAB) RANKING_TAB 
               else FINAL_STANDINGS_TAB
           )
           unsetLoading()
@@ -221,6 +229,22 @@ package object model:
           unsetLoading()
       })(using queue)
   end seGetFinalStandings
+
+  def seGetRankings(championshipTypeId: Id, numUpToEdition: Int): Unit =
+    setLoading()
+    println(s"fetching rankings with championship type id '$championshipTypeId' up to edition '$numUpToEdition'")
+    ChampionshipTypeService.getRankings(championshipTypeId, numUpToEdition)
+      .unsafeToFuture()
+      .onComplete({
+        case s: Success[List[Ranking]] =>
+          vRankings.update(_ => s.value)
+          unsetLoading()
+        case f: Failure[List[Ranking]] =>
+          println(s"failed fetching rankings: ${f.exception.getMessage}")
+          vRankings.update(_ => List.empty)
+          unsetLoading()
+      })(using queue)
+  end seGetRankings
 
   def seGetTeams(name: String = ""): Unit =
     setLoading()

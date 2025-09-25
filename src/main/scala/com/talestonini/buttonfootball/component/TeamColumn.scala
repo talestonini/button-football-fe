@@ -7,11 +7,11 @@ import com.talestonini.buttonfootball.service.EmptyToken
 import com.talestonini.buttonfootball.util.Logo
 import com.talestonini.util.Window.Size
 
-object StandingsTeamColumn:
+object TeamColumn:
 
-  def apply(windowSize: Size): Column =
-    Column(EmptyToken, 4, "text-center", true, Some((teamLogoImgFile: String) =>
+  def apply(numCol: Int): Column =
+    Column(EmptyToken, numCol, "text-center", true, Some((teamLogoImgFile: String) =>
       LogoImage(Logo.forTeamImgFile(teamLogoImgFile), Some(XSMALL_LOGO_PX_SIZE))
     ))
 
-end StandingsTeamColumn
+end TeamColumn
