@@ -38,6 +38,9 @@ object Debug:
           child.text <-- assertCorrectNumQualifAndFinalsMatches()
         ),
         div(
+          child.text <-- sNumQualif.map(nq => "Num qualif: " + nq)
+        ),
+        div(
           child.text <-- sRows.combineWith(sCols).map {
             case(r, c) => s"Finals rows: $r, Finals cols: $c"
           }
