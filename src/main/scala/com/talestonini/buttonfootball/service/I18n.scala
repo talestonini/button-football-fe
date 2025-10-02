@@ -36,8 +36,7 @@ case object RankingPointsTableToken extends Token("tabela de pontos", "points ta
 case object RankingPositionToken extends Token("Posição", "Position")
 case object RankingPositionShortToken extends Token("", "")
 case object RankingSeePointsTableToken extends Token("Veja a ", "See the ")
-case object RankingUpToEditionNoteToken extends Token("* Até a edição %s do campeonato selecionado.",
-  "* Up to edition %s of the selected championship.")
+case object RankingUpToEditionNoteToken extends Token("* Até a edição %s.", "* Up to edition %s.")
 case object RankingWorstPositionShortToken extends Token("Pi", "Wo")
 case object RankingWorstPositionToken extends Token("Pior", "Worst")
 case object StandingsDrawsToken extends Token("Empates", "Draws")

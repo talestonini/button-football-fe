@@ -10,7 +10,7 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
   .enablePlugins(ScalablyTypedConverterExternalNpmPlugin)
   .enablePlugins(BuildInfoPlugin)
   .settings(
-    version := "0.4.1",
+    version := "0.4.2",
     scalaVersion := scalaVer,
 
     // Tell Scala.js that this is an application with a main method
