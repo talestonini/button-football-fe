@@ -4,6 +4,7 @@ import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.component.Table.Column
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Rankings.*
+import com.talestonini.buttonfootball.model.Scorings.*
 import com.talestonini.buttonfootball.service.*
 import com.talestonini.util.*
 import com.talestonini.util.Window.Size
@@ -12,7 +13,55 @@ object RankingTabContent:
 
   def apply(): Element =
     div(
-      div(cls := "text-start", text <-- I18n(RankingNoteToken)),
+      div(
+        cls := "text-start",
+        text <-- I18n(RankingUpToEditionNoteToken).combineWith(vSelectedEdition.signal)
+          .map((token, edition) => token.format(edition)),
+        span(
+          cls := "p-2",
+          text <-- I18n(RankingSeePointsTableToken),
+          button(
+            cls := "btn btn-link",
+            buildStyleAttr("vertical-align: initial", "--bs-btn-padding-x: 0"),
+            typ := "button",
+            dataAttr("bs-toggle") := "modal",
+            dataAttr("bs-target") := "#pointsTableModal",
+            text <-- I18n(RankingPointsTableToken)
+          ),
+          "."
+        ),
+        div(
+          cls := "modal fade",
+          idAttr := "pointsTableModal",
+          tabIndex := -1,
+          div(
+            cls := "modal-dialog",
+            div(
+              cls := "modal-content",
+              div(
+                cls := "modal-header",
+                h1(cls := "modal-title fs-5", text <-- I18n(PointsTableTitleToken))
+              ),
+              div(
+                cls := "modal-body",
+                Table[Scoring](vScorings, List(
+                  Column(PointsTableFinalStandingToken, 1),
+                  Column(RankingPointsToken, 2)
+                ))
+              ),
+              div(
+                cls := "modal-footer",
+                button(
+                  cls := "btn btn-primary",
+                  typ := "button",
+                  dataAttr("bs-dismiss") := "modal",
+                  text <-- I18n(PointsTableDismissButtonToken)
+                )
+              )
+            )
+          )
+        )
+      ),
       cls := "container border bg-white p-3 text-end",
       buildStyleAttr("overflow-x: auto"),
       child <-- vRankings.signal.map(rs => {

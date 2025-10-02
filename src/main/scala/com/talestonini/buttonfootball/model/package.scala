@@ -6,6 +6,7 @@ import com.talestonini.buttonfootball.model.Championships.*
 import com.talestonini.buttonfootball.model.ChampionshipTypes.*
 import com.talestonini.buttonfootball.model.Matches.*
 import com.talestonini.buttonfootball.model.Rankings.*
+import com.talestonini.buttonfootball.model.Scorings.*
 import com.talestonini.buttonfootball.model.Standings.*
 import com.talestonini.buttonfootball.model.Teams.*
 import com.talestonini.buttonfootball.model.TeamTypes.*
@@ -62,6 +63,7 @@ package object model:
   val vGroupStandings: Var[List[Standing]] = Var(List.empty)
   val vFinalStandings: Var[List[Standing]] = Var(List.empty)
   val vRankings: Var[List[Ranking]] = Var(List.empty)
+  val vScorings: Var[List[Scoring]] = Var(List.empty)
   
   case class Qualified(pos: Int, team: String)
   val sQualifiedTeams: Signal[List[Qualified]] = vGroupStandings.signal.combineWith(sNumQualif).map {
@@ -132,6 +134,7 @@ package object model:
               else
                 if (vSelectedEdition.now() == NO_CHAMPIONSHIP_EDITION) s.value.length
                 else vSelectedEdition.now()
+            vSelectedEdition.update(_ => editionToUpdateWith)
             vChampionships.now().find(_.numEdition == editionToUpdateWith)
           )
           val selectedChampionship = vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP)
@@ -143,6 +146,7 @@ package object model:
           seGetStandings(selectedChampionship.id)
           seGetRankings(vSelectedChampionshipType.now().getOrElse(NO_CHAMPIONSHIP_TYPE).id,
             selectedChampionship.numEdition)
+          seGetScorings(vSelectedChampionshipType.now().getOrElse(NO_CHAMPIONSHIP_TYPE).id)
           unsetLoading()
         case f: Failure[List[Championship]] =>
           println(s"failed fetching championships: ${f.exception.getMessage}")
@@ -245,6 +249,23 @@ package object model:
           unsetLoading()
       })(using queue)
   end seGetRankings
+
+  def seGetScorings(championshipTypeId: Id): Unit =
+    setLoading()
+    println(s"fetching scorings with championship type id '$championshipTypeId'")
+    ChampionshipTypeService.getScorings(championshipTypeId)
+      .unsafeToFuture()
+      .onComplete({
+        case s: Success[List[Scoring]] =>
+          val numQualif = vSelectedChampionship.now().getOrElse(NO_CHAMPIONSHIP).numQualif
+          vScorings.update(_ => s.value.take(numQualif))
+          unsetLoading()
+        case f: Failure[List[Scoring]] =>
+          println(s"failed fetching scorings: ${f.exception.getMessage}")
+          vScorings.update(_ => List.empty)
+          unsetLoading()
+      })(using queue)
+  end seGetScorings
 
   def seGetTeams(name: String = ""): Unit =
     setLoading()
