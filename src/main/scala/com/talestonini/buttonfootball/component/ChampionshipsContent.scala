@@ -46,7 +46,7 @@ object ChampionshipsContent:
       cls := s"row ${spacingStyle("pb")}",
       label(
         cls := "form-label text-muted",
-        forId := "championshipEditionRange",
+        forId := "championshipEditionsRange",
         b(text <-- I18n(ChampionshipEditionToken))
       ),
       div(
@@ -105,7 +105,7 @@ object ChampionshipsContent:
       cls := "col",
       label(
         cls := "form-label text-muted",
-        forId := "championshipdStatus",
+        forId := "championshipStatus",
         b(text <-- I18n(ChampionshipStageToken))
       ),
       input(
