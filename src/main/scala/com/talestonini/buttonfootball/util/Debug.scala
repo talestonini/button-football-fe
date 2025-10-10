@@ -38,6 +38,9 @@ object Debug:
           child.text <-- assertCorrectNumQualifAndFinalsMatches()
         ),
         div(
+          child.text <-- sNumQualif.map(nq => "Num qualif: " + nq)
+        ),
+        div(
           child.text <-- sRows.combineWith(sCols).map {
             case(r, c) => s"Finals rows: $r, Finals cols: $c"
           }
@@ -45,6 +48,11 @@ object Debug:
         div(
           child.text <-- vGroupStandings.signal.combineWith(vFinalStandings.signal).map {
             case(gss, fss) => s"Group Standings: ${gss.size}, Final Standings: ${fss.size}"
+          }
+        ),
+        div(
+          child.text <-- vRankings.signal.map {
+            case(rs) => s"Rankings: ${rs.size}"
           }
         ),
         div(child.text <-- vTeams.signal.map(ts => s"Teams count: ${ts.size}")),

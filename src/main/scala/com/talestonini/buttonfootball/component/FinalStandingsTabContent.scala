@@ -19,8 +19,8 @@ object FinalStandingsTabContent:
         val ws = Window.size()
         val smallish = ws == Size.Small || ws == Size.Medium
         Table[Standing](vFinalStandings, List(
-          Column(if (smallish) StandingsFinalShortToken else  StandingsFinalToken, 8),
-          StandingsTeamColumn(ws),
+          Column(if (smallish) StandingsFinalShortToken else StandingsFinalToken, 8),
+          TeamColumn(4),
           Column(EmptyToken, 3, "text-start", !smallish,
             Some((teamName: String) => span(text <-- I18n(teamName, TeamTranslationMap)))
           ),
