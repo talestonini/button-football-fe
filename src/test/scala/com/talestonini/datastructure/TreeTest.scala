@@ -1,4 +1,4 @@
-package com.talestonini.buttonfootball.datastructure
+package com.talestonini.datastructure
 
 class TreeTest extends munit.FunSuite:
 
