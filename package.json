@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@scala-js/vite-plugin-scalajs": "^1.1.0",
-    "@types/chart.js": "^2.9.29",
+    "@types/chart.js": "^4.0.1",
     "sass": "^1.93.3",
     "vite": "^7.1.12",
     "typescript": "^5.9.3"
@@ -19,6 +19,6 @@
     "@popperjs/core": "^2.11.8",
     "@types/bootstrap": "^5.2.10",
     "bootstrap": "^5.3.8",
-    "chart.js": "^2.9.4"
+    "chart.js": "^4.5.1"
   }
 }
