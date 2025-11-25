@@ -2,6 +2,7 @@ package com.talestonini.buttonfootball
 
 import com.raquo.laminar.api.L.{*, given}
 import com.talestonini.buttonfootball.component.*
+import com.talestonini.buttonfootball.component.facade.*
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.service.*
 import com.talestonini.buttonfootball.util.*

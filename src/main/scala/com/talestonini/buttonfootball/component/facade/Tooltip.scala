@@ -1,4 +1,4 @@
-package com.talestonini.buttonfootball.util
+package com.talestonini.buttonfootball.component.facade
 
 import scala.scalajs.js
 import js.annotation.JSGlobal
