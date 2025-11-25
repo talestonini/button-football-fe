@@ -2,8 +2,8 @@ import sbt.internal.util.ManagedLogger
 import org.scalajs.linker.interface.ModuleSplitStyle
 
 val scalaVer  = "3.7.2" // update prep_public.sh to match this version
-val circeVer  = "0.14.14"
-val http4sVer = "0.23.30"
+val circeVer  = "0.14.15"
+val http4sVer = "0.23.33"
 
 lazy val buttonFootballFrontEnd = project.in(file("."))
   .enablePlugins(ScalaJSPlugin) // Enable the Scala.js plugin in this project
@@ -35,7 +35,7 @@ lazy val buttonFootballFrontEnd = project.in(file("."))
     libraryDependencies ++= Seq(
       "org.scala-js"  %%% "scalajs-dom" % "2.8.1",
       "com.raquo"     %%% "laminar"     % "17.2.1",
-      "org.scalameta" %%% "munit"       % "1.1.1" % Test,
+      "org.scalameta" %%% "munit"       % "1.2.1" % Test,
 
       // Http4s (backend and database stuff)
       "io.circe"   %%% "circe-core"      % circeVer,
