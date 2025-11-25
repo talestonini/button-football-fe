@@ -1,11 +1,11 @@
 package com.talestonini.buttonfootball.component
 
 import com.raquo.laminar.api.L.{*, given}
-import com.talestonini.buttonfootball.datastructure.*
 import com.talestonini.buttonfootball.model.*
 import com.talestonini.buttonfootball.model.Matches.Match
 import com.talestonini.buttonfootball.service.MatchTypeTranslationMap
 import com.talestonini.buttonfootball.util.*
+import com.talestonini.datastructure.*
 import com.talestonini.util.*
 
 import java.lang.Math.{log, pow}

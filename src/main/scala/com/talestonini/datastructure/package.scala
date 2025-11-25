@@ -1,4 +1,4 @@
-package com.talestonini.buttonfootball
+package com.talestonini
 
 package object datastructure {
   
