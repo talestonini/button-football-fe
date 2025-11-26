@@ -57,18 +57,11 @@ jobs:
         echo "$DEV_SECRETS" > .secrets-dev
         echo "$PROD_SECRETS" > .secrets-prod
 
-    - name: Show tree for debugging
-      run: |
-        echo "Repo root listing:"
-        ls -la
-        echo "project/ listing:"
-        ls -la project || true
-        echo "project/plugins.sbt contents:"
-        cat project/plugins.sbt || true
-
     - name: Run tests (depends on typescript for scalablytyped, hence npm install)
       run: |
         npm install
+        npm ls
+        sbt -J-Xmx3G -v 'show thisProject / plugins'
         sbt -J-Xmx3G -v test
 
     # This step uploads information to the GitHub dependency graph, unblocking Dependabot alerts for the repository.
