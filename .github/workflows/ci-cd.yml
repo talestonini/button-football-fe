@@ -44,9 +44,9 @@ jobs:
           libgles2\
           gstreamer1.0-libav
 
-    - name: Setup Node.js
-        uses: actions/setup-node@v5
-        with:
+    - name: Set up Node.js
+      uses: actions/setup-node@v5
+      with:
           node-version: '22'
 
     - name: Create project config files
@@ -58,13 +58,13 @@ jobs:
         echo "$PROD_SECRETS" > .secrets-prod
 
     - name: Show tree for debugging
-        run: |
-          echo "Repo root listing:"
-          ls -la
-          echo "project/ listing:"
-          ls -la project || true
-          echo "project/plugins.sbt contents:"
-          cat project/plugins.sbt || true
+      run: |
+        echo "Repo root listing:"
+        ls -la
+        echo "project/ listing:"
+        ls -la project || true
+        echo "project/plugins.sbt contents:"
+        cat project/plugins.sbt || true
 
     - name: Run tests (depends on typescript for scalablytyped, hence npm install)
       run: |
