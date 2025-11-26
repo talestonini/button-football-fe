@@ -44,6 +44,11 @@ jobs:
           libgles2\
           gstreamer1.0-libav
 
+    - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
     - name: Create project config files
       env:
         DEV_SECRETS: ${{ secrets.DEV }}
@@ -52,10 +57,19 @@ jobs:
         echo "$DEV_SECRETS" > .secrets-dev
         echo "$PROD_SECRETS" > .secrets-prod
 
+    - name: Show tree for debugging
+        run: |
+          echo "Repo root listing:"
+          ls -la
+          echo "project/ listing:"
+          ls -la project || true
+          echo "project/plugins.sbt contents:"
+          cat project/plugins.sbt || true
+
     - name: Run tests (depends on typescript for scalablytyped, hence npm install)
       run: |
         npm install
-        sbt -J-Xmx3G test
+        sbt -J-Xmx3G -v test
 
     # This step uploads information to the GitHub dependency graph, unblocking Dependabot alerts for the repository.
     - name: Upload dependency graph
