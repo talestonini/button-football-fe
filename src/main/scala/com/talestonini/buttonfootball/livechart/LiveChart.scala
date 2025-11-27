@@ -8,6 +8,9 @@ import org.scalajs.dom
 import com.talestonini.buttonfootball.livechart.model.Model
 import com.talestonini.buttonfootball.livechart.model.DataItemID
 import com.talestonini.buttonfootball.livechart.model.DataItem
+// import typings.chartJs.chartJsStrings.*
+// import typings.chartJs.distTypesIndexMod.ChartData
+// import typings.chartJs.distTypesIndexMod.ChartDataset
 
 object LiveChart:
   val model = new Model
@@ -105,40 +108,44 @@ object LiveChart:
     )
 
   val chartConfig =
-    import typings.chartJs.mod.*
+    import typings.chartJs.distTypesIndexMod.ChartConfiguration
+    import typings.chartJs.chartJsStrings
+    import typings.chartJs.anon.ChartType
+
     new ChartConfiguration {
-      `type` = ChartType.bar
-      data = new ChartData {
-        datasets = js.Array(
-          new ChartDataSets {
-            label = "Price"
-            borderWidth = 1
-            backgroundColor = "green"
-          },
-          new ChartDataSets {
-            label = "Full price"
-            borderWidth = 1
-            backgroundColor = "blue"
-          }
-        )
-      }
-      options = new ChartOptions {
-        scales = new ChartScales {
-          yAxes = js.Array(new CommonAxe {
-            ticks = new TickOptions {
-              beginAtZero = true
-            }
-          })
-        }
-      }
+      // // `type` = ChartType.bar
+      // data = new ChartData {
+      //   datasets = js.Array(
+      //     new ChartDataSets {
+      //       label = "Price"
+      //       borderWidth = 1
+      //       backgroundColor = "green"
+      //     },
+      //     new ChartDataSets {
+      //       label = "Full price"
+      //       borderWidth = 1
+      //       backgroundColor = "blue"
+      //     }
+      //   )
+      // }
+      // options = new ChartOptions {
+      //   scales = new ChartScales {
+      //     yAxes = js.Array(new CommonAxe {
+      //       ticks = new TickOptions {
+      //         beginAtZero = true
+      //       }
+      //     })
+      //   }
+      // }
     }
   end chartConfig
 
   def renderDataChart(): Element =
     import scala.scalajs.js.JSConverters.*
-    import typings.chartJs.mod.*
+    import typings.chartJs.distMod.*
 
     var optChart: Option[Chart] = None
+    // val data: ChartData[bar, Int, String] = ChartData(dataset)
 
     canvasTag(
       // Regular properties of the canvas
@@ -150,7 +157,7 @@ object LiveChart:
         // on mount, create the `Chart` instance and store it in optChart
         mount = { nodeCtx =>
           val domCanvas: dom.HTMLCanvasElement = nodeCtx.thisNode.ref
-          val chart = Chart.apply.newInstance2(domCanvas, chartConfig)
+          val chart = Chart(domCanvas, chartConfig)
           optChart = Some(chart)
         },
         // on unmount, destroy the `Chart` instance
@@ -164,7 +171,7 @@ object LiveChart:
       // Bridge the FRP world of dataSignal to the imperative world of the `chart.data`
       dataSignal --> { data =>
         for (chart <- optChart) {
-          chart.data.labels = data.map(_.label).toJSArray
+          // chart.data.labels = data.map(_.label).toJSArray
           chart.data.datasets.get(0).data = data.map(_.price).toJSArray
           chart.data.datasets.get(1).data = data.map(_.fullPrice).toJSArray
           chart.update()
