@@ -9,6 +9,8 @@ import org.scalajs.dom
 import com.talestonini.buttonfootball.livechart.model.Model
 import com.talestonini.buttonfootball.livechart.model.DataItemID
 import com.talestonini.buttonfootball.livechart.model.DataItem
+import typings.chartJs.mod.Chart
+import typings.chartJs.distTypesIndexMod.{ChartConfiguration, ChartItem}
 
 object LiveChart:
   val model = new Model
@@ -105,7 +107,7 @@ object LiveChart:
       }
     )
 
-  def createChartConfig(): js.Object =
+  val chartConfig: ChartConfiguration[Any, Any, Any] =
     jsLiteral(
       "type" -> "bar",
       "data" -> jsLiteral(
@@ -132,13 +134,10 @@ object LiveChart:
           )
         )
       )
-    ).asInstanceOf[js.Object]
-  end createChartConfig
+    ).asInstanceOf[ChartConfiguration[Any, Any, Any]]
 
   def renderDataChart(): Element =
     import scala.scalajs.js.JSConverters.*
-    import typings.chartJs.mod.Chart
-    import typings.chartJs.distTypesIndexMod.{ChartConfiguration, ChartItem}
 
     var optChart: Option[Chart[Any, Any, Any]] = None
 
@@ -151,9 +150,8 @@ object LiveChart:
       onMountUnmountCallback(
         // on mount, create the `Chart` instance and store it in optChart
         mount = { nodeCtx =>
-          val domCanvas: dom.HTMLCanvasElement = nodeCtx.thisNode.ref
-          val config = createChartConfig().asInstanceOf[ChartConfiguration[Any, Any, Any]]
-          val chart = new Chart[Any, Any, Any](domCanvas.asInstanceOf[ChartItem], config)
+          val domCanvas: ChartItem = nodeCtx.thisNode.ref
+          val chart = new Chart[Any, Any, Any](domCanvas, chartConfig)
           optChart = Some(chart)
         },
         // on unmount, destroy the `Chart` instance
