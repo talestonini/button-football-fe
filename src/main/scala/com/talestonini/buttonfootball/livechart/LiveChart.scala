@@ -8,9 +8,9 @@ import org.scalajs.dom
 import com.talestonini.buttonfootball.livechart.model.Model
 import com.talestonini.buttonfootball.livechart.model.DataItemID
 import com.talestonini.buttonfootball.livechart.model.DataItem
-// import typings.chartJs.chartJsStrings.*
-// import typings.chartJs.distTypesIndexMod.ChartData
-// import typings.chartJs.distTypesIndexMod.ChartDataset
+import typings.chartJs.mod.{Chart => ChartClass}
+import typings.chartJs.distTypesIndexMod
+import scala.scalajs.js.|
 
 object LiveChart:
   val model = new Model
@@ -107,45 +107,41 @@ object LiveChart:
       }
     )
 
-  val chartConfig =
-    import typings.chartJs.distTypesIndexMod.ChartConfiguration
-    import typings.chartJs.chartJsStrings
-    import typings.chartJs.anon.ChartType
-
-    new ChartConfiguration {
-      // // `type` = ChartType.bar
-      // data = new ChartData {
-      //   datasets = js.Array(
-      //     new ChartDataSets {
-      //       label = "Price"
-      //       borderWidth = 1
-      //       backgroundColor = "green"
-      //     },
-      //     new ChartDataSets {
-      //       label = "Full price"
-      //       borderWidth = 1
-      //       backgroundColor = "blue"
-      //     }
-      //   )
-      // }
-      // options = new ChartOptions {
-      //   scales = new ChartScales {
-      //     yAxes = js.Array(new CommonAxe {
-      //       ticks = new TickOptions {
-      //         beginAtZero = true
-      //       }
-      //     })
-      //   }
-      // }
-    }
-  end chartConfig
+  def createChartConfig(): js.Object =
+    js.Dynamic.literal(
+      "type" -> "bar",
+      "data" -> js.Dynamic.literal(
+        "labels" -> js.Array[String](),
+        "datasets" -> js.Array(
+          js.Dynamic.literal(
+            "label" -> "Price",
+            "data" -> js.Array[Double](),
+            "borderWidth" -> 1,
+            "backgroundColor" -> "rgba(75, 192, 192, 0.6)"
+          ),
+          js.Dynamic.literal(
+            "label" -> "Full Price",
+            "data" -> js.Array[Double](),
+            "borderWidth" -> 1,
+            "backgroundColor" -> "rgba(54, 162, 235, 0.6)"
+          )
+        )
+      ),
+      "options" -> js.Dynamic.literal(
+        "scales" -> js.Dynamic.literal(
+          "y" -> js.Dynamic.literal(
+            "beginAtZero" -> true
+          )
+        )
+      )
+    ).asInstanceOf[js.Object]
+  end createChartConfig
 
   def renderDataChart(): Element =
     import scala.scalajs.js.JSConverters.*
-    import typings.chartJs.distMod.*
+    import scala.scalajs.js.Dynamic.{literal => lit}
 
-    var optChart: Option[Chart] = None
-    // val data: ChartData[bar, Int, String] = ChartData(dataset)
+    var optChart: Option[ChartClass[Any, Any, Any]] = None
 
     canvasTag(
       // Regular properties of the canvas
@@ -157,7 +153,8 @@ object LiveChart:
         // on mount, create the `Chart` instance and store it in optChart
         mount = { nodeCtx =>
           val domCanvas: dom.HTMLCanvasElement = nodeCtx.thisNode.ref
-          val chart = Chart(domCanvas, chartConfig)
+          val config = createChartConfig().asInstanceOf[distTypesIndexMod.ChartConfiguration[Any, Any, Any]]
+          val chart = new ChartClass[Any, Any, Any](domCanvas.asInstanceOf[distTypesIndexMod.ChartItem], config)
           optChart = Some(chart)
         },
         // on unmount, destroy the `Chart` instance
@@ -171,12 +168,20 @@ object LiveChart:
       // Bridge the FRP world of dataSignal to the imperative world of the `chart.data`
       dataSignal --> { data =>
         for (chart <- optChart) {
-          // chart.data.labels = data.map(_.label).toJSArray
-          chart.data.datasets.get(0).data = data.map(_.price).toJSArray
-          chart.data.datasets.get(1).data = data.map(_.fullPrice).toJSArray
+          val chartData = chart.data.asInstanceOf[js.Dynamic]
+          val datasets = chartData.selectDynamic("datasets").asInstanceOf[js.Array[js.Dynamic]]
+          
+          // Update labels
+          chartData.updateDynamic("labels")(data.map(_.label).toJSArray)
+          
+          // Update dataset 0 (Price)
+          datasets(0).updateDynamic("data")(data.map(_.price).toJSArray)
+          
+          // Update dataset 1 (Full Price)
+          datasets(1).updateDynamic("data")(data.map(_.fullPrice).toJSArray)
+          
+          // Update the chart
           chart.update()
         }
       },
     )
-  end renderDataChart
-end LiveChart
