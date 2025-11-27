@@ -151,7 +151,7 @@ object LiveChart:
         // on mount, create the `Chart` instance and store it in optChart
         mount = { nodeCtx =>
           val domCanvas: ChartItem = nodeCtx.thisNode.ref
-          val chart = new Chart[Any, Any, Any](domCanvas, chartConfig)
+          val chart = Chart[Any, Any, Any](domCanvas, chartConfig)
           optChart = Some(chart)
         },
         // on unmount, destroy the `Chart` instance
@@ -182,3 +182,5 @@ object LiveChart:
         }
       },
     )
+  end renderDataChart
+end LiveChart
