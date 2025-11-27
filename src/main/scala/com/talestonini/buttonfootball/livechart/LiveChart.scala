@@ -3,14 +3,12 @@ package com.talestonini.buttonfootball.livechart
 import com.raquo.laminar.api.L.{*, given}
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*
+import scala.scalajs.js.Dynamic.{literal => jsLiteral}
 
 import org.scalajs.dom
 import com.talestonini.buttonfootball.livechart.model.Model
 import com.talestonini.buttonfootball.livechart.model.DataItemID
 import com.talestonini.buttonfootball.livechart.model.DataItem
-import typings.chartJs.mod.{Chart => ChartClass}
-import typings.chartJs.distTypesIndexMod
-import scala.scalajs.js.|
 
 object LiveChart:
   val model = new Model
@@ -108,18 +106,18 @@ object LiveChart:
     )
 
   def createChartConfig(): js.Object =
-    js.Dynamic.literal(
+    jsLiteral(
       "type" -> "bar",
-      "data" -> js.Dynamic.literal(
+      "data" -> jsLiteral(
         "labels" -> js.Array[String](),
         "datasets" -> js.Array(
-          js.Dynamic.literal(
+          jsLiteral(
             "label" -> "Price",
             "data" -> js.Array[Double](),
             "borderWidth" -> 1,
             "backgroundColor" -> "rgba(75, 192, 192, 0.6)"
           ),
-          js.Dynamic.literal(
+          jsLiteral(
             "label" -> "Full Price",
             "data" -> js.Array[Double](),
             "borderWidth" -> 1,
@@ -127,9 +125,9 @@ object LiveChart:
           )
         )
       ),
-      "options" -> js.Dynamic.literal(
-        "scales" -> js.Dynamic.literal(
-          "y" -> js.Dynamic.literal(
+      "options" -> jsLiteral(
+        "scales" -> jsLiteral(
+          "y" -> jsLiteral(
             "beginAtZero" -> true
           )
         )
@@ -139,9 +137,10 @@ object LiveChart:
 
   def renderDataChart(): Element =
     import scala.scalajs.js.JSConverters.*
-    import scala.scalajs.js.Dynamic.{literal => lit}
+    import typings.chartJs.mod.Chart
+    import typings.chartJs.distTypesIndexMod.{ChartConfiguration, ChartItem}
 
-    var optChart: Option[ChartClass[Any, Any, Any]] = None
+    var optChart: Option[Chart[Any, Any, Any]] = None
 
     canvasTag(
       // Regular properties of the canvas
@@ -153,8 +152,8 @@ object LiveChart:
         // on mount, create the `Chart` instance and store it in optChart
         mount = { nodeCtx =>
           val domCanvas: dom.HTMLCanvasElement = nodeCtx.thisNode.ref
-          val config = createChartConfig().asInstanceOf[distTypesIndexMod.ChartConfiguration[Any, Any, Any]]
-          val chart = new ChartClass[Any, Any, Any](domCanvas.asInstanceOf[distTypesIndexMod.ChartItem], config)
+          val config = createChartConfig().asInstanceOf[ChartConfiguration[Any, Any, Any]]
+          val chart = new Chart[Any, Any, Any](domCanvas.asInstanceOf[ChartItem], config)
           optChart = Some(chart)
         },
         // on unmount, destroy the `Chart` instance
