@@ -14,13 +14,13 @@ jobs:
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Set up JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '21'
-        distribution: 'temurin'
+        distribution: 'oracle'
         cache: 'sbt'
 
     - name: Install SBT
@@ -44,6 +44,11 @@ jobs:
           libgles2\
           gstreamer1.0-libav
 
+    - name: Set up Node.js
+      uses: actions/setup-node@v5
+      with:
+          node-version: '22'
+
     - name: Create project config files
       env:
         DEV_SECRETS: ${{ secrets.DEV }}
@@ -55,7 +60,9 @@ jobs:
     - name: Run tests (depends on typescript for scalablytyped, hence npm install)
       run: |
         npm install
-        sbt -J-Xmx3G test
+        npm ls
+        sbt -J-Xmx3G -v about
+        sbt -J-Xmx3G -v test
 
     # This step uploads information to the GitHub dependency graph, unblocking Dependabot alerts for the repository.
     - name: Upload dependency graph
@@ -68,13 +75,13 @@ jobs:
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Set up JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '21'
-        distribution: 'temurin'
+        distribution: 'oracle'
         cache: 'sbt'
 
     - name: Install SBT
