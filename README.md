@@ -48,6 +48,5 @@ Have the JSON key file path of a Firebase service account pointed by an env var 
 
 ## TODOs/FIXMEs
 
-- Delete counter.js.
 - Logos for trophies.
 - App icon.
