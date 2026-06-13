@@ -8,6 +8,7 @@ import com.talestonini.buttonfootball.service.*
 import com.talestonini.buttonfootball.util.*
 import com.talestonini.buttonfootball.component.{AccordionItem, Footer, Languages}
 import com.talestonini.util.*
+import com.talestonini.buttonfootball.livechart.LiveChart
 
 @main
 def ButtonFootballFrontEnd(): Unit =
@@ -27,6 +28,7 @@ private val mainRowClasses = s"row-12 ${spacingStyle("pb")}"
 
 def mainAppElement(): Element =
   div(
+    LiveChart.appElement(),
     cls := s"container shadow ${spacingStyle("p")} text-muted",
     Debug.internalStateView(),
     div(
